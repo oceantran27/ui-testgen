@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer components {
+  /* Main card/panel styling */
+  .card {
+    @apply bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-200/80 transition-all duration-300 hover:shadow-xl hover:border-gray-300;
+  }
+
+  /* Base button styles */
+  .btn {
+    @apply inline-flex items-center justify-center font-bold rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-4 disabled:cursor-not-allowed;
+  }
+
+  /* Primary button (blue gradient) */
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-400/50 disabled:from-gray-400 disabled:to-gray-500 disabled:shadow-none;
+  }
+
+  /* File input styling */
+  .file-input-label {
+    @apply flex-1 cursor-pointer bg-gray-100/80 hover:bg-gray-200/80 text-gray-700 font-semibold py-3 px-4 rounded-lg border-2 border-dashed border-gray-300 text-center transition-all duration-300;
+  }
+
+  /* Custom styled scrollbar for history list */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-blue-400 rounded-full transition-colors;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-blue-500;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
+}
