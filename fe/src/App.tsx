@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { FiUploadCloud, FiTrash2, FiLoader, FiImage, FiChevronDown, FiServer } from 'react-icons/fi';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
-const STATIC_URL = 'http://localhost:8000';
+const API_BASE_URL = '/api/v1';
+const STATIC_URL = '';
 
 // Define types for our data
 interface AnalysisScenario {
