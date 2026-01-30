@@ -13,8 +13,8 @@ services:
       - db
     environment:
       - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=password
+      - DB_USER=new_user
+      - DB_PASSWORD=new_password
       - DB_NAME=ui_testgen_db
 
   frontend:
@@ -34,8 +34,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root_secret_password
       MYSQL_DATABASE: ui_testgen_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: password
+      MYSQL_USER: new_user
+      MYSQL_PASSWORD: new_password
     ports:
       - "3306:3306"
     volumes:
