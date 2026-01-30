@@ -9,6 +9,13 @@ services:
       - ./be/uploads:/app/uploads
     container_name: ui-testgen-be
     restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=ui_testgen_db
 
   frontend:
     build:
@@ -19,3 +26,20 @@ services:
       - backend
     container_name: ui-testgen-fe
     restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: ui-testgen-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret_password
+      MYSQL_DATABASE: ui_testgen_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
