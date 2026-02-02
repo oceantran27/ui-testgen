@@ -7,6 +7,7 @@ import {
   FiImage,
   FiChevronDown,
   FiServer,
+  FiX,
 } from "react-icons/fi";
 
 const API_BASE_URL = "/api/v1";
@@ -29,6 +30,8 @@ interface AnalysisRecord {
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisScenario | null>(
     null,
   );
@@ -38,6 +41,15 @@ function App() {
   useEffect(() => {
     fetchRecords();
   }, []);
+
+  // Clean up object URL on component unmount
+  useEffect(() => {
+    return () => {
+      if (filePreview) {
+        URL.revokeObjectURL(filePreview);
+      }
+    };
+  }, [filePreview]);
 
   const fetchRecords = async () => {
     try {
@@ -60,9 +72,18 @@ function App() {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setFile(event.target.files[0]);
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+    }
+
+    if (event.target.files && event.target.files.length > 0) {
+      const newFile = event.target.files[0];
+      setFile(newFile);
+      setFilePreview(URL.createObjectURL(newFile));
       setAnalysisResult(null);
+    } else {
+      setFile(null);
+      setFilePreview(null);
     }
   };
 
@@ -124,126 +145,163 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen text-gray-800 bg-gradient-to-br from-gray-50 to-gray-100">
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          className:
-            "bg-white/80 backdrop-blur-sm border border-gray-200/80 shadow-lg rounded-xl",
-          style: {
-            color: "#333",
-          },
-        }}
-      />
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header className="text-center mb-12">
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-gradient from-blue-600 to-indigo-500">
-            UI TestGen
-          </h1>
-          <p className="text-gray-500 mt-3 text-lg">
-            Generate UI test scenarios from screenshots using AI
-          </p>
-        </header>
+    <>
+      <div className="min-h-screen text-gray-800 bg-gradient-to-br from-gray-50 to-gray-100">
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          toastOptions={{
+            className:
+              "bg-white/80 backdrop-blur-sm border border-gray-200/80 shadow-lg rounded-xl",
+            style: {
+              color: "#333",
+            },
+          }}
+        />
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+          <header className="text-center mb-12">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-gradient from-blue-600 to-indigo-500">
+              UI TestGen
+            </h1>
+            <p className="text-gray-500 mt-3 text-lg">
+              Generate UI test scenarios from screenshots using AI
+            </p>
+          </header>
 
-        <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="card">
-              <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
-                <FiUploadCloud className="mr-3 text-blue-500" />
-                Analyze New Screenshot
-              </h2>
-              <div className="flex items-center space-x-4">
-                <label className="file-input-label">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <span className="truncate">
-                    {file ? file.name : "Choose a file..."}
-                  </span>
-                </label>
-                <button
-                  onClick={handleAnalyzeClick}
-                  disabled={isLoading || !file}
-                  className="btn btn-primary"
-                >
-                  {isLoading ? (
-                    <FiLoader className="animate-spin -ml-1 mr-2" />
-                  ) : null}
-                  {isLoading ? "Analyzing..." : "Analyze"}
-                </button>
-              </div>
-            </div>
-
-            {analysisResult && (
+          <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-8">
               <div className="card">
-                <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                  Analysis Result
+                <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
+                  <FiUploadCloud className="mr-3 text-blue-500" />
+                  Analyze New Screenshot
                 </h2>
-                <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto custom-scrollbar">
-                  {JSON.stringify(analysisResult, null, 2)}
-                </pre>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column (History) */}
-          <div className="card lg:col-span-3 row-span-2">
-            <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
-              <FiServer className="mr-3 text-blue-500" />
-              Analysis History
-            </h2>
-            <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
-              {records.length === 0 && (
-                <div className="text-center text-gray-500 py-10">
-                  <FiImage className="mx-auto text-4xl mb-2" />
-                  <p>No analysis records found.</p>
-                  <p className="text-sm">Upload a screenshot to get started.</p>
-                </div>
-              )}
-              {records.map((record) => (
-                <div
-                  key={record.id}
-                  className="group flex items-start space-x-4 p-4 rounded-xl bg-gray-50/80 border border-transparent hover:border-gray-200 transition-all"
-                >
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-700">
-                      Record ID: {record.id}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(record.created_at).toLocaleString()}
-                    </p>
-                    <details className="mt-2 text-sm">
-                      <summary className="cursor-pointer font-medium text-blue-600 hover:underline flex items-center">
-                        <FiChevronDown className="inline mr-1" /> View Scenario
-                      </summary>
-                      <pre className="bg-gray-100 p-2 mt-2 rounded-md overflow-x-auto custom-scrollbar">
-                        {JSON.stringify(
-                          JSON.parse(record.scenario_json),
-                          null,
-                          2,
-                        )}
-                      </pre>
-                    </details>
-                  </div>
+                <div className="flex items-center space-x-4">
+                  <label className="file-input-label">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <span className="truncate">
+                      {file ? file.name : "Choose a file..."}
+                    </span>
+                  </label>
                   <button
-                    onClick={() => handleDeleteRecord(record.id)}
-                    className="text-gray-400 hover:text-red-500 hover:bg-red-100/50 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                    aria-label="Delete record"
+                    onClick={handleAnalyzeClick}
+                    disabled={isLoading || !file}
+                    className="btn btn-primary"
                   >
-                    <FiTrash2 size={18} />
+                    {isLoading ? (
+                      <FiLoader className="animate-spin -ml-1 mr-2" />
+                    ) : null}
+                    {isLoading ? "Analyzing..." : "Analyze"}
                   </button>
                 </div>
-              ))}
+                {filePreview && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-600 mb-2">
+                      Selected image preview:
+                    </p>
+                    <img
+                      src={filePreview}
+                      alt="Selected preview"
+                      className="w-full h-auto max-w-xs max-h-48 object-contain rounded-lg border border-gray-200 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
+                      onClick={() => setIsModalOpen(true)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {analysisResult && (
+                <div className="card">
+                  <h2 className="text-2xl font-bold text-gray-700 mb-4">
+                    Analysis Result
+                  </h2>
+                  <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto custom-scrollbar">
+                    {JSON.stringify(analysisResult, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
-          </div>
-        </main>
+
+            {/* Right Column (History) */}
+            <div className="card lg:col-span-3 row-span-2">
+              <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
+                <FiServer className="mr-3 text-blue-500" />
+                Analysis History
+              </h2>
+              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
+                {records.length === 0 && (
+                  <div className="text-center text-gray-500 py-10">
+                    <FiImage className="mx-auto text-4xl mb-2" />
+                    <p>No analysis records found.</p>
+                    <p className="text-sm">
+                      Upload a screenshot to get started.
+                    </p>
+                  </div>
+                )}
+                {records.map((record) => (
+                  <div
+                    key={record.id}
+                    className="group flex items-start space-x-4 p-4 rounded-xl bg-gray-50/80 border border-transparent hover:border-gray-200 transition-all"
+                  >
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-700">
+                        Record ID: {record.id}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(record.created_at).toLocaleString()}
+                      </p>
+                      <details className="mt-2 text-sm">
+                        <summary className="cursor-pointer font-medium text-blue-600 hover:underline flex items-center">
+                          <FiChevronDown className="inline mr-1" /> View
+                          Scenario
+                        </summary>
+                        <pre className="bg-gray-100 p-2 mt-2 rounded-md overflow-x-auto custom-scrollbar">
+                          {JSON.stringify(
+                            JSON.parse(record.scenario_json),
+                            null,
+                            2,
+                          )}
+                        </pre>
+                      </details>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteRecord(record.id)}
+                      className="text-gray-400 hover:text-red-500 hover:bg-red-100/50 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                      aria-label="Delete record"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+      {isModalOpen && filePreview && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <FiX />
+          </button>
+          <img
+            src={filePreview}
+            alt="Selected screenshot"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking on image
+          />
+        </div>
+      )}
+    </>
   );
 }
 
