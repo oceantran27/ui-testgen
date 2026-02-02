@@ -37,6 +37,8 @@ function App() {
   );
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRecords();
@@ -124,6 +126,11 @@ function App() {
     }
   };
 
+  const handleHistoryImageClick = (src: string) => {
+    setHistoryImageSrc(src);
+    setHistoryModalOpen(true);
+  };
+
   const handleDeleteRecord = async (recordId: number) => {
     const toastId = toast.loading("Deleting record...");
     try {
@@ -136,7 +143,11 @@ function App() {
       }
 
       toast.success("Record deleted.", { id: toastId });
-      fetchRecords(); // Refresh records
+      if (historyImageSrc?.endsWith(record.image_path)) {
+        setHistoryModalOpen(false);
+        setHistoryImageSrc(null);
+      }
+      setRecords(records.filter((r) => r.id !== recordId));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "An unknown error occurred.";
@@ -247,6 +258,9 @@ function App() {
                     key={record.id}
                     className="group flex items-start space-x-4 p-4 rounded-xl bg-gray-50/80 border border-transparent hover:border-gray-200 transition-all"
                   >
+                    <div className="w-24 h-16 flex-shrink-0 bg-gray-200 rounded-md cursor-pointer" onClick={() => handleHistoryImageClick(`/${record.image_path}`)}>
+                      <img src={`/${record.image_path}`} alt={`Record ${record.id}`} className="w-full h-full object-cover rounded-md"/>
+                    </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-700">
                         Record ID: {record.id}
@@ -296,6 +310,25 @@ function App() {
           <img
             src={filePreview}
             alt="Selected screenshot"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking on image
+          />
+        </div>
+      )}
+      {historyModalOpen && historyImageSrc && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setHistoryModalOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
+            onClick={() => setHistoryModalOpen(false)}
+          >
+            <FiX />
+          </button>
+          <img
+            src={historyImageSrc}
+            alt="History screenshot"
             className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking on image
           />
