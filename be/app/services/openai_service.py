@@ -46,26 +46,32 @@ class OpenAIService:
                     {
                         "role": "user",
                         "content": [
-                            {"type": "text", "text": "Analyze this UI and extract high-level user intentions based on the defined strategy."},
+                            {"type": "text", "text": "Analyze this web interface image and list the functions that have been set up according to the requirements."},
                             {
                                 "type": "image_url",
                                 "image_url": {
-                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "high"
                                 }
                             }
                         ]
                     }
                 ],
                 response_format={"type": "json_object"},
-                max_tokens=1000
+                max_tokens=4000,
+                temperature=0
             )
             
             content = response.choices[0].message.content
             if not content:
                 raise AIProcessingError("Received empty response from OpenAI")
-                
+            
+            # The API is now expected to return a JSON string.
             return json.loads(content)
 
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response from OpenAI: {e}")
+            raise AIProcessingError(f"Failed to parse JSON response: {str(e)}")
         except Exception as e:
             logger.error(f"GPT-4o API connection failed or processing error: {e}")
             raise AIProcessingError(f"AI Processing failed: {str(e)}")

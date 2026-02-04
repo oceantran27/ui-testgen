@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from datetime import datetime
 
 class AnalysisRequest(BaseModel):
@@ -7,8 +7,16 @@ class AnalysisRequest(BaseModel):
     # but good to have for structure if we pass metadata.
     pass
 
+class Function(BaseModel):
+    function_name: str
+    description: str
+
+class Group(BaseModel):
+    group_name: str
+    functions: List[Function]
+
 class AnalysisResponse(BaseModel):
-    scenario: Dict[str, Any]
+    groups: List[Group]
 
 class AnalysisRecordBase(BaseModel):
     image_path: str

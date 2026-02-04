@@ -1,8 +1,8 @@
 import shutil
 import os
 import uuid
-import json
 import logging
+import json
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 from typing import List
@@ -28,7 +28,8 @@ def save_analysis_record_task(image_path: str, scenario_result: dict):
     db = next(deps.get_db())
     try:
         repository = AnalysisRepository(db)
-        # Convert dict to JSON string for storage
+        
+        # Convert dict to JSON string for DB storage
         scenario_json_str = json.dumps(scenario_result, ensure_ascii=False)
         
         record_in = AnalysisRecordCreate(
@@ -74,7 +75,8 @@ async def analyze_screenshot(
     # 3. Trigger Background Task for Persistence
     background_tasks.add_task(save_analysis_record_task, file_path, scenario_result)
     
-    return AnalysisResponse(scenario=scenario_result)
+    # The service now returns a dict that matches the AnalysisResponse schema
+    return AnalysisResponse(**scenario_result)
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
