@@ -8,17 +8,25 @@ import {
   FiChevronDown,
   FiServer,
   FiX,
+  FiChevronRight,
+  FiChevronsRight,
 } from "react-icons/fi";
 
 const API_BASE_URL = "/api/v1";
 
 // Define types for our data
-interface AnalysisScenario {
-  [key: string]: unknown;
+interface Function {
+  function_name: string;
+  description: string;
+}
+
+interface Group {
+  group_name: string;
+  functions: Function[];
 }
 
 interface AnalysisResponse {
-  scenario: AnalysisScenario;
+  groups: Group[];
 }
 
 interface AnalysisRecord {
@@ -28,11 +36,62 @@ interface AnalysisRecord {
   created_at: string;
 }
 
+const AnalysisResultDisplay = ({
+  result,
+  showTitle = true,
+  className = "",
+}: {
+  result: AnalysisResponse;
+  showTitle?: boolean;
+  className?: string;
+}) => {
+  if (!result || !Array.isArray(result.groups)) {
+    return null;
+  }
+  return (
+    <div className={`card ${className}`}>
+      {showTitle && (
+        <h2 className="text-2xl font-bold text-gray-700 mb-4">
+          Analysis Result
+        </h2>
+      )}
+      <div className="space-y-3">
+        {result.groups.map((group, index) => (
+          <details
+            key={index}
+            className="group/details bg-gray-50/80 p-3 rounded-lg border border-gray-200/80"
+            open
+          >
+            <summary className="flex items-center cursor-pointer font-semibold text-gray-800 list-none">
+              <FiChevronRight className="w-5 h-5 mr-2 transform group-open/details:rotate-90 transition-transform" />
+              {group.group_name}
+            </summary>
+            <div className="mt-3 pl-4 border-l-2 border-blue-200">
+              {group.functions.map((func, funcIndex) => (
+                <div key={funcIndex} className="py-2">
+                  <p className="font-semibold text-blue-800 flex items-center">
+                    <FiChevronsRight className="w-4 h-4 mr-2 text-blue-500" />
+                    {func.function_name}
+                  </p>
+                  <p className="text-sm text-gray-600 pl-6">
+                    {func.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisScenario | null>(
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
     null,
   );
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
@@ -114,7 +173,7 @@ function App() {
       }
 
       const result: AnalysisResponse = await response.json();
-      setAnalysisResult(result.scenario);
+      setAnalysisResult(result);
       toast.success("Analysis complete!", { id: toastId });
       fetchRecords(); // Refresh records
     } catch (err) {
@@ -134,6 +193,12 @@ function App() {
   const handleDeleteRecord = async (recordId: number) => {
     const toastId = toast.loading("Deleting record...");
     try {
+      const recordToDelete = records.find(r => r.id === recordId);
+      if (!recordToDelete) {
+        toast.error("Could not find record to delete.", { id: toastId });
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/records/${recordId}`, {
         method: "DELETE",
       });
@@ -143,7 +208,8 @@ function App() {
       }
 
       toast.success("Record deleted.", { id: toastId });
-      if (historyImageSrc?.endsWith(record.image_path)) {
+      
+      if (historyImageSrc?.endsWith(recordToDelete.image_path)) {
         setHistoryModalOpen(false);
         setHistoryImageSrc(null);
       }
@@ -225,16 +291,7 @@ function App() {
                 )}
               </div>
 
-              {analysisResult && (
-                <div className="card">
-                  <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                    Analysis Result
-                  </h2>
-                  <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto custom-scrollbar">
-                    {JSON.stringify(analysisResult, null, 2)}
-                  </pre>
-                </div>
-              )}
+              {analysisResult && <AnalysisResultDisplay result={analysisResult} />}
             </div>
 
             {/* Right Column (History) */}
@@ -258,8 +315,17 @@ function App() {
                     key={record.id}
                     className="group flex items-start space-x-4 p-4 rounded-xl bg-gray-50/80 border border-transparent hover:border-gray-200 transition-all"
                   >
-                    <div className="w-24 h-16 flex-shrink-0 bg-gray-200 rounded-md cursor-pointer" onClick={() => handleHistoryImageClick(`/${record.image_path}`)}>
-                      <img src={`/${record.image_path}`} alt={`Record ${record.id}`} className="w-full h-full object-cover rounded-md"/>
+                    <div
+                      className="w-24 h-16 flex-shrink-0 bg-gray-200 rounded-md cursor-pointer"
+                      onClick={() =>
+                        handleHistoryImageClick(`/${record.image_path}`)
+                      }
+                    >
+                      <img
+                        src={`/${record.image_path}`}
+                        alt={`Record ${record.id}`}
+                        className="w-full h-full object-cover rounded-md"
+                      />
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-700">
@@ -268,19 +334,11 @@ function App() {
                       <p className="text-sm text-gray-500">
                         {new Date(record.created_at).toLocaleString()}
                       </p>
-                      <details className="mt-2 text-sm">
-                        <summary className="cursor-pointer font-medium text-blue-600 hover:underline flex items-center">
-                          <FiChevronDown className="inline mr-1" /> View
-                          Scenario
-                        </summary>
-                        <pre className="bg-gray-100 p-2 mt-2 rounded-md overflow-x-auto custom-scrollbar">
-                          {JSON.stringify(
-                            JSON.parse(record.scenario_json),
-                            null,
-                            2,
-                          )}
-                        </pre>
-                      </details>
+                      <AnalysisResultDisplay
+                        result={JSON.parse(record.scenario_json)}
+                        showTitle={false}
+                        className="mt-2"
+                      />
                     </div>
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
