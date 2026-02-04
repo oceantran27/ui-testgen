@@ -1,0 +1,41 @@
+[rev] f5a77a214f72aec159f380388a080fc5918e76a1
+[prompt] v1
+
+ISSUE-01: Over-grouping
+- Cause: Section 4 (Reasoning) – instruction "Group these components based on their collective purpose"
+- Impact: AI gộp các link độc lập (e.g. Help Center, Buyer Central) vào nhóm chung như "Navigation" / "Access Categories"
+
+ISSUE-02: Priority Bias
+- Cause: Section 3 (Context) – "Prioritize identifying primary functions... before secondary or utility functions"
+- Impact: Các chức năng phụ (Read Policy, Help Center) bị loại bỏ để ưu tiên chức năng chính
+
+ISSUE-03: Over-normalization of Function Names
+- Cause: Rule "function names must be concise" + "standard naming conventions"
+- Impact: AI đổi tên hành động cụ thể ("Buy Custom High-quality Jeans") thành tên chung ("Send Inquiry", "Select Product Variations")
+
+ISSUE-04: Narrow Function Definition
+- Cause: Definition of "Function" = "Complete unit of work" + "Strict Exclusion"
+- Impact: Các thao tác nhỏ (Zoom item image) bị loại là "Atomic Interaction Step" và không xuất hiện trong output
+
+--------------
+
+[rev] 3a1b2c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t
+[prompt] v2
+
+ISSUE-01: Low Coverage of Micro-interactions
+- Cause: Định nghĩa "Function" tập trung quá nhiều vào "Business Functions"
+- Impact: Thiếu các tương tác nhỏ như "Zoom in", "Set favorite", "Open shopping cart"
+
+ISSUE-02: Missing Informational Links
+- Cause: Ưu tiên các hành động thay đổi trạng thái, coi link thông tin là thứ yếu
+- Impact: Bỏ qua "Read reviews", "Shop Name", "Return Policy"
+
+ISSUE-03: Generic Product Names
+- Cause: Yêu cầu tên function phải ngắn gọn (concise)
+- Impact: Tên sản phẩm bị rút gọn, mất tính duy nhất (e.g. "Buy Item" thay vì tên đầy đủ)
+
+ISSUE-04: UI Blind Spots
+- Cause: Thiếu chiến lược quét (Scan Strategy) cho các vùng biên (Header, Footer, Overlay)
+- Impact: Bỏ sót các chức năng nằm ở góc màn hình hoặc lớp phủ trên ảnh
+
+--------------
