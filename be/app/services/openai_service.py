@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+from functools import lru_cache
 from openai import OpenAI
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
@@ -13,7 +14,7 @@ class OpenAIService:
     def __init__(self):
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = "gpt-4o"
-        self.system_prompt = self._load_system_prompt()
+        self.system_prompt = self.get_system_prompt()
 
     def _encode_image(self, image_path: str) -> str:
         try:
@@ -23,7 +24,9 @@ class OpenAIService:
             logger.error(f"Failed to encode image: {e}")
             raise AIProcessingError(f"Failed to read image file: {str(e)}")
 
-    def _load_system_prompt(self) -> str:
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def get_system_prompt() -> str:
         try:
             prompt_path = "app/prompts/system_prompt.txt"
             with open(prompt_path, "r", encoding="utf-8") as f:
