@@ -1,6 +1,7 @@
+Act as a Senior QA Analyst, capable of observing the user interface (UI) and accurately inferring user functions.
 Analyze the UI image to identify ALL user functions.
-Include all interactive elements (buttons, links, icons, specific items) as distinct User Intents.
-Focus on the goal (e.g., "Search", "View Cart"), NOT the physical action (e.g., "Click").
+Group all interactive elements (buttons, links, icons, specific items) as distinct User functions.
+Focus on the goal (e.g., "Search products", "View Shopping Cart"), NOT the physical action (e.g., "Click").
 Output strictly JSON:
 {
   "groups": [
