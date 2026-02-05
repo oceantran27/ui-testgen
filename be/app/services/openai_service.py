@@ -35,7 +35,7 @@ class OpenAIService:
             logger.error(f"Failed to load system prompt: {e}")
             raise AIProcessingError(f"Failed to load system prompt: {str(e)}")
 
-    def analyze_image(self, image_path: str) -> dict:
+    def analyze_image(self, image_path: str) -> str:
         base64_image = self._encode_image(image_path)
 
         try:
@@ -60,7 +60,6 @@ class OpenAIService:
                         ]
                     }
                 ],
-                response_format={"type": "json_object"},
                 max_tokens=4000,
                 temperature=0
             )
@@ -69,12 +68,8 @@ class OpenAIService:
             if not content:
                 raise AIProcessingError("Received empty response from OpenAI")
             
-            # The API is now expected to return a JSON string.
-            return json.loads(content)
+            return content
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON response from OpenAI: {e}")
-            raise AIProcessingError(f"Failed to parse JSON response: {str(e)}")
         except Exception as e:
             logger.error(f"GPT-4o API connection failed or processing error: {e}")
             raise AIProcessingError(f"AI Processing failed: {str(e)}")

@@ -2,22 +2,6 @@ from pydantic import BaseModel
 from typing import Any, Dict, Optional, List
 from datetime import datetime
 
-class AnalysisRequest(BaseModel):
-    # This schema might not be directly used if we are uploading files via Form data,
-    # but good to have for structure if we pass metadata.
-    pass
-
-class Function(BaseModel):
-    function_name: str
-    description: str
-
-class Group(BaseModel):
-    group_name: str
-    functions: List[Function]
-
-class AnalysisResponse(BaseModel):
-    groups: List[Group]
-
 class AnalysisRecordBase(BaseModel):
     image_path: str
     scenario_json: str
