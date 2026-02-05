@@ -60,7 +60,6 @@ const AnalysisResultDisplay = ({
           <details
             key={index}
             className="group/details bg-gray-50/80 p-3 rounded-lg border border-gray-200/80"
-            open
           >
             <summary className="flex items-center cursor-pointer font-semibold text-gray-800 list-none">
               <FiChevronRight className="w-5 h-5 mr-2 transform group-open/details:rotate-90 transition-transform" />
@@ -98,10 +97,49 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
+  const [expandedRecordId, setExpandedRecordId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchRecords();
   }, []);
+  
+  const handleToggleExpand = (recordId: number) => {
+    setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
+  };
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const blob = items[i].getAsFile();
+          if (blob) {
+            if (filePreview) {
+              URL.revokeObjectURL(filePreview);
+            }
+            const newFile = new File([blob], "pasted-image.png", {
+              type: blob.type,
+            });
+            setFile(newFile);
+            setFilePreview(URL.createObjectURL(newFile));
+            setAnalysisResult(null);
+            toast.success("Image pasted!");
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [filePreview]);
 
   // Clean up object URL on component unmount
   useEffect(() => {
@@ -328,17 +366,34 @@ function App() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-700">
-                        Record ID: {record.id}
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <p className="font-semibold text-gray-700">
+                          Record ID: {record.id}
+                        </p>
+                        <button
+                          onClick={() => handleToggleExpand(record.id)}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center"
+                        >
+                          {expandedRecordId === record.id
+                            ? "Collapse"
+                            : "Expand"}
+                          {expandedRecordId === record.id ? (
+                            <FiChevronDown className="ml-1" />
+                          ) : (
+                            <FiChevronRight className="ml-1" />
+                          )}
+                        </button>
+                      </div>
                       <p className="text-sm text-gray-500">
                         {new Date(record.created_at).toLocaleString()}
                       </p>
-                      <AnalysisResultDisplay
-                        result={JSON.parse(record.scenario_json)}
-                        showTitle={false}
-                        className="mt-2"
-                      />
+                      {expandedRecordId === record.id && (
+                        <AnalysisResultDisplay
+                          result={JSON.parse(record.scenario_json)}
+                          showTitle={false}
+                          className="mt-2"
+                        />
+                      )}
                     </div>
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
