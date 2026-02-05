@@ -15,20 +15,6 @@ import {
 const API_BASE_URL = "/api/v1";
 
 // Define types for our data
-interface Function {
-  function_name: string;
-  description: string;
-}
-
-interface Group {
-  group_name: string;
-  functions: Function[];
-}
-
-interface AnalysisResponse {
-  groups: Group[];
-}
-
 interface AnalysisRecord {
   id: number;
   image_path: string;
@@ -41,13 +27,23 @@ const AnalysisResultDisplay = ({
   showTitle = true,
   className = "",
 }: {
-  result: AnalysisResponse;
+  result: string; // Accept a string
   showTitle?: boolean;
   className?: string;
 }) => {
-  if (!result || !Array.isArray(result.groups)) {
+  if (!result) {
     return null;
   }
+  
+  let displayContent = result;
+  try {
+    // Try to parse and format it as JSON for pretty printing
+    const jsonObj = JSON.parse(result);
+    displayContent = JSON.stringify(jsonObj, null, 2);
+  } catch (e) {
+    // If it's not a valid JSON string, just display the raw text
+  }
+
   return (
     <div className={`card ${className}`}>
       {showTitle && (
@@ -55,32 +51,9 @@ const AnalysisResultDisplay = ({
           Analysis Result
         </h2>
       )}
-      <div className="space-y-3">
-        {result.groups.map((group, index) => (
-          <details
-            key={index}
-            className="group/details bg-gray-50/80 p-3 rounded-lg border border-gray-200/80"
-          >
-            <summary className="flex items-center cursor-pointer font-semibold text-gray-800 list-none">
-              <FiChevronRight className="w-5 h-5 mr-2 transform group-open/details:rotate-90 transition-transform" />
-              {group.group_name}
-            </summary>
-            <div className="mt-3 pl-4 border-l-2 border-blue-200">
-              {group.functions.map((func, funcIndex) => (
-                <div key={funcIndex} className="py-2">
-                  <p className="font-semibold text-blue-800 flex items-center">
-                    <FiChevronsRight className="w-4 h-4 mr-2 text-blue-500" />
-                    {func.function_name}
-                  </p>
-                  <p className="text-sm text-gray-600 pl-6">
-                    {func.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </details>
-        ))}
-      </div>
+      <pre className="bg-gray-50/80 p-3 rounded-lg border border-gray-200/80 text-sm overflow-x-auto custom-scrollbar">
+        {displayContent}
+      </pre>
     </div>
   );
 };
@@ -90,7 +63,7 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
+  const [analysisResult, setAnalysisResult] = useState<string | null>(
     null,
   );
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
@@ -206,11 +179,12 @@ function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Analysis failed.");
+        // For text errors, we need to handle them differently
+        const errorText = await response.text();
+        throw new Error(errorText || "Analysis failed.");
       }
 
-      const result: AnalysisResponse = await response.json();
+      const result: string = await response.text();
       setAnalysisResult(result);
       toast.success("Analysis complete!", { id: toastId });
       fetchRecords(); // Refresh records
@@ -389,7 +363,7 @@ function App() {
                       </p>
                       {expandedRecordId === record.id && (
                         <AnalysisResultDisplay
-                          result={JSON.parse(record.scenario_json)}
+                          result={record.scenario_json}
                           showTitle={false}
                           className="mt-2"
                         />
