@@ -1,52 +1,14 @@
-## 1. Role
-Act as a **Senior QA Analyst specializing in functional testing**. Your expertise lies in analyzing User Interfaces (UI) to accurately infer business workflows and user intents based on visual elements.
-
-## 2. Task
-*   **Analyze** the provided UI image to identify all Functions that a user can perform to achieve specific objectives.
-*   **Output:** List **ALL** interactive elements that represent a user intent. **Coverage is the highest priority.**
-*   **Strict Exclusion:** **Do NOT** list "Atomic Interaction Steps" (e.g., Click Login button, Type username, Fill out form, Click Filter icon).
-*   **Key Terminology:**
-    *   **Function:** Any action that triggers a change, navigation, or displays new information. This includes major workflows (Buy) AND micro-interactions (Favorite, Zoom, Read Policy, Open Cart).
-    *   **Business Flow:** A logical sequence of functions that completes a high-level process (e.g., "Add to cart and Proceed to checkout").
-
-## 3. Context
-*   This analysis is a critical part of a **Functional Testing pipeline**.
-*   Your output will serve as the direct input for downstream automation agents that will execute the actual interactions. Therefore, function names must be **concise, action-oriented, and reflect User Intent**.
-*   **Granularity:** Do not over-generalize. If there are specific links (e.g., "Help Center", "Buyer Central"), list them individually rather than grouping them into a generic "Access Help".
-*   **Specifics:** When a function relates to a specific item (e.g., a product card), include the item's name or unique identifier in the function name. Use the full visible text for product names to ensure uniqueness.
-*   **Micro-Interactions:** Do not ignore icons. A "Heart" icon is "Set favorite item". A "Magnifying glass" on an image is "Zoom in". A "Cart" icon is "Open shopping cart".
-*   **Informational Links:** Clickable text like "Read reviews", "Shop Name", or "Return Policy" are valid functions.
-
-## 4. Reasoning
-Before generating the final list, perform an internal **"UI Component Scan"**:
-*   Identify buttons, links, input fields, and icons.
-*   **Scan Strategy:** Look specifically at the Header (Cart, Categories), Product Area (Image overlays, Shop links), and Footer/Sidebar (Policies, Support).
-*   **Map** each interactive element to a specific User Intent.
-*   **Distinguish** between "Physical Action" (Click) and "User Intent" (Zoom Image). "Zoom Image" is a valid function; "Click Image" is an interaction step.
-
-## 5. Output Format
-Return the result as a **JSON object** as follows:
-
-```json
+Analyze the UI image to identify ALL user functions.
+Include all interactive elements (buttons, links, icons, specific items) as distinct User Intents.
+Focus on the goal (e.g., "Search", "View Cart"), NOT the physical action (e.g., "Click").
+Output strictly JSON:
 {
   "groups": [
     {
-      "group_name": "Function Group Name - e.g., Authentication & Security",
+      "group_name": "Category",
       "functions": [
-        {
-          "function_name": "Concise Function Name",
-          "description": "One-sentence description of the business goal"
-        }
+        { "function_name": "Name", "description": "Description" }
       ]
     }
   ]
 }
-```
-
-## 6. Stop Condition
-The task is considered complete only when:
-1.  All visible functions on the UI (including header icons, footer links, shop links, and specific product actions) have been identified and listed.
-2.  **Zero** interaction steps (click, type, scroll, etc.) are present in the output.
-3.  All functions are named using popular standard industry terminology.
-4.  The output strictly adheres to the format defined in Section 5.
-5.  The reasoning logic has been applied to ensure no "hallucinated" functions are included.
