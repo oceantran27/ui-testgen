@@ -2,13 +2,13 @@ import shutil
 import os
 import uuid
 import logging
-import json
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Depends
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.services.openai_service import OpenAIService
-from app.schemas.analysis import AnalysisResponse, AnalysisRecordInDB, AnalysisRecordCreate
+from app.schemas.analysis import AnalysisRecordInDB, AnalysisRecordCreate
 from app.core.exceptions import AIProcessingError
 from app.api import deps
 from app.repositories.analysis_repository import AnalysisRepository
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def save_analysis_record_task(image_path: str, scenario_result: dict):
+def save_analysis_record_task(image_path: str, scenario_result: str):
     """
     Background task to save the analysis record to the database.
     """
@@ -29,12 +29,9 @@ def save_analysis_record_task(image_path: str, scenario_result: dict):
     try:
         repository = AnalysisRepository(db)
         
-        # Convert dict to JSON string for DB storage
-        scenario_json_str = json.dumps(scenario_result, ensure_ascii=False)
-        
         record_in = AnalysisRecordCreate(
             image_path=image_path,
-            scenario_json=scenario_json_str
+            scenario_json=scenario_result  # Directly use the string
         )
         repository.create(record_in)
         logger.info(f"Successfully saved analysis record for {image_path}")
@@ -43,7 +40,7 @@ def save_analysis_record_task(image_path: str, scenario_result: dict):
     finally:
         db.close()
 
-@router.post("/analyze", response_model=AnalysisResponse)
+@router.post("/analyze")
 async def analyze_screenshot(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...)
@@ -75,8 +72,8 @@ async def analyze_screenshot(
     # 3. Trigger Background Task for Persistence
     background_tasks.add_task(save_analysis_record_task, file_path, scenario_result)
     
-    # The service now returns a dict that matches the AnalysisResponse schema
-    return AnalysisResponse(**scenario_result)
+    # 4. Return the raw result as plain text
+    return PlainTextResponse(content=scenario_result)
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
