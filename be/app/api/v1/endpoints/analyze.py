@@ -20,6 +20,15 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+def _clean_json_string(s: str) -> str:
+    """Removes markdown-style code fences from a string."""
+    s = s.strip()
+    if s.startswith("```json"):
+        s = s[len("```json"):].strip()
+    if s.endswith("```"):
+        s = s[:-len("```")].strip()
+    return s
+
 def save_analysis_record_task(image_path: str, scenario_result: str):
     """
     Background task to save the analysis record to the database.
@@ -29,9 +38,11 @@ def save_analysis_record_task(image_path: str, scenario_result: str):
     try:
         repository = AnalysisRepository(db)
         
+        cleaned_scenario_json = _clean_json_string(scenario_result)
+        
         record_in = AnalysisRecordCreate(
             image_path=image_path,
-            scenario_json=scenario_result  # Directly use the string
+            scenario_json=cleaned_scenario_json
         )
         repository.create(record_in)
         logger.info(f"Successfully saved analysis record for {image_path}")
