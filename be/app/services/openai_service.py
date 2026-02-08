@@ -49,7 +49,7 @@ class OpenAIService:
                     {
                         "role": "user",
                         "content": [
-                            {"type": "text", "text": "Analyze this web interface image and list the functions that have been set up according to the requirements."},
+                            {"type": "text", "text": "Analyze this web interface image and list the user's intents that have been set up according to the requirements."},
                             {
                                 "type": "image_url",
                                 "image_url": {
@@ -60,7 +60,7 @@ class OpenAIService:
                         ]
                     }
                 ],
-                max_tokens=4000,
+                max_tokens=2000,
                 temperature=0
             )
             
