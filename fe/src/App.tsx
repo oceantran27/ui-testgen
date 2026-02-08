@@ -9,7 +9,6 @@ import {
   FiServer,
   FiX,
   FiChevronRight,
-  FiChevronsRight,
 } from "react-icons/fi";
 
 const API_BASE_URL = "/api/v1";
@@ -34,7 +33,7 @@ const AnalysisResultDisplay = ({
   if (!result) {
     return null;
   }
-  
+
   let displayContent = result;
   try {
     // Try to parse and format it as JSON for pretty printing
@@ -58,26 +57,21 @@ const AnalysisResultDisplay = ({
   );
 };
 
-
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(
-    null,
-  );
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
-  const [expandedRecordId, setExpandedRecordId] = useState<number | null>(
-    null,
-  );
+  const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchRecords();
   }, []);
-  
+
   const handleToggleExpand = (recordId: number) => {
     setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
   };
@@ -205,7 +199,7 @@ function App() {
   const handleDeleteRecord = async (recordId: number) => {
     const toastId = toast.loading("Deleting record...");
     try {
-      const recordToDelete = records.find(r => r.id === recordId);
+      const recordToDelete = records.find((r) => r.id === recordId);
       if (!recordToDelete) {
         toast.error("Could not find record to delete.", { id: toastId });
         return;
@@ -220,7 +214,7 @@ function App() {
       }
 
       toast.success("Record deleted.", { id: toastId });
-      
+
       if (historyImageSrc?.endsWith(recordToDelete.image_path)) {
         setHistoryModalOpen(false);
         setHistoryImageSrc(null);
@@ -303,7 +297,9 @@ function App() {
                 )}
               </div>
 
-              {analysisResult && <AnalysisResultDisplay result={analysisResult} />}
+              {analysisResult && (
+                <AnalysisResultDisplay result={analysisResult} />
+              )}
             </div>
 
             {/* Right Column (History) */}
