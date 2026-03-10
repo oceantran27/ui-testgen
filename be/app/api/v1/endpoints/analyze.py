@@ -4,12 +4,13 @@ import uuid
 import logging
 import json
 import re
-from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Depends, Query
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.services.openai_service import OpenAIService
+from app.services.gemini_service import GeminiService
 from app.schemas.analysis import AnalysisRecordInDB, AnalysisRecordCreate
 from app.core.exceptions import AIProcessingError
 from app.api import deps
@@ -17,6 +18,7 @@ from app.repositories.analysis_repository import AnalysisRepository
 
 router = APIRouter()
 openai_service = OpenAIService()
+gemini_service = GeminiService()
 logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = "uploads"
@@ -163,7 +165,8 @@ def save_analysis_record_task(image_path: str, scenario_result: str):
 @router.post("/analyze")
 async def analyze_screenshot(
     background_tasks: BackgroundTasks,
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    model: Optional[str] = Query("gemini-2.5-pro", description="Model to use: 'openai', 'gemini', 'gemini-2.5-pro'")
 ):
     # 1. Save the uploaded file temporarily
     file_extension = file.filename.split(".")[-1] if file.filename else "jpg"
@@ -176,9 +179,16 @@ async def analyze_screenshot(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not save image: {str(e)}")
 
-    # 2. Call OpenAI Service
+    # 2. Call AI Service
     try:
-        scenario_result = openai_service.analyze_image(file_path)
+        if model == "gemini":
+            scenario_result = gemini_service.analyze_image(file_path)
+        elif model == "gemini-2.5-pro":
+            # Instantiate a specific service for Gemini 2.5 Pro
+            temp_service = GeminiService(model_name="gemini-2.5-pro")
+            scenario_result = temp_service.analyze_image(file_path)
+        else:
+            scenario_result = openai_service.analyze_image(file_path)
     except AIProcessingError as e:
         # Clean up file if AI fails
         if os.path.exists(file_path):

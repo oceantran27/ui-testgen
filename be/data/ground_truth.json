@@ -1,0 +1,657 @@
+[
+  {
+    "id": 1,
+    "ground_truth": ["Login"]
+  },
+  {
+    "id": 2,
+    "ground_truth": [
+      ["Navigate to 'All Items' page", "Navigate to 'About' page"],
+      "Logout",
+      "Reset App State",
+      "Close menu",
+      "View shopping cart",
+      "Sort items",
+      "Remove 'Sauce Labs Backpack' from cart",
+      [
+        "Add 'Sauce Labs Bike Light' to cart",
+        "Add 'Sauce Labs Bolt T-Shirt' to cart",
+        "Add 'Sauce Labs Fleece Jacket' to cart",
+        "Add 'Sauce Labs Onesie' to cart",
+        "Add 'Test.allTheThings() T-Shirt (Red)' to cart"
+      ],
+      "View details for 'Sauce Labs Fleece Jacket'"
+    ]
+  },
+  {
+    "id": 3,
+    "ground_truth": [
+      "Open Menu",
+      "View Shopping Cart",
+      "Continue checkout",
+      "Cancel checkout"
+    ]
+  },
+  {
+    "id": 4,
+    "ground_truth": [
+      "Login",
+      "Reset password",
+      "Sign up",
+      [
+        "Navigate to 'Store'",
+        "Navigate to 'Knowledge base'",
+        "Navigate to 'Custom page'"
+      ]
+    ]
+  },
+  {
+    "id": 5,
+    "ground_truth": [
+      [
+        "Navigate to home page",
+        "Navigate to 'Store'",
+        "Navigate to 'Knowledge base'",
+        "Navigate to 'Custom page'"
+      ],
+      "Sign in",
+      "Search item",
+      "Filter items by category",
+      [
+        "Add 'Art pictures' to cart",
+        "Add 'Logo Design' to cart",
+        "Add '10GB Hosting' to cart",
+        "Add 'Art pictures' to cart",
+        "Add 'Content Writing' to cart",
+        "Add 'Custom app development' to cart",
+        "Add 'Domain .com' to cart",
+        "Add 'SEO' to cart",
+        "Add 'Website Design' to cart"
+      ],
+      [
+        "View 'Logo Design'",
+        "View '10GB Hosting'",
+        "View 'Art pictures'",
+        "View 'Content Writing'",
+        "View 'Custom app development'",
+        "View 'Domain .com'",
+        "View 'SEO'",
+        "View 'Website Design'"
+      ],
+      "Checkout",
+      "View shopping cart"
+    ]
+  },
+  {
+    "id": 6,
+    "ground_truth": [
+      "Search employee",
+      "Change language",
+      ["Export to Excel", "Export to PDF"],
+      [
+        "Group employees by 'Contact Name'",
+        "Group employees by 'Job Title'",
+        "Group employees by 'Country'",
+        "Group employees by 'Status'",
+        "Group employees by 'Engagement'",
+        "Group employees by 'Budget'",
+        "Group employees by 'Phone'",
+        "Group employees by 'Address'"
+      ],
+      [
+        "Sort employees by 'Contact Name'",
+        "Sort employees by 'Job Title'",
+        "Sort employees by 'Country'",
+        "Sort employees by 'Status'",
+        "Sort employees by 'Engagement'",
+        "Sort employees by 'Budget'",
+        "Sort employees by 'Phone'",
+        "Sort employees by 'Address'"
+      ],
+      [
+        "Filter employees by 'Contact Name'",
+        "Filter employees by 'Job Title'",
+        "Filter employees by 'Country'",
+        "Filter employees by 'Status'",
+        "Filter employees by 'Engagement'",
+        "Filter employees by 'Budget'",
+        "Filter employees by 'Phone'",
+        "Filter employees by 'Address'"
+      ],
+      "Filter employees by column",
+      [
+        "Navigate to next page",
+        "Navigate to the last page",
+        "Navigate to page number 1",
+        "Navigate to page number 2",
+        "Navigate to page number 3",
+        "Navigate to page number 4",
+        "Navigate to page number 5"
+      ],
+      "Change number of items per page"
+    ]
+  },
+  {
+    "id": 7,
+    "ground_truth": [
+      "Search",
+      "Open pinned contacts",
+      "Open bin",
+      ["Open help", "Contact support"],
+      "Open setting",
+      "Create new contact",
+      "Cancel create new contact",
+      [
+        "Change to home tab",
+        "Change to calendar tab",
+        "Change to message tab",
+        "Change to email tab"
+      ],
+      [
+        "Navigate to Home",
+        "Navigate to Contacts",
+        "Navigate to Tasks",
+        "Navigate to Cases",
+        "Navigate to Call",
+        "Navigate to Documents",
+        "Navigate to Campaigns",
+        "Navigate to Forms"
+      ]
+    ]
+  },
+  {
+    "id": 8,
+    "ground_truth": [
+      "Search",
+      "Open pinned contacts",
+      "Open bin",
+      ["Open help", "Contact support"],
+      "Open setting",
+      "Create new contact",
+      "Search contact",
+      "Filter the contact list",
+      "Export the contact list",
+      "Change view",
+      "Change layout contact table",
+      "Refresh contacts list",
+      [
+        "Open 'James Edward Harrison' profile",
+        "Open 'Hans Muller' profile",
+        "Open 'Sarah Jenkins' profile"
+      ],
+      [
+        "Edit 'James Edward Harrison' profile",
+        "Edit 'Hans Muller' profile",
+        "Edit 'Sarah Jenkins' profile"
+      ],
+      [
+        "Call contact named 'James Edward Harrison'",
+        "Call contact named 'Hans Muller'",
+        "Call contact named 'Sarah Jenkins'"
+      ],
+      [
+        "Delete contact named 'James Edward Harrison'",
+        "Delete contact named 'Hans Muller'",
+        "Delete contact named 'Sarah Jenkins'"
+      ],
+      "Choose action",
+      [
+        "Navigate to Home",
+        "Navigate to Contacts",
+        "Navigate to Tasks",
+        "Navigate to Cases",
+        "Navigate to Call",
+        "Navigate to Documents",
+        "Navigate to Campaigns",
+        "Navigate to Forms"
+      ]
+    ]
+  },
+  {
+    "id": 9,
+    "ground_truth": [
+      "Create new event",
+      "Schedule a new event",
+      "Sync calendar",
+      [
+        "Change calendar view to Month",
+        "Change calendar view to Week",
+        "Change calendar view to Day",
+        "Change calendar view to Agenda"
+      ],
+      "Open events",
+      "Navigate to next calendar page",
+      "Navigate to previous calendar page",
+      "Filter calendar events by Ocean Tran",
+      "Navigate to 'Manage calendar' page",
+      ["Open 'Check issue' event", "Open 'Meeting with cus...' event"]
+    ]
+  },
+  {
+    "id": 10,
+    "ground_truth": [
+      "Navigate to Homepage",
+      "Change delivery destination to 'Vietnam'",
+      "Search for 'gaming hats'",
+      "Change language to 'EN'",
+      "Sign in",
+      [
+        "Navigate to 'Returns & Orders' page",
+        "Navigate to 'Today's Deals' page",
+        "Navigate to 'Prime Video' page",
+        "Navigate to 'Registry' page",
+        "Navigate to 'Gift Cards' page",
+        "Navigate to 'Customer Service' page",
+        "Navigate to 'Sell' page"
+      ],
+      "Open shopping cart",
+      "Sort by featured",
+      "Open all menu",
+      [
+        "View details of 'I Paused My Game to Be Here Hat ...'",
+        "View details of 'Gamer Gifts for Men Women ...'",
+        "View details of 'Fortnite Baseball Cap for Boys ...'",
+        "View details of 'Do Not Disturb Gaming Socks ...'",
+        "View details of 'Gamer Gifts for Men Women ...'"
+      ],
+      [
+        "Filter by gender",
+        "Filter by customer reviews'",
+        "Filter by price",
+        "Filter by discounts",
+        "Filter by deals"
+      ],
+      [
+        "Add 'Gamer Gifts for Men Women ...' to cart",
+        "Add 'Fortnite Baseball Cap for Boys ...' to cart",
+        "Add 'Do Not Disturb Gaming Socks ...' to cart",
+        "Add 'Gamer Gifts for Men Women ...' to cart"
+      ],
+      "Remove 'I Paused My Game to Be Here Hat ...' item from cart",
+      [
+        "Check review of 'I Paused My Game to Be Here Hat ...'",
+        "Check review of 'Gamer Gifts for Men Women ...'",
+        "Check review of 'Fortnite Baseball Cap for Boys ...'",
+        "Check review of 'Do Not Disturb Gaming Socks ...'",
+        "Check review of 'Gamer Gifts for Men Women ...'"
+      ]
+    ]
+  },
+  {
+    "id": 11,
+    "ground_truth": [
+      "Mark Order as Gift",
+      [
+        "Add 'Mundial BP666 Red D...' to cart",
+        "Add 'Stanley Hand Tools 3...' to Cart"
+      ],
+      "Proceed to checkout",
+      [
+        "Delete 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' from cart",
+        "Delete 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...'"
+      ],
+      [
+        "Save 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' for later",
+        "Save 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...' for later"
+      ],
+      [
+        "Compare 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' with similar items",
+        "Compare 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...' with similar items"
+      ],
+      [
+        "Share 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…'",
+        "Share 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...'"
+      ],
+      [
+        "Navigate to 'Free International Returns' page",
+        "Navigate to 'Learn more' page"
+      ]
+    ]
+  },
+  {
+    "id": 12,
+    "ground_truth": [
+      "Search products",
+      "Change delivery destination",
+      "Change language",
+      "Open Profile",
+      "View Messages",
+      "Open shopping cart",
+      "Open 'All categories' menu",
+      "View Product Image",
+      "Scan Product QR Code",
+      "Buy 'Custom High-quality Retro Old Washed Casual Loose Straight Streetwear Fashion Custom Baggy Jeans'",
+      "Add Product to Wishlist",
+      "Chat with seller",
+      [
+        "Navigate to 'Featured Selections'",
+        "Navigate to 'Order protections'",
+        "Navigate to 'Buyer Central'",
+        "Navigate to 'Help Center'",
+        "Navigate to 'App & Extensions'",
+        "Navigate to 'Sell on Alibaba.com'",
+        "Navigate to 'Polarskate Clothing Co., Ltd.' shop"
+      ],
+      "Read the 'Easy Return' policy",
+      "Read reviews"
+    ]
+  },
+  {
+    "id": 13,
+    "ground_truth": [
+      ["Switch to Store reviews", "Switch to Product reviews"],
+      "Sort reviews list",
+      "Vote helpful for reviews",
+      [
+        "Read product reviews",
+        "Read 'verified purchases' define",
+        "Read original reviews"
+      ],
+      [
+        "Filter reviews with photos/videos",
+        "Filter reviews with rating",
+        "Filter reviews with buy frequencies",
+        "Filter reviews by United States"
+      ],
+      "Show original language of reviews",
+      "Open 'L***i' profile"
+    ]
+  },
+  {
+    "id": 14,
+    "ground_truth": [
+      "Search for topics",
+      [
+        "Navigate to Home",
+        "Navigate to For You",
+        "Navigate to Following",
+        "Navigate to Vietnam News",
+        "Navigate to World News",
+        "Navigate to Local News",
+        "Navigate to Enterprise News",
+        "Navigate to Recreation News",
+        "Navigate to Sport News"
+      ],
+      "Open help",
+      "Open setting",
+      "Open Google Apps",
+      "Read 'US-Iran negotiations: Is there enough trust?' article",
+      ["Filter news by category", "Filter local news"],
+      ["See all featured news", "See more featured news", "See all local news"]
+    ]
+  },
+  {
+    "id": 15,
+    "ground_truth": [
+      "Search chat history",
+      "Open Profile",
+      "Explore GPTs",
+      ["Open Pictures", "Open Apps", "Open Projects"],
+      "Resume chat session named 'UI Web Testing Categories'",
+      "Submit query",
+      "Upgrade to a premium plan",
+      "Hide sidebar",
+      ["Add member to conversation", "Add files"],
+      "Create a new chat",
+      [
+        "Use 'Hevy-Gym workout planner' model",
+        "Use 'DoctorX Medical [Health & ...' model"
+      ]
+    ]
+  },
+  {
+    "id": 16,
+    "ground_truth": [
+      "Set up MFA",
+      "Test voice",
+      ["Close secure suggestion", "Close settings modal"],
+      [
+        "Change appearance",
+        "Change accent color",
+        "Change language",
+        "Change spoken language",
+        "Change voice"
+      ],
+      [
+        "Navigate to 'Notifications' tab",
+        "Navigate to 'Personalization' tab",
+        "Navigate to 'Apps' tab",
+        "Navigate to 'Data controls' tab",
+        "Navigate to 'Security' tab",
+        "Navigate to 'Parental controls' tab",
+        "Navigate to 'Account' tab"
+      ]
+    ]
+  },
+  {
+    "id": 17,
+    "ground_truth": [
+      "Navigate to home page",
+      "Change language",
+      "Convert file",
+      "Download all converted images",
+      "Clear the file queue",
+      "Navigate through the uploaded file list",
+      ["Navigate to 'JPG to PNG' tab", "Navigate to 'PNG to JPG' tab"]
+    ]
+  },
+  {
+    "id": 18,
+    "ground_truth": [
+      "Open Menu",
+      "Go to Homepage",
+      "Open Settings",
+      "Open Google Apps",
+      [
+        "Change Input Language to 'English'",
+        "Change Input Language to 'Spanish'",
+        "Change Input Language to 'French'",
+        "Change Input Language to 'Detect language automatically'"
+      ],
+      "Translate 'Good'",
+      "Change Output Language to 'Spanish'",
+      "Play Pronunciation of 'Good'",
+      "Copy Translation 'Buena'",
+      "Save Translation 'Buena'",
+      "Share translation 'Buena'",
+      "Rate translation 'Buena'",
+      "Open dictionary ",
+      "Sign in",
+      "Clear current input",
+      "Swap source and target languages",
+      ["Use voice-to-text input", "Use virtual keyboard for input"]
+    ]
+  },
+  {
+    "id": 19,
+    "ground_truth": [
+      "Select file or folder",
+      "Navigate to home",
+      "Expand side bar",
+      "Search document",
+      "Contact help",
+      "Change language",
+      "Login",
+      "Sign up",
+      "Save document to MEGA",
+      "Download document",
+      "Sort document list",
+      "Check document information"
+    ]
+  },
+  {
+    "id": 20,
+    "ground_truth": [
+      "Find flights",
+      ["Navigate to 'home' page", "Navigate to 'Travel The World' page"]
+    ]
+  },
+  {
+    "id": 21,
+    "ground_truth": [
+      [
+        "Navigate to 'Home' page",
+        "Navigate to 'Contact'",
+        "Navigate to About Us"
+      ],
+      [
+        "Filter by Category 'Laptops'",
+        "Filter by Category 'Phones'",
+        "Filter by Category 'Monitors'"
+      ],
+      [
+        "View Details for 'Samsung galaxy s6'",
+        "View Details for 'Nexus 6'",
+        "View Details for 'Nokia Lumia 1520'"
+      ],
+      "View Cart",
+      "Log In",
+      "Sign Up"
+    ]
+  },
+  {
+    "id": 22,
+    "ground_truth": ["Open 'Element' box", "Complete the pratice form"]
+  },
+  {
+    "id": 23,
+    "ground_truth": ["Add a new contact", "Logout"]
+  },
+  {
+    "id": 24,
+    "ground_truth": [
+      "Contact the website owner",
+      "Check availability room by check out and check in",
+      "Book room",
+      ["Navigate to 'Rooms' page", "Navigate to 'Booking' page"]
+    ]
+  },
+  {
+    "id": 25,
+    "ground_truth": [
+      "Check shopping cart",
+      "View details for 'Freshwater'",
+      "Searching pet information",
+      "Sign in",
+      ["Navigate to 'Fish' page", "Navigate to 'Dogs' page"]
+    ]
+  },
+  {
+    "id": 26,
+    "ground_truth": [
+      "Login",
+      "Sign up",
+      ["Navigate to 'MERGE PDF' page", "Navigate to 'SPLIT PDF' page"],
+      ["Convert images to pdf file", "Convert JDG to PDF"]
+    ]
+  },
+  {
+    "id": 27,
+    "ground_truth": [
+      [
+        "Add $25 Virtual Gift Card to Cart",
+        "Add Build your own cheap computer to Cart",
+        "Add '14.1 inch laptop' to cart"
+      ],
+      "Filter catagories by 'Book'",
+      "Login",
+      "Register",
+      "View All Tags",
+      "Vote in Community Poll",
+      [
+        "Navigate to 'Shopping cart' page",
+        "Navigate to 'Wishlist' page",
+        "Navigate to Books",
+        "Navigate to Computers",
+        "Navigate to Electronics",
+        "Navigate to Apparel & Shoes",
+        "Navigate to Digital Downloads",
+        "Navigate to Jewelry",
+        "Navigate to Gift Cards",
+        "Navigate to Tricentis"
+      ]
+    ]
+  },
+  {
+    "id": 28,
+    "ground_truth": [
+      "Navigate to 'github' page",
+      "Buy coffee",
+      "Checkout shopping cart"
+    ]
+  },
+  {
+    "id": 29,
+    "ground_truth": [
+      "Checkout shopping cart",
+      "Navigate to 'Desktops' page",
+      ["Add 'Iphone' to cart", "Add 'MacBook' to Cart"],
+      "View details of 'Iphone'",
+      "Change Currency",
+      "View Wish List",
+      "Proceed to Checkout",
+      "Search Products",
+      [
+        "View About Us",
+        "Contact Customer Service",
+        "Explore Brands",
+        "Access My Account"
+      ],
+      "Manage My Account"
+    ]
+  },
+  {
+    "id": 30,
+    "ground_truth": [
+      "Open profile",
+      "Logout",
+      "View details of 'List of all registered'",
+      "Navigate to Homepage",
+      ["Open Facebook Page", "Open Twitter Page"],
+      [
+        "View Popular Make 'Lamborghini'",
+        "View Popular Model 'Lamborghini Diablo'",
+        "View Overall Rating"
+      ]
+    ]
+  },
+  {
+    "id": 31,
+    "ground_truth": [
+      "View details of 'Delhi'",
+      "Print the weather forecast",
+      "Save image"
+    ]
+  },
+  {
+    "id": 32,
+    "ground_truth": ["Order pizza"]
+  },
+  {
+    "id": 33,
+    "ground_truth": [
+      "Add 'Sunny' to wishlist",
+      ["Filter pet by species", "Filter pet by price"],
+      [
+        "Navigate to 'Home' page",
+        "Navigate to 'Shop' page",
+        "Navigate to Contact"
+      ],
+      "View More Information",
+      ["Adopt 'Coco'", "Adopt Pet 'Sunny'"],
+      ["View details of 'Leo'", "View Details of Pet 'Sunny'"],
+      "Like Pet 'Sunny'"
+    ]
+  },
+  {
+    "id": 34,
+    "ground_truth": ["Book tickets for a movie"]
+  },
+  {
+    "id": 35,
+    "ground_truth": [
+      ["Navigate to 'Offers' page", "Navigate to 'Profile' page"],
+      ["View details of 'Places for rent'", "View details of 'Places for sale'"]
+    ]
+  }
+]
