@@ -5,6 +5,38 @@ from app.core.config import settings
 from app.api.v1.api import api_router
 from app.db.init_db import init_db
 import os
+import logging
+import time
+from datetime import datetime, timedelta
+
+# --- Logging Setup ---
+LOG_FILE = "log.txt"
+LOG_EXPIRATION_DAYS = 3
+
+def setup_logging():
+    """Configures logging with expiration policy."""
+    if os.path.exists(LOG_FILE):
+        creation_time = os.path.getctime(LOG_FILE)
+        creation_date = datetime.fromtimestamp(creation_time)
+        if datetime.now() - creation_date > timedelta(days=LOG_EXPIRATION_DAYS):
+            try:
+                os.remove(LOG_FILE)
+                print(f"Old log file {LOG_FILE} removed (expired).")
+            except Exception as e:
+                print(f"Error removing old log file: {e}")
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(LOG_FILE, mode='a', encoding='utf-8'),
+            logging.StreamHandler()
+        ]
+    )
+    logging.info("Logging initialized.")
+
+setup_logging()
+# ---------------------
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
