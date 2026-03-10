@@ -7,7 +7,6 @@ from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class OpenAIService:
@@ -39,6 +38,7 @@ class OpenAIService:
         base64_image = self._encode_image(image_path)
 
         try:
+            logger.info(f"Sending request to OpenAI for image: {image_path}")
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -65,6 +65,12 @@ class OpenAIService:
             )
             
             content = response.choices[0].message.content
+            
+            # Log raw output
+            logger.info("--- RAW LLM OUTPUT START ---")
+            logger.info(content)
+            logger.info("--- RAW LLM OUTPUT END ---")
+
             if not content:
                 raise AIProcessingError("Received empty response from OpenAI")
             
