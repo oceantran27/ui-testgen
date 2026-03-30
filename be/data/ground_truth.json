@@ -6,512 +6,322 @@
   {
     "id": 2,
     "ground_truth": [
-      ["Navigate to 'All Items' page", "Navigate to 'About' page"],
+      "Add product to cart",
+      "Sort products",
+      "View shopping cart contents",
+      "Navigate to About page",
       "Logout",
-      "Reset App State",
-      "Close menu",
-      "View shopping cart",
-      "Sort items",
-      "Remove 'Sauce Labs Backpack' from cart",
-      [
-        "Add 'Sauce Labs Bike Light' to cart",
-        "Add 'Sauce Labs Bolt T-Shirt' to cart",
-        "Add 'Sauce Labs Fleece Jacket' to cart",
-        "Add 'Sauce Labs Onesie' to cart",
-        "Add 'Test.allTheThings() T-Shirt (Red)' to cart"
-      ],
-      "View details for 'Sauce Labs Fleece Jacket'"
+      "Reset application state",
+      "Close navigation menu",
+      "Navigate to All Items page"
     ]
   },
   {
     "id": 3,
     "ground_truth": [
-      "Open Menu",
-      "View Shopping Cart",
-      "Continue checkout",
-      "Cancel checkout"
+      "Provide personal information and proceed to the next checkout step",
+      "Cancel the current checkout process",
+      "View items in the shopping cart",
+      "Access the main navigation menu"
     ]
   },
   {
     "id": 4,
     "ground_truth": [
-      "Login",
-      "Reset password",
-      "Sign up",
-      [
-        "Navigate to 'Store'",
-        "Navigate to 'Knowledge base'",
-        "Navigate to 'Custom page'"
-      ]
+      "Sign in with credentials",
+      "Recover forgotten password",
+      "Sign up for a new account",
+      "Sign in as Admin demo user",
+      "Navigate to Store page",
+      "Navigate to Knowledge base page",
+      "Navigate to Custom page"
     ]
   },
   {
     "id": 5,
     "ground_truth": [
-      [
-        "Navigate to home page",
-        "Navigate to 'Store'",
-        "Navigate to 'Knowledge base'",
-        "Navigate to 'Custom page'"
-      ],
-      "Sign in",
-      "Search item",
-      "Filter items by category",
-      [
-        "Add 'Art pictures' to cart",
-        "Add 'Logo Design' to cart",
-        "Add '10GB Hosting' to cart",
-        "Add 'Art pictures' to cart",
-        "Add 'Content Writing' to cart",
-        "Add 'Custom app development' to cart",
-        "Add 'Domain .com' to cart",
-        "Add 'SEO' to cart",
-        "Add 'Website Design' to cart"
-      ],
-      [
-        "View 'Logo Design'",
-        "View '10GB Hosting'",
-        "View 'Art pictures'",
-        "View 'Content Writing'",
-        "View 'Custom app development'",
-        "View 'Domain .com'",
-        "View 'SEO'",
-        "View 'Website Design'"
-      ],
-      "Checkout",
-      "View shopping cart"
+      "Search products",
+      "Filter products by category",
+      "Add a product to cart",
+      "View product details",
+      "Proceed to checkout",
+      "View shopping cart",
+      "Navigate to Knowledge base",
+      "Navigate to Custom page",
+      "Sign in"
     ]
   },
   {
     "id": 6,
     "ground_truth": [
-      "Search employee",
-      "Change language",
-      ["Export to Excel", "Export to PDF"],
-      [
-        "Group employees by 'Contact Name'",
-        "Group employees by 'Job Title'",
-        "Group employees by 'Country'",
-        "Group employees by 'Status'",
-        "Group employees by 'Engagement'",
-        "Group employees by 'Budget'",
-        "Group employees by 'Phone'",
-        "Group employees by 'Address'"
-      ],
-      [
-        "Sort employees by 'Contact Name'",
-        "Sort employees by 'Job Title'",
-        "Sort employees by 'Country'",
-        "Sort employees by 'Status'",
-        "Sort employees by 'Engagement'",
-        "Sort employees by 'Budget'",
-        "Sort employees by 'Phone'",
-        "Sort employees by 'Address'"
-      ],
-      [
-        "Filter employees by 'Contact Name'",
-        "Filter employees by 'Job Title'",
-        "Filter employees by 'Country'",
-        "Filter employees by 'Status'",
-        "Filter employees by 'Engagement'",
-        "Filter employees by 'Budget'",
-        "Filter employees by 'Phone'",
-        "Filter employees by 'Address'"
-      ],
-      "Filter employees by column",
-      [
-        "Navigate to next page",
-        "Navigate to the last page",
-        "Navigate to page number 1",
-        "Navigate to page number 2",
-        "Navigate to page number 3",
-        "Navigate to page number 4",
-        "Navigate to page number 5"
-      ],
-      "Change number of items per page"
+      "Search data across all columns",
+      "Group data by a column",
+      "Change display language",
+      "Export data to Excel",
+      "Export data to PDF",
+      "Sort data by a column",
+      "Filter data by a column",
+      "Navigate to other pages",
+      "Change number of items displayed per page"
     ]
   },
   {
     "id": 7,
     "ground_truth": [
-      "Search",
-      "Open pinned contacts",
-      "Open bin",
-      ["Open help", "Contact support"],
-      "Open setting",
       "Create new contact",
-      "Cancel create new contact",
-      [
-        "Change to home tab",
-        "Change to calendar tab",
-        "Change to message tab",
-        "Change to email tab"
-      ],
-      [
-        "Navigate to Home",
-        "Navigate to Contacts",
-        "Navigate to Tasks",
-        "Navigate to Cases",
-        "Navigate to Call",
-        "Navigate to Documents",
-        "Navigate to Campaigns",
-        "Navigate to Forms"
-      ]
+      "Cancel new contact creation",
+      "Navigate to other tabs in sidebar",
+      "Perform global search",
+      "Access application settings",
+      "Access support"
     ]
   },
   {
     "id": 8,
     "ground_truth": [
-      "Search",
-      "Open pinned contacts",
-      "Open bin",
-      ["Open help", "Contact support"],
-      "Open setting",
-      "Create new contact",
-      "Search contact",
-      "Filter the contact list",
-      "Export the contact list",
-      "Change view",
-      "Change layout contact table",
-      "Refresh contacts list",
-      [
-        "Open 'James Edward Harrison' profile",
-        "Open 'Hans Muller' profile",
-        "Open 'Sarah Jenkins' profile"
-      ],
-      [
-        "Edit 'James Edward Harrison' profile",
-        "Edit 'Hans Muller' profile",
-        "Edit 'Sarah Jenkins' profile"
-      ],
-      [
-        "Call contact named 'James Edward Harrison'",
-        "Call contact named 'Hans Muller'",
-        "Call contact named 'Sarah Jenkins'"
-      ],
-      [
-        "Delete contact named 'James Edward Harrison'",
-        "Delete contact named 'Hans Muller'",
-        "Delete contact named 'Sarah Jenkins'"
-      ],
-      "Choose action",
-      [
-        "Navigate to Home",
-        "Navigate to Contacts",
-        "Navigate to Tasks",
-        "Navigate to Cases",
-        "Navigate to Call",
-        "Navigate to Documents",
-        "Navigate to Campaigns",
-        "Navigate to Forms"
-      ]
+      "Perform global search",
+      "Create a new contact",
+      "View contact details",
+      "Edit contact information",
+      "Initiate a call to a contact",
+      "Delete a contact",
+      "Apply filters to the contact list",
+      "Export contact data",
+      "Change records view",
+      "Switch to board view",
+      "Refresh contact list data",
+      "Perform a action on selected contacts",
+      "Navigate to the next page of contacts"
     ]
   },
   {
     "id": 9,
     "ground_truth": [
-      "Create new event",
-      "Schedule a new event",
-      "Sync calendar",
-      [
-        "Change calendar view to Month",
-        "Change calendar view to Week",
-        "Change calendar view to Day",
-        "Change calendar view to Agenda"
-      ],
-      "Open events",
-      "Navigate to next calendar page",
-      "Navigate to previous calendar page",
-      "Filter calendar events by Ocean Tran",
-      "Navigate to 'Manage calendar' page",
-      ["Open 'Check issue' event", "Open 'Meeting with cus...' event"]
+      "Navigate to today's date",
+      "Navigate to the previous period",
+      "Navigate to the next period",
+      "Change calendar view",
+      "Create a new event",
+      "Sync events",
+      "Access the events list/dashboard",
+      "Toggle visibility of a specific calendar",
+      "Manage calendars",
+      "View details of an existing event"
     ]
   },
   {
     "id": 10,
     "ground_truth": [
-      "Navigate to Homepage",
-      "Change delivery destination to 'Vietnam'",
-      "Search for 'gaming hats'",
-      "Change language to 'EN'",
-      "Sign in",
-      [
-        "Navigate to 'Returns & Orders' page",
-        "Navigate to 'Today's Deals' page",
-        "Navigate to 'Prime Video' page",
-        "Navigate to 'Registry' page",
-        "Navigate to 'Gift Cards' page",
-        "Navigate to 'Customer Service' page",
-        "Navigate to 'Sell' page"
-      ],
-      "Open shopping cart",
-      "Sort by featured",
-      "Open all menu",
-      [
-        "View details of 'I Paused My Game to Be Here Hat ...'",
-        "View details of 'Gamer Gifts for Men Women ...'",
-        "View details of 'Fortnite Baseball Cap for Boys ...'",
-        "View details of 'Do Not Disturb Gaming Socks ...'",
-        "View details of 'Gamer Gifts for Men Women ...'"
-      ],
-      [
-        "Filter by gender",
-        "Filter by customer reviews'",
-        "Filter by price",
-        "Filter by discounts",
-        "Filter by deals"
-      ],
-      [
-        "Add 'Gamer Gifts for Men Women ...' to cart",
-        "Add 'Fortnite Baseball Cap for Boys ...' to cart",
-        "Add 'Do Not Disturb Gaming Socks ...' to cart",
-        "Add 'Gamer Gifts for Men Women ...' to cart"
-      ],
-      "Remove 'I Paused My Game to Be Here Hat ...' item from cart",
-      [
-        "Check review of 'I Paused My Game to Be Here Hat ...'",
-        "Check review of 'Gamer Gifts for Men Women ...'",
-        "Check review of 'Fortnite Baseball Cap for Boys ...'",
-        "Check review of 'Do Not Disturb Gaming Socks ...'",
-        "Check review of 'Gamer Gifts for Men Women ...'"
-      ]
+      "Navigate to Home page",
+      "Search for products",
+      "Filter products by gender",
+      "Filter products by customer review rating",
+      "Filter products by price range",
+      "Filter products by deals and discounts",
+      "Filter products by color",
+      "Sort product search results",
+      "View product details",
+      "Add a product to the shopping cart",
+      "Increase quantity of an item",
+      "Decrease quantity of an item",
+      "Remove an item",
+      "Go to cart",
+      "Change delivery location",
+      "Change display language",
+      "Access account and lists",
+      "View returns and orders",
+      "Access global navigation menu"
     ]
   },
   {
     "id": 11,
     "ground_truth": [
-      "Mark Order as Gift",
-      [
-        "Add 'Mundial BP666 Red D...' to cart",
-        "Add 'Stanley Hand Tools 3...' to Cart"
-      ],
       "Proceed to checkout",
-      [
-        "Delete 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' from cart",
-        "Delete 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...'"
-      ],
-      [
-        "Save 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' for later",
-        "Save 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...' for later"
-      ],
-      [
-        "Compare 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…' with similar items",
-        "Compare 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...' with similar items"
-      ],
-      [
-        "Share 'Gamer Gifts for Men Women, I Paused My Game to Be Here Baseball Cap, Adjustable Cotton Embroidered Gaming Hats, Funny Gaming Stuff Gift for Teen Boys Girls Son Br…'",
-        "Share 'Gamer Gifts for Men Women, Ideas for Gamers, Gaming Stuff, Gamings ...'"
-      ],
-      [
-        "Navigate to 'Free International Returns' page",
-        "Navigate to 'Learn more' page"
-      ]
+      "Increase item quantity",
+      "Decrease item quantity",
+      "Delete an item from the cart",
+      "Save an item for later",
+      "Mark an individual item as a gift",
+      "Mark the entire order as a gift",
+      "Add a recommended item to cart",
+      "Compare an item with similar items",
+      "Share an item"
     ]
   },
   {
     "id": 12,
     "ground_truth": [
-      "Search products",
-      "Change delivery destination",
-      "Change language",
-      "Open Profile",
-      "View Messages",
-      "Open shopping cart",
-      "Open 'All categories' menu",
-      "View Product Image",
-      "Scan Product QR Code",
-      "Buy 'Custom High-quality Retro Old Washed Casual Loose Straight Streetwear Fashion Custom Baggy Jeans'",
-      "Add Product to Wishlist",
-      "Chat with seller",
-      [
-        "Navigate to 'Featured Selections'",
-        "Navigate to 'Order protections'",
-        "Navigate to 'Buyer Central'",
-        "Navigate to 'Help Center'",
-        "Navigate to 'App & Extensions'",
-        "Navigate to 'Sell on Alibaba.com'",
-        "Navigate to 'Polarskate Clothing Co., Ltd.' shop"
-      ],
-      "Read the 'Easy Return' policy",
-      "Read reviews"
+      "Search for products",
+      "Perform image search",
+      "Navigate to main site sections",
+      "Change delivery location",
+      "Change language and currency",
+      "View messages",
+      "View orders",
+      "View shopping cart",
+      "Access user account",
+      "Navigate through product categories",
+      "View product reviews",
+      "View seller profile",
+      "Browse product images",
+      "Add product to favorites",
+      "Share or embed product information",
+      "Select product size",
+      "Send inquiry to supplier",
+      "Chat with supplier",
+      "Access help or support",
+      "View messages (floating menu)",
+      "View similar products (floating menu)"
     ]
   },
   {
     "id": 13,
     "ground_truth": [
-      ["Switch to Store reviews", "Switch to Product reviews"],
-      "Sort reviews list",
-      "Vote helpful for reviews",
-      [
-        "Read product reviews",
-        "Read 'verified purchases' define",
-        "Read original reviews"
-      ],
-      [
-        "Filter reviews with photos/videos",
-        "Filter reviews with rating",
-        "Filter reviews with buy frequencies",
-        "Filter reviews by United States"
-      ],
-      "Show original language of reviews",
-      "Open 'L***i' profile"
+      "View product reviews",
+      "View store reviews",
+      "Filter store reviews by available criteria",
+      "Sort store reviews",
+      "View original language of a translated review",
+      "Expand a truncated review",
+      "Mark a review as helpful"
     ]
   },
   {
     "id": 14,
     "ground_truth": [
-      "Search for topics",
-      [
-        "Navigate to Home",
-        "Navigate to For You",
-        "Navigate to Following",
-        "Navigate to Vietnam News",
-        "Navigate to World News",
-        "Navigate to Local News",
-        "Navigate to Enterprise News",
-        "Navigate to Recreation News",
-        "Navigate to Sport News"
-      ],
-      "Open help",
-      "Open setting",
-      "Open Google Apps",
-      "Read 'US-Iran negotiations: Is there enough trust?' article",
-      ["Filter news by category", "Filter local news"],
-      ["See all featured news", "See more featured news", "See all local news"]
+      "Navigate to homepage",
+      "Access account menu",
+      "Search for news",
+      "Navigate to other news sections",
+      "Access application options",
+      "View a featured news article",
+      "View more featured news perspectives",
+      "View a local news article",
+      "Filter local news",
+      "View detailed weather information",
+      "Adjust weather widget settings",
+      "Navigate weather forecast"
     ]
   },
   {
     "id": 15,
     "ground_truth": [
-      "Search chat history",
-      "Open Profile",
-      "Explore GPTs",
-      ["Open Pictures", "Open Apps", "Open Projects"],
-      "Resume chat session named 'UI Web Testing Categories'",
-      "Submit query",
-      "Upgrade to a premium plan",
-      "Hide sidebar",
-      ["Add member to conversation", "Add files"],
-      "Create a new chat",
-      [
-        "Use 'Hevy-Gym workout planner' model",
-        "Use 'DoctorX Medical [Health & ...' model"
-      ]
+      "Initiate a new chat session",
+      "Search existing chat conversations",
+      "Resume a past conversation",
+      "Submit a new prompt or query",
+      "Provide voice input for a query",
+      "Attach files or content to a query",
+      "Access the Pictures feature",
+      "Access the Apps feature",
+      "Access the Projects feature",
+      "Interact with a specific GPT",
+      "Explore more GPTs",
+      "Upgrade the user account",
+      "Access additional features and benefits",
+      "Open user settings or profile",
+      "Switch the ChatGPT model",
+      "Toggle the sidebar visibility"
     ]
   },
   {
     "id": 16,
     "ground_truth": [
-      "Set up MFA",
-      "Test voice",
-      ["Close secure suggestion", "Close settings modal"],
-      [
-        "Change appearance",
-        "Change accent color",
-        "Change language",
-        "Change spoken language",
-        "Change voice"
-      ],
-      [
-        "Navigate to 'Notifications' tab",
-        "Navigate to 'Personalization' tab",
-        "Navigate to 'Apps' tab",
-        "Navigate to 'Data controls' tab",
-        "Navigate to 'Security' tab",
-        "Navigate to 'Parental controls' tab",
-        "Navigate to 'Account' tab"
-      ]
+      "Close settings dialog",
+      "Navigate to other settings sections",
+      "Set up multi-factor authentication",
+      "Change appearance theme",
+      "Change accent color",
+      "Change application language",
+      "Change spoken language for voice interactions",
+      "Preview selected voice",
+      "Change voice for interactions"
     ]
   },
   {
     "id": 17,
     "ground_truth": [
-      "Navigate to home page",
-      "Change language",
-      "Convert file",
-      "Download all converted images",
-      "Clear the file queue",
-      "Navigate through the uploaded file list",
-      ["Navigate to 'JPG to PNG' tab", "Navigate to 'PNG to JPG' tab"]
+      "Convert PNG files to JPG using file selection button",
+      "Convert PNG files to JPG using drag-and-drop",
+      "Clear selected files",
+      "Switch to JPG to PNG conversion mode",
+      "Change UI language"
     ]
   },
   {
     "id": 18,
     "ground_truth": [
-      "Open Menu",
-      "Go to Homepage",
-      "Open Settings",
-      "Open Google Apps",
-      [
-        "Change Input Language to 'English'",
-        "Change Input Language to 'Spanish'",
-        "Change Input Language to 'French'",
-        "Change Input Language to 'Detect language automatically'"
-      ],
-      "Translate 'Good'",
-      "Change Output Language to 'Spanish'",
-      "Play Pronunciation of 'Good'",
-      "Copy Translation 'Buena'",
-      "Save Translation 'Buena'",
-      "Share translation 'Buena'",
-      "Rate translation 'Buena'",
-      "Open dictionary ",
-      "Sign in",
-      "Clear current input",
+      "Translate text",
+      "Clear source text input",
+      "Listen to source text",
+      "Listen to translated text",
+      "Copy translated text",
+      "Search translated text on Google",
+      "Share translated text",
+      "Save translation",
+      "View dictionary for source word",
+      "View dictionary for translated word",
+      "Select source language",
+      "Select target language",
       "Swap source and target languages",
-      ["Use voice-to-text input", "Use virtual keyboard for input"]
+      "Switch translation mode",
+      "Expand more translations",
+      "Access main navigation menu",
+      "Access settings",
+      "Access Google apps",
+      "Sign in to Google Translate"
     ]
   },
   {
     "id": 19,
     "ground_truth": [
-      "Select file or folder",
-      "Navigate to home",
-      "Expand side bar",
-      "Search document",
-      "Contact help",
-      "Change language",
-      "Login",
-      "Sign up",
-      "Save document to MEGA",
-      "Download document",
-      "Sort document list",
-      "Check document information"
+      "Search for documents or folders",
+      "Save selected items to MEGA",
+      "Download selected items",
+      "Sort items by available criteria",
+      "Change the sort order direction",
+      "Open an item from the list",
+      "Login to the account",
+      "Sign up for a new account",
+      "Change the display language",
+      "Access help or support information",
+      "Change the view mode of items",
+      "Select all visible items",
+      "Collapse or expand the sidebar navigation"
     ]
   },
   {
     "id": 20,
     "ground_truth": [
-      "Find flights",
-      ["Navigate to 'home' page", "Navigate to 'Travel The World' page"]
+      "Find flights between selected cities",
+      "View destination of the week details",
+      "Navigate to home page via header link"
     ]
   },
   {
     "id": 21,
     "ground_truth": [
-      [
-        "Navigate to 'Home' page",
-        "Navigate to 'Contact'",
-        "Navigate to About Us"
-      ],
-      [
-        "Filter by Category 'Laptops'",
-        "Filter by Category 'Phones'",
-        "Filter by Category 'Monitors'"
-      ],
-      [
-        "View Details for 'Samsung galaxy s6'",
-        "View Details for 'Nexus 6'",
-        "View Details for 'Nokia Lumia 1520'"
-      ],
-      "View Cart",
-      "Log In",
-      "Sign Up"
+      "Navigate to Home page",
+      "Navigate to Contact page",
+      "Navigate to About Us page",
+      "View shopping cart",
+      "Login",
+      "Sign up",
+      "Browse products by Phones category",
+      "Browse products by Laptops category",
+      "Browse products by Monitors category",
+      "View product details from a product card",
+      "Navigate product carousel to the previous item",
+      "Navigate product carousel to the next item"
     ]
   },
   {
     "id": 22,
-    "ground_truth": ["Open 'Element' box", "Complete the pratice form"]
+    "ground_truth": [
+      "Register a student",
+      "Navigate to another section of the website",
+      "Explore the ZeroStep testing tool advertisement"
+    ]
   },
   {
     "id": 23,
@@ -520,138 +330,861 @@
   {
     "id": 24,
     "ground_truth": [
-      "Contact the website owner",
-      "Check availability room by check out and check in",
-      "Book room",
-      ["Navigate to 'Rooms' page", "Navigate to 'Booking' page"]
+      "Check room availability",
+      "Book a Single room",
+      "Book a Double room",
+      "Book a Suite room",
+      "Navigate to other website sections"
     ]
   },
   {
     "id": 25,
     "ground_truth": [
-      "Check shopping cart",
-      "View details for 'Freshwater'",
-      "Searching pet information",
-      "Sign in",
-      ["Navigate to 'Fish' page", "Navigate to 'Dogs' page"]
+      [
+        "Modify search location",
+        "Modify search dates",
+        "Modify number of guests",
+        "Initiate a new search",
+        "Apply general filters",
+        "Filter by entire home",
+        "Filter by room type",
+        "Filter by hotel type",
+        "Browse accommodations from the listing",
+        "Save an accommodation to favorites",
+        "View additional images for an accommodation",
+        "Adjust map zoom level",
+        "Expand the map view",
+        "Explore accommodations on the map",
+        "Navigate to the Airbnb homepage",
+        "Navigate to the 'Become a host' page",
+        "Change language or region settings",
+        "Open the main navigation menu"
+      ]
     ]
   },
   {
     "id": 26,
     "ground_truth": [
+      "Convert JPG images to PDF from local device",
+      "Convert JPG images to PDF from Google Drive",
+      "Convert JPG images to PDF from Dropbox",
+      "Navigate to Merge PDF tool",
+      "Navigate to Split PDF tool",
+      "Navigate to Compress PDF tool",
+      "Explore Convert PDF options",
+      "Explore All PDF Tools",
       "Login",
-      "Sign up",
-      ["Navigate to 'MERGE PDF' page", "Navigate to 'SPLIT PDF' page"],
-      ["Convert images to pdf file", "Convert JDG to PDF"]
+      "Sign up for an account",
+      "Access additional application options",
+      "Navigate to homepage"
     ]
   },
   {
     "id": 27,
     "ground_truth": [
-      [
-        "Add $25 Virtual Gift Card to Cart",
-        "Add Build your own cheap computer to Cart",
-        "Add '14.1 inch laptop' to cart"
-      ],
-      "Filter catagories by 'Book'",
+      "Register for an account",
       "Login",
-      "Register",
-      "View All Tags",
-      "Vote in Community Poll",
-      [
-        "Navigate to 'Shopping cart' page",
-        "Navigate to 'Wishlist' page",
-        "Navigate to Books",
-        "Navigate to Computers",
-        "Navigate to Electronics",
-        "Navigate to Apparel & Shoes",
-        "Navigate to Digital Downloads",
-        "Navigate to Jewelry",
-        "Navigate to Gift Cards",
-        "Navigate to Tricentis"
-      ]
-    ]
-  },
-  {
-    "id": 28,
-    "ground_truth": [
-      "Navigate to 'github' page",
-      "Buy coffee",
-      "Checkout shopping cart"
+      "View shopping cart",
+      "View wishlist",
+      "Search for products",
+      "Browse products by main navigation category",
+      "Browse products by sidebar category",
+      "Browse products by manufacturer",
+      "Sign up for newsletter",
+      "Vote in community poll",
+      "Navigate main banner carousel",
+      "Browse products by popular tag"
     ]
   },
   {
     "id": 29,
     "ground_truth": [
-      "Checkout shopping cart",
-      "Navigate to 'Desktops' page",
-      ["Add 'Iphone' to cart", "Add 'MacBook' to Cart"],
-      "View details of 'Iphone'",
-      "Change Currency",
+      "Change display currency",
+      "Access My Account",
       "View Wish List",
+      "View Shopping Cart",
       "Proceed to Checkout",
-      "Search Products",
-      [
-        "View About Us",
-        "Contact Customer Service",
-        "Explore Brands",
-        "Access My Account"
-      ],
-      "Manage My Account"
+      "Search for products",
+      "Navigate to product categories",
+      "Add product to cart from featured section",
+      "Add product to wish list from featured section",
+      "Compare products from featured section",
+      "View product details from featured section",
+      "Browse products by brand",
+      "Access information pages",
+      "Access customer service pages",
+      "Access extra features/pages",
+      "Access account-related pages from footer"
     ]
   },
   {
     "id": 30,
     "ground_truth": [
-      "Open profile",
-      "Logout",
-      "View details of 'List of all registered'",
-      "Navigate to Homepage",
-      ["Open Facebook Page", "Open Twitter Page"],
-      [
-        "View Popular Make 'Lamborghini'",
-        "View Popular Model 'Lamborghini Diablo'",
-        "View Overall Rating"
-      ]
+      "View user profile",
+      "Log out",
+      "View details of the most popular car make",
+      "View details of the most popular car model",
+      "View a list of all registered car models",
+      "Access Buggy Software's Facebook page",
+      "Access Buggy Software's Twitter page"
     ]
   },
   {
     "id": 31,
     "ground_truth": [
-      "View details of 'Delhi'",
-      "Print the weather forecast",
-      "Save image"
+      "Select a different city to view its forecast",
+      "Print the weather forecast chart",
+      "Save the weather forecast chart as JPEG",
+      "Save the weather forecast chart as PNG"
     ]
   },
   {
     "id": 32,
-    "ground_truth": ["Order pizza"]
+    "ground_truth": [
+      "Place a standard pizza order",
+      "Place a pizza order with extra toppings",
+      "Reset the pizza order form",
+      "Change delivery method to a free option"
+    ]
   },
   {
     "id": 33,
     "ground_truth": [
-      "Add 'Sunny' to wishlist",
-      ["Filter pet by species", "Filter pet by price"],
-      [
-        "Navigate to 'Home' page",
-        "Navigate to 'Shop' page",
-        "Navigate to Contact"
-      ],
-      "View More Information",
-      ["Adopt 'Coco'", "Adopt Pet 'Sunny'"],
-      ["View details of 'Leo'", "View Details of Pet 'Sunny'"],
-      "Like Pet 'Sunny'"
+      "Navigate to Home page",
+      "Navigate to Shop page",
+      "Navigate to Contact page",
+      "View more information about adoption",
+      "Filter pets by category",
+      "Sort pets by price",
+      "View details of a specific pet",
+      "Initiate adoption for a specific pet",
+      "Like a specific pet"
     ]
   },
   {
     "id": 34,
-    "ground_truth": ["Book tickets for a movie"]
+    "ground_truth": [
+      "Select a movie",
+      "Select an available seat",
+      "Deselect a selected seat",
+      "Navigate to home page"
+    ]
   },
   {
     "id": 35,
     "ground_truth": [
-      ["Navigate to 'Offers' page", "Navigate to 'Profile' page"],
-      ["View details of 'Places for rent'", "View details of 'Places for sale'"]
+      "Search for items",
+      "Create new Trello items",
+      "Access global utility features",
+      "Share the current board",
+      "Add a card to the Inbox",
+      "Connect external services for task consolidation",
+      "Access Inbox options",
+      "Connect an account to the Planner",
+      "Upgrade the Trello plan",
+      "Manage board settings",
+      "Add a card to a list",
+      "Add a new list to the board",
+      "Toggle card completion status",
+      "Open a card detail view",
+      "Navigate between main application sections",
+      "Switch to a different board",
+      "Access Jira integration"
+    ]
+  },
+  {
+    "id": 36,
+    "ground_truth": [
+      "Navigate to other listing details sections",
+      "Select and proceed with a room reservation",
+      "View all available room types",
+      "Change the check-in date",
+      "Change the checkout date",
+      "Adjust the number of guests",
+      "Report an issue with the listing"
+    ]
+  },
+  {
+    "id": 37,
+    "ground_truth": [
+      "Navigate to other tabs in sidebar menu",
+      "Change language",
+      "Navigate to other pages in footer",
+      "Edit profile information",
+      "View followers",
+      "Find new friends",
+      "Invite friends",
+      "View all achievements"
+    ]
+  },
+  {
+    "id": 38,
+    "ground_truth": [
+      "Start current lesson",
+      "View lesson guide",
+      "Navigate to other tabs in sidebar menu",
+      "View more navigation options",
+      "Initiate Super Duolingo free trial from top promotion",
+      "View all daily tasks",
+      "Initiate Super Duolingo free trial from ad",
+      "Turn off ad blockers",
+      "Navigate to other pages in footer",
+      "Scroll to top of page"
+    ]
+  },
+  {
+    "id": 39,
+    "ground_truth": [
+      "Update basic profile information",
+      "Change password",
+      "Verify email address",
+      "Change profile photo",
+      "Navigate to other account settings sections",
+      "Manage subscription plan",
+      "Access help center",
+      "Log out of the account",
+      "Extract personal data",
+      "Delete account",
+      "Navigate to main application sections"
+    ]
+  },
+  {
+    "id": 40,
+    "ground_truth": [
+      "Answer vocabulary question",
+      "Skip vocabulary question",
+      "Exit vocabulary quiz"
+    ]
+  },
+  {
+    "id": 41,
+    "ground_truth": [
+      "Browse available classes",
+      "Search for classes",
+      "Access MasterClass for Business",
+      "Explore gift options",
+      "View subscription plans from header",
+      "Open main navigation menu",
+      "Watch class trailer",
+      "Enroll in MasterClass",
+      "View subscription plans from class content",
+      "View class lesson plan"
+    ]
+  },
+  {
+    "id": 42,
+    "ground_truth": [
+      "Select learning interests and proceed",
+      "Search for learning content / courses",
+      "Browse courses by categories",
+      "Navigate to At Work section",
+      "Navigate to Gifts section",
+      "View subscription plans",
+      "Access main navigation menu",
+      "Pause featured video content",
+      "Navigate to homepage"
+    ]
+  },
+  {
+    "id": 43,
+    "ground_truth": [
+      "Navigate to homepage",
+      "Enroll in specialization",
+      "Learn about Coursera Plus",
+      "View instructor profile",
+      "View all instructors",
+      "Browse specialization information sections",
+      "Search for learning content / courses",
+      "Explore Coursera's courses offered",
+      "Access My Learning dashboard",
+      "Access Degrees information",
+      "Check notifications",
+      "Access user profile/account settings",
+      "Ask Coursera for assistance",
+      "Change language/region"
+    ]
+  },
+  {
+    "id": 44,
+    "ground_truth": [
+      "Navigate to homepage",
+      "Enroll in free trial with card payment",
+      "Enroll in free trial with PayPal payment",
+      "Remove course from cart",
+      "Understand card saving policy",
+      "Access user profile/account settings"
+    ]
+  },
+  {
+    "id": 45,
+    "ground_truth": [
+      "Navigate to home page",
+      "Explore learning content categories",
+      "Access user's learning dashboard",
+      "Browse degree programs",
+      "Search for learning content",
+      "View shopping cart",
+      "View user notifications",
+      "Access user profile or account settings",
+      "Start or resume a course",
+      "Play the next learning item",
+      "View details for completing learning items",
+      "Add a career goal",
+      "Set up a learning plan from Today's goals",
+      "View weekly learning activity for a specific day",
+      "Set up a learning plan from Weekly activity",
+      "Confirm user's professional role",
+      "Dismiss role confirmation banner",
+      "Change language/region",
+      "View details of a recently viewed product"
+    ]
+  },
+  {
+    "id": 46,
+    "ground_truth": [
+      "Navigate to homepage",
+      "Play the current video lesson",
+      "Navigate to the next learning item",
+      "Learn other module",
+      "Navigate to a specific learning item from the sidebar",
+      "Save a note for the current learning item",
+      "Continue video lesson",
+      "Access video settings",
+      "Adjust video audio",
+      "Change video mode",
+      "Adjust video playback speed",
+      "Toggle full-screen video mode",
+      "Close the current course content view",
+      "Collapse a module in the course outline",
+      "Initiate a free trial",
+      "Access help resources",
+      "Change language/region",
+      "Access user profile or account settings"
+    ]
+  },
+  {
+    "id": 47,
+    "ground_truth": [
+      "Navigate to homepage",
+      "Compose a new message",
+      "Filter messages by status",
+      "Search messages",
+      "Open a conversation from the list",
+      "Mark a conversation as favorite or unfavorite",
+      "Reply to a message",
+      "Format message content",
+      "Access course Q&A",
+      "Visit Udemy help center",
+      "Access conversation-specific options",
+      "Access message list management options",
+      "Navigate to global platform sections",
+      "View cart contents",
+      "View notifications",
+      "View favorite courses",
+      "Access user profile or account settings"
+    ]
+  },
+  {
+    "id": 48,
+    "ground_truth": [
+      "Search globally for content",
+      "Explore available courses and topics",
+      "Access subscription options",
+      "Access Udemy Business platform",
+      "Access instructor resources",
+      "View global wishlist",
+      "View items in the shopping cart",
+      "View user notifications",
+      "Access user profile and account settings",
+      "Navigate to other sections of My learning",
+      "Search for courses within My learning",
+      "View course details from the wishlist",
+      "Remove course from wishlist"
+    ]
+  },
+  {
+    "id": 49,
+    "ground_truth": [
+      "Search for content",
+      "Navigate to different application sections",
+      "View details of a content item (pin)",
+      "Access options for a content item (pin)",
+      "Share a specific content item",
+      "Save a specific content item",
+      "Access user profile or account menu"
+    ]
+  },
+  {
+    "id": 50,
+    "ground_truth": [
+      "Search for content",
+      "Navigate to different sections of the application",
+      "Access user profile or account menu",
+      "Return to the previous page",
+      "Like a pin",
+      "View comments on the pin",
+      "Share a pin",
+      "Access more pin options",
+      "Save a pin",
+      "Expand pin image",
+      "Perform image search for similar pins",
+      "Add a comment to the pin",
+      "Add rich content to a comment",
+      "Browse related pins",
+      "Open a related pin"
+    ]
+  },
+  {
+    "id": 51,
+    "ground_truth": [
+      "Update password",
+      "Convert account to business",
+      "Update date of birth",
+      "Update gender",
+      "Update country or region",
+      "Save account changes",
+      "Reset account changes",
+      "Navigate to other settings sections",
+      "Search for content",
+      "Access user profile or account menu"
+    ]
+  },
+  {
+    "id": 52,
+    "ground_truth": [
+      "Search for destinations or content",
+      "Navigate to other main sections of the application",
+      "Log in to the application",
+      "View existing reviews for the destination",
+      "Write a new review for the destination",
+      "Initiate planning a new trip",
+      "Save the current destination",
+      "Share the current destination",
+      "View the image gallery for the destination",
+      "Add a photo to the destination",
+      "Navigate back to the map view",
+      "Navigate to parent geographical categories",
+      "Play an audio story related to the destination",
+      "Remove advertisements from the page"
+    ]
+  },
+  {
+    "id": 53,
+    "ground_truth": [
+      "Search for content across the site",
+      "Navigate to main sections of the application",
+      "Log in to the application",
+      "Navigate to the home page",
+      "Submit a star rating for the listing",
+      "Initiate writing a new review",
+      "Sort the displayed reviews",
+      "Indicate helpfulness of a review",
+      "Remove advertisements from the page",
+      "View details of a featured destination",
+      "Open the chat support interface"
+    ]
+  },
+  {
+    "id": 54,
+    "ground_truth": [
+      "Login with Google",
+      "Login with Facebook",
+      "Login with Apple",
+      "Login with email or username",
+      "Toggle password visibility",
+      "Initiate password reset",
+      "Create a new account",
+      "Close login modal",
+      "Reading pRivacy policy",
+      "Reading Terms of Service"
+    ]
+  },
+  {
+    "id": 55,
+    "ground_truth": [
+      "Perform a global search",
+      "Navigate to main sections",
+      "Access the user profile or sign in",
+      "Get started with onboarding or premium features",
+      "Change the display language",
+      "Change the stock screener type",
+      "Filter by stock category",
+      "Apply stock filters",
+      "Add a custom filter",
+      "Switch between stock data views",
+      "Search for a specific stock symbol",
+      "Sort the stock list",
+      "Customize stock list columns",
+      "Refresh stock data",
+      "Change the stock list display mode",
+      "View stock details",
+      "View analyst rating details"
+    ]
+  },
+  {
+    "id": 56,
+    "ground_truth": [
+      "Search for jobs",
+      "Navigate to main sections",
+      "View the personal profile",
+      "Access job preferences",
+      "Access the job tracker",
+      "Access career insights",
+      "Post a job listing",
+      "View job details",
+      "Dismiss a job recommendation",
+      "View more job recommendations",
+      "Explore LinkedIn Premium",
+      "Access footer information links",
+      "Open the messaging interface"
+    ]
+  },
+  {
+    "id": 57,
+    "ground_truth": [
+      "Search for content or profiles",
+      "Navigate to main platform sections",
+      "Access the user profile and account settings",
+      "Explore business solutions",
+      "Explore premium features",
+      "Accept a connection request",
+      "Ignore a connection request",
+      "Access additional connection request options",
+      "View contact information",
+      "View mutual connections",
+      "Follow a profile",
+      "View profile activity",
+      "Connect with suggested profiles",
+      "Message suggested profiles",
+      "Learn more about an advertisement",
+      "Open the messaging widget"
+    ]
+  },
+  {
+    "id": 58,
+    "ground_truth": [
+      "Login or sign up",
+      "Change language",
+      "Initiate location search or login for location",
+      "View restaurant details",
+      "Select a delivery date",
+      "Select a delivery time",
+      "Browse menu by category",
+      "Add a food item to the cart",
+      "Navigate to Home page",
+      "Navigate to Restaurant list page"
+    ]
+  },
+  {
+    "id": 59,
+    "ground_truth": [
+      "Navigate to home page",
+      "Perform a search",
+      "Explore premium features",
+      "Install desktop application",
+      "View notifications",
+      "Access user profile or account settings",
+      "Create new content in library",
+      "Navigate library content categories",
+      "Open an item from library list",
+      "Sort library items by recency",
+      "Toggle library view mode",
+      "Play current playlist",
+      "Add playlist to library",
+      "Download playlist",
+      "Access more playlist options",
+      "Toggle playlist track view mode",
+      "Play a specific track from playlist",
+      "Add a track to queue or playlist from list",
+      "Pause playback",
+      "Skip to next track",
+      "Skip to previous track",
+      "Toggle shuffle mode",
+      "Toggle repeat mode",
+      "Adjust volume",
+      "View playback queue",
+      "Enter full screen player",
+      "Add currently playing track to playlist",
+      "View artist details"
+    ]
+  },
+  {
+    "id": 60,
+    "ground_truth": [
+      "Navigate to Home",
+      "Initiate a search for content",
+      "Explore Premium features",
+      "Install the desktop application",
+      "Access user profile menu",
+      "Create new content in library",
+      "Expand or collapse Your Library section",
+      "Filter library content by type",
+      "Search within Your Library",
+      "Sort library items",
+      "Open items from Your Library list",
+      "Filter main content by type",
+      "Play a recommended item",
+      "View all items in a content section",
+      "Play or pause current track",
+      "Skip to next track",
+      "Skip to previous track",
+      "Toggle shuffle mode",
+      "Toggle repeat mode",
+      "Adjust playback volume",
+      "View current queue",
+      "Toggle full-screen player",
+      "Add current playing track to library or playlist",
+      "View artist details for current track"
+    ]
+  },
+  {
+    "id": 61,
+    "ground_truth": [
+      "Change delivery city",
+      "Browse different product and service categories",
+      "Search for food, places, or addresses",
+      "Filter displayed items by food type",
+      "Access user account and profile options",
+      "Change the display language",
+      "Update the current delivery location",
+      "View all available collections and deals",
+      "Explore a specific food collection or deal",
+      "Download the ShopeeFood mobile application"
+    ]
+  },
+  {
+    "id": 62,
+    "ground_truth": [
+      "Navigate to ShopeeFood homepage",
+      "Change current city",
+      "Navigate to different service categories",
+      "Initiate a global search",
+      "Login to ShopeeFood",
+      "Change display language",
+      "Navigate back using breadcrumbs",
+      "View reviews on Foody",
+      "Filter menu by category",
+      "Search for a dish in the menu",
+      "Add a dish to the order",
+      "Order food via Shopee app"
+    ]
+  },
+  {
+    "id": 63,
+    "ground_truth": [
+      "Complete visual verification challenge",
+      "Navigate through visual challenge options",
+      "Access audio verification challenge",
+      "Restart verification challenge",
+      "Close verification modal"
+    ]
+  },
+  {
+    "id": 64,
+    "ground_truth": [
+      "Open location search",
+      "Search for a specific location",
+      "Copy location coordinates",
+      "Access specific location information",
+      "Close location details panel",
+      "Explore premium features",
+      "Login to account",
+      "Open main navigation menu",
+      "Select different weather layers",
+      "Close weather layers menu",
+      "Close wind information overlay",
+      "Navigate through forecast timeline",
+      "Play or pause timeline animation",
+      "Zoom in on the map",
+      "Zoom out on the map",
+      "Toggle 3D map view",
+      "Toggle pressure overlay",
+      "Toggle particles animation",
+      "View video forecast",
+      "View map in full screen",
+      "Access map settings",
+      "Access additional map layers",
+      "Select a weather model",
+      "Change wind speed unit"
+    ]
+  },
+  {
+    "id": 65,
+    "ground_truth": [
+      [
+        "Login to account",
+        "Upgrade to Premium",
+        "Search for a location",
+        "View weather radar layer",
+        "View satellite layer",
+        "View hurricane tracker layer",
+        "View wind gusts layer",
+        "View wind accumulation layer",
+        "View pressure layer",
+        "View temperature layer",
+        "View dew point layer",
+        "View humidity layer",
+        "View wet-bulb temperature layer",
+        "View solar power layer",
+        "View UV Index layer",
+        "View city heatmaps layer",
+        "View rain and thunder layer",
+        "View rain accumulation layer",
+        "View new snow layer",
+        "View snow depth layer",
+        "View precipitation type layer",
+        "View thunderstorms layer",
+        "Expand more layers options",
+        "Adjust altitude for weather data",
+        "Switch to 3D map view",
+        "Change weather forecast model to ECMWF",
+        "Change wind speed units to meters per second",
+        "Select a future forecast time",
+        "Animate forecast over time",
+        "Navigate to previous day's forecast",
+        "Navigate to next day's forecast",
+        "Close layer selection panel",
+        "Access My Favorites",
+        "Access My Alerts",
+        "Access Settings",
+        "Install Windy Plugin",
+        "Access Distance & planning tool",
+        "Display KML, GPX, ... data",
+        "Search for layers",
+        "Arrange layers",
+        "Close wind detail popup",
+        "Deactivate active wind layer"
+      ]
+    ]
+  },
+  {
+    "id": 66,
+    "ground_truth": [
+      [
+        "Navigate to Home page",
+        "Navigate to Projects page",
+        "Navigate to Brand Kit page",
+        "Navigate to Canva AI features page from sidebar",
+        "Initiate a new design via 'Create' button",
+        "Search for templates",
+        "Browse 'Your designs'",
+        "Browse 'Canva AI' related content from top tabs",
+        "Start a design using a specific design type from the main row",
+        "Start a design using a specific template from 'Explore templates'",
+        "View more templates in 'Explore templates' section",
+        "Explore AI video effects",
+        "Start a free trial",
+        "Check notifications",
+        "Access user profile and account settings",
+        "Create a design with custom dimensions",
+        "Upload a file to start a design",
+        "View more design types from the main row",
+        "Access 'Magic Layers' feature"
+      ]
+    ]
+  },
+  {
+    "id": 67,
+    "ground_truth": [
+      "Apply the selected template to all pages",
+      "View more templates from the same creator",
+      "Return to the previous view in the sidebar",
+      "Access different design tools and resources from the sidebar",
+      "Access various file, editing, and collaboration features from the top menu",
+      "Undo the last action",
+      "Redo the last undone action",
+      "Initiate a free trial for premium features",
+      "Navigate to a specific page using the page selector thumbnails",
+      "Navigate to the next page",
+      "Navigate to the previous page",
+      "Open the grid view of all pages",
+      "Open the notes panel for the current slide",
+      "Open the presentation timer settings",
+      "Adjust the zoom level of the canvas",
+      "Edit text on the current slide",
+      "Check the cloud save status of the design",
+      "Add new content or a new page to the design",
+      "Access help and support resources"
+    ]
+  },
+  {
+    "id": 68,
+    "ground_truth": [
+      "Navigate to Templates section",
+      "Navigate to Elements section",
+      "Navigate to Text section",
+      "Navigate to Brand section",
+      "Navigate to Uploads section",
+      "Navigate to Projects section",
+      "Navigate to Apps section",
+      "Navigate to Magic Media section",
+      "Search for elements",
+      "Add a new element from search results",
+      "Generate images using AI",
+      "Browse and select elements from categories",
+      "Access File menu options",
+      "Resize the design",
+      "Access Editing menu options",
+      "Undo a change",
+      "Redo a change",
+      "Save the design to cloud",
+      "Start a Pro trial",
+      "Present the design",
+      "Share the design",
+      "Navigate to a specific slide using thumbnails",
+      "Navigate to the next slide",
+      "Navigate to the previous slide",
+      "Adjust zoom level",
+      "View/Edit slide notes",
+      "Use the presentation timer",
+      "View all pages in a grid",
+      "Toggle full-screen editing",
+      "Edit text on the current slide"
+    ]
+  },
+  {
+    "id": 69,
+    "ground_truth": [
+      "Search for a design type or template",
+      "Navigate to other design categories",
+      "Initiate a quick action",
+      "Filter social media design types by platform",
+      "Select a design template",
+      "Close the design creation modal",
+      "Custom a design",
+      "Upload a design"
+    ]
+  },
+  {
+    "id": 70,
+    "ground_truth": [
+      "Access file management options",
+      "Access canvas resizing options",
+      "Access general editing options",
+      "Undo the last action",
+      "Redo a previously undone action",
+      "Save the current design",
+      "Rename the current design",
+      "Initiate a premium trial",
+      "Share the current design",
+      "Access user-related features or settings",
+      "Navigate to different design tool categories",
+      "View more templates from the creative studio",
+      "Apply the currently selected 'Feuille simple' template",
+      "Browse and select other suggested templates",
+      "Access additional spreadsheet actions",
+      "Apply data filtering or sorting",
+      "Adjust number formatting",
+      "Change cell background color",
+      "Modify cell grid or border styles",
+      "Apply text and cell styling",
+      "Interact with a specific column header",
+      "Add notes to the current page",
+      "Activate or use the timer",
+      "Adjust the zoom level of the canvas",
+      "Navigate between existing pages/sheets",
+      "Add a new page or sheet",
+      "Switch to a grid view of all pages"
     ]
   }
 ]
