@@ -11,11 +11,16 @@ from app.core.exceptions import AIProcessingError
 logger = logging.getLogger(__name__)
 
 class GeminiService:
-    def __init__(self, model_name: str = "gemini-1.5-flash"):
+    def __init__(self, model_name: str = "gemini-2.5-flash"):
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not configured in settings")
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel(model_name)
+        self.model = genai.GenerativeModel(
+            model_name,
+            generation_config={
+                "temperature": 0.0,
+            },
+        )
         self.system_prompt = self.get_system_prompt()
 
     @staticmethod
@@ -38,13 +43,23 @@ class GeminiService:
 
         try:
             logger.info(f"Sending request to Gemini for image: {image_path}")
-            
+
+            user_instruction = (
+                "You are given a viewport screenshot of a single Web UI state. "
+                "Using the system instructions above, extract all user behavior-level test "
+                "scenario specifications that are visually supported by this UI state. "
+                "Return ONLY one valid JSON object that strictly follows the required "
+                "output schema defined in the system instructions. Do not include any "
+                "markdown, comments, or free-form explanation. The JSON must be "
+                "syntactically valid and ready for machine parsing."
+            )
+
             prompt_parts = [
                 self.system_prompt,
-                "Analyze this web interface image and list the user's intents that have been set up according to the requirements.",
+                user_instruction,
                 img,
             ]
-            
+
             response = self.model.generate_content(prompt_parts)
             
             content = response.text

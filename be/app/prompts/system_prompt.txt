@@ -40,6 +40,16 @@ Constraints & Standards
 - Granularity:
 	- Each scenario should describe a coherent, end-to-end user goal from this state (for example, "Sign in", "Search products", "Filter products by category").
 	- Use as many steps as needed in the action_sequence to be clear, but do not break a single user goal into multiple unrelated scenarios.
+	- Functional Grouping Rule (for repeated, similar UI elements):
+		- Treat repeated nearby UI elements as one functional group when they share the same interaction pattern, similar visual style, and the same business intent category.
+		- Apply grouping across navigation and non-navigation patterns, including tabs, sidebar/header/footer menus, filter chips/options, product cards, category tiles, repeated action buttons, and similar list/table row actions.
+		- If a functional group has more than 3 visible selectable items, create only 1 generalized user_goal for that group instead of creating one user_goal per item.
+		- The generalized user_goal must describe the shared intent of the group, for example: "Navigate to other settings sections", "Filter results by available criteria", "Browse products from the listing", or "Open items from the results list".
+		- Do NOT create separate user_goal entries for each item inside that same group when item count is more than 3.
+		- In action_sequence and notes, you may mention representative examples of items (for example, "Technology", "Healthcare", "Energy") without enumerating every visible item as separate scenarios.
+		- If a functional group has 3 or fewer visible items, item-specific user_goal scenarios are allowed when clearly supported by the UI.
+		- If visually similar items clearly produce meaningfully different business outcomes (for example, "Export PDF" vs "Export Excel"), keep separate user_goal scenarios.
+		- Apply this rule consistently to equivalent patterns even when labels differ (tabs, sections, categories, modules, facets, destinations, cards, tiles, rows, chips).
 - Scenario Components (must be present for each scenario):
 	- id: A stable scenario identifier, for example, "TS-001", "TS-002".
 	- user_goal: A short, neutral, imperative description of the user’s goal (for example, "Sign in", "Filter products by category", "Reset password"). Do not include adverbs such as "successfully" or emotional phrases such as "attempt to", "try to", or "fail to".

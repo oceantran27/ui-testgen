@@ -10,25 +10,53 @@ import re
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '')))
 
 from app.services.openai_service import OpenAIService
-# from app.services.gemini_service import GeminiService
+from app.services.gemini_service import GeminiService
 from evaluation.main import perform_evaluation
 from sentence_transformers import SentenceTransformer
 
 def extract_intents_from_response(response_text):
-    """Extracts intent names from model JSON output."""
+    """Extracts user goals from model JSON output following the new schema."""
     try:
+        # Some models may wrap JSON in ```json ... ``` fences
         json_match = re.search(r'```json\s*([\s\S]*?)\s*```', response_text)
         json_str = json_match.group(1) if json_match else response_text
+
         data = json.loads(json_str)
-        return [intent['intent_name'] for intent in data.get('user_intents', [])]
-    except (json.JSONDecodeError, KeyError) as e:
+
+        # Preferred: new schema with "scenarios" and "user_goal"
+        if isinstance(data, dict) and "scenarios" in data:
+            scenarios = data.get("scenarios", [])
+            user_goals = []
+            for scenario in scenarios:
+                if isinstance(scenario, dict):
+                    goal = scenario.get("user_goal")
+                    if isinstance(goal, str) and goal.strip():
+                        user_goals.append(goal.strip())
+            if user_goals:
+                return user_goals
+
+        # Backward compatibility: older schema with "user_intents" and "intent_name"
+        user_intents = data.get("user_intents", []) if isinstance(data, dict) else []
+        extracted = []
+        for intent in user_intents:
+            if isinstance(intent, dict) and "intent_name" in intent:
+                name = intent.get("intent_name")
+                if isinstance(name, str) and name.strip():
+                    extracted.append(name.strip())
+            elif isinstance(intent, str) and intent.strip():
+                extracted.append(intent.strip())
+        return extracted
+
+    except (json.JSONDecodeError, TypeError) as e:
         print(f"JSON Error: {e}")
         return []
 
 def run_experiment():
     """Runs experiment: processes images, evaluates output, saves metrics to CSV."""
-    # Switching to GPT-4o as requested
-    model_type = "gpt-4o"
+    # Switch between providers/models here or override by env vars:
+    # EXP_PROVIDER in {openai, gemini}, EXP_MODEL e.g. gemini-2.5-pro
+    provider = os.getenv("EXP_PROVIDER", "gemini").strip().lower()
+    model_type = os.getenv("EXP_MODEL", "gemini-2.5-pro").strip()
     
     results_dir = "experiment_results"
     os.makedirs(results_dir, exist_ok=True)
@@ -60,17 +88,23 @@ def run_experiment():
         print(f"No PNGs in {img_dir}")
         return
 
-    # Initialize OpenAI Service
-    print(f"Initializing OpenAI Service with model: {model_type}")
+    # Initialize AI Service (OpenAI/Gemini)
+    print(f"Initializing AI service: provider={provider}, model={model_type}")
     try:
-        ai_service = OpenAIService()
+        if provider == "openai":
+            ai_service = OpenAIService(model_name=model_type)
+        elif provider == "gemini":
+            ai_service = GeminiService(model_name=model_type)
+        else:
+            print(f"Unsupported provider: {provider}")
+            return
     except Exception as e:
-        print(f"Failed to initialize OpenAIService: {e}")
+        print(f"Failed to initialize AI service: {e}")
         return
     
     # Load the evaluation model once to avoid reloading in the loop
     try:
-        eval_model_name = 'all-MiniLM-L6-v2'
+        eval_model_name = 'BAAI/bge-large-en-v1.5'
         print(f"Loading evaluation model: {eval_model_name}...")
         eval_model = SentenceTransformer(eval_model_name)
     except Exception as e:
@@ -97,9 +131,9 @@ def run_experiment():
             try:
                 img_id = int(os.path.splitext(img_name)[0])
 
-                # Loop only from image 22 to 35
-                if not (33 <= img_id <= 35):
-                    continue
+                # Loop only from image 5 to 35
+                # if (img_id <= 57) :
+                #     continue
                 
                 print(f"Processing: {img_name}")
                 
@@ -110,9 +144,9 @@ def run_experiment():
                     continue
 
                 raw_output = ai_service.analyze_image(os.path.join(img_dir, img_name))
-                om_intents = extract_intents_from_response(raw_output)
+                user_goals = extract_intents_from_response(raw_output)
 
-                if not om_intents:
+                if not user_goals:
                     print(f"Warning: No intents for {img_name}")
                     writer.writerow([
                         img_name,
@@ -129,7 +163,8 @@ def run_experiment():
                     ])
                     continue
 
-                res = perform_evaluation({"ground_truth": gt, "user_intents": om_intents}, model=eval_model, context_info=img_name)
+                # Pass extracted user goals to the evaluator using the new key
+                res = perform_evaluation({"ground_truth": gt, "user_goals": user_goals}, model=eval_model, context_info=img_name)
 
                 # Calculate Precision and Recall
                 # Precision = 1 - percent_hallucination (since percent_hallucination is rate of unmatched OM)

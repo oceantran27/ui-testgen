@@ -24,7 +24,30 @@ def perform_evaluation(data: dict, model: SentenceTransformer, context_info: str
     logging.info(f"--- EVALUATION: {context_info} ---")
     
     gt_raw = data.get("ground_truth", [])
-    om_raw = data.get("user_intents", [])
+    if not isinstance(gt_raw, list):
+        gt_raw = [gt_raw] if gt_raw else []
+
+    # Prefer Gemini-style key first.
+    om_raw = data.get("user_intents")
+    # Backward compatibility with newer callers that use "user_goals".
+    if om_raw is None:
+        om_raw = data.get("user_goals")
+    # Compatibility with direct schema output containing scenarios[].user_goal
+    if om_raw is None:
+        scenarios = data.get("scenarios", [])
+        if isinstance(scenarios, list):
+            om_raw = [
+                item.get("user_goal", "")
+                for item in scenarios
+                if isinstance(item, dict) and isinstance(item.get("user_goal"), str)
+            ]
+        else:
+            om_raw = []
+
+    if isinstance(om_raw, str):
+        om_raw = [om_raw]
+    elif not isinstance(om_raw, list):
+        om_raw = []
 
     # Normalize inputs
     om_norm = [preprocess_text(i) for i in om_raw]
