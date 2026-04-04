@@ -33,15 +33,6 @@ _records_lock = threading.Lock()
 class PresignedUploadRequest(BaseModel):
     file_name: str
     file_type: str
-    file_size: int
-
-class UploadSessionRequest(BaseModel):
-    session_id: Optional[str] = None
-    file_key: Optional[str] = None
-    file_url: str
-    original_name: str
-    content_type: Optional[str] = None
-    size: Optional[int] = None
 
 def _load_records() -> list[dict[str, Any]]:
     try:
@@ -179,6 +170,23 @@ def _find_json_block(s: str) -> str | None:
     return None
 
 
+def _save_upload_file(file: UploadFile) -> str:
+    """
+    Save an uploaded file temporarily to disk.
+    Returns the local file path.
+    """
+    file_extension = file.filename.split(".")[-1] if file.filename else "jpg"
+    file_name = f"{uuid.uuid4()}.{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return file_path
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not save image: {str(e)}")
+
+
 def _extract_and_minify_json(s: str) -> str | None:
     """Return compact JSON string if extraction and parsing succeeds; otherwise None."""
     raw_json = _find_json_block(s)
@@ -279,18 +287,6 @@ def create_presigned_upload_url(payload: PresignedUploadRequest):
     }
 
 
-@router.post("/upload-session")
-def finalize_upload_session(payload: UploadSessionRequest):
-    # Frontend expects this callback endpoint after direct PUT to B2.
-    # For now we acknowledge payload and keep data flow consistent.
-    return {
-        "ok": True,
-        "session_id": payload.session_id,
-        "file_key": payload.file_key,
-        "file_url": payload.file_url,
-    }
-
-
 @router.get("/logs/backend")
 def read_backend_logs(lines: int = Query(200, ge=1, le=2000)):
     log_file_path = os.path.abspath("log.txt")
@@ -309,9 +305,7 @@ def read_backend_logs(lines: int = Query(200, ge=1, le=2000)):
         raise HTTPException(status_code=500, detail="Could not read backend logs.") from e
 
 @router.post("/upload-to-b2")
-async def upload_file_to_b2(
-    file: UploadFile = File(...)
-):
+async def upload_file_to_b2(file: UploadFile = File(...)):
     """
     Backend receives file and uploads to B2 (server-to-server, no CORS issues).
     Frontend must send with Content-Type: multipart/form-data
@@ -323,28 +317,19 @@ async def upload_file_to_b2(
             detail="B2 service is not configured on server.",
         )
 
-    # Validate Content-Type is multipart form data
-    content_type = file.content_type
-    
     # Save file temporarily
-    file_extension = file.filename.split(".")[-1] if file.filename else "jpg"
-    temp_file_name = f"{uuid.uuid4()}.{file_extension}"
-    temp_file_path = os.path.join(UPLOAD_DIR, temp_file_name)
+    temp_file_path = _save_upload_file(file)
 
     try:
-        with open(temp_file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
         # Upload to B2 with proper content type metadata
         safe_ext = _safe_file_extension(file.filename or "file")
         b2_file_name = f"uploads/{uuid.uuid4()}.{safe_ext}"
         
         try:
-            # Use b2_service which will handle content type during upload
-            b2_service.upload_file(temp_file_path, b2_file_name, content_type)
+            b2_service.upload_file(temp_file_path, b2_file_name, file.content_type)
             file_url = b2_service.get_file_url(b2_file_name)
             
-            logger.info(f"Successfully uploaded {b2_file_name} (content_type: {content_type})")
+            logger.info(f"Successfully uploaded {b2_file_name} (content_type: {file.content_type})")
             
             return {
                 "file_url": file_url,
@@ -353,9 +338,6 @@ async def upload_file_to_b2(
         except Exception as e:
             logger.error(f"Failed to upload to B2: {e}")
             raise HTTPException(status_code=502, detail=f"Failed to upload to B2: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to handle upload: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
     finally:
         # Clean up temp file
         if os.path.exists(temp_file_path):
@@ -372,15 +354,7 @@ async def analyze_screenshot(
     model: Optional[str] = Query("gemini-2.5-flash", description="Model to use: 'openai', 'gemini', 'gemini-2.5-flash', 'gemini-1.5-flash'")
 ):
     # 1. Save the uploaded file to a temporary local path for processing
-    file_extension = file.filename.split(".")[-1] if file.filename else "jpg"
-    file_name = f"{uuid.uuid4()}.{file_extension}"
-    file_path = os.path.join(UPLOAD_DIR, file_name)
-
-    try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Could not save image: {str(e)}")
+    file_path = _save_upload_file(file)
 
     # 2. Call AI Service with the local file path
     try:

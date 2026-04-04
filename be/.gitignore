@@ -27,3 +27,6 @@ coverage/
 *.swo
 .DS_Store
 Thumbs.db
+
+uploads
+experiment_results

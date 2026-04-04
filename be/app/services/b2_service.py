@@ -49,7 +49,7 @@ class B2Service:
         return cleaned
 
     def _build_raw_url(self, file_name: str) -> str:
-        """Xây dựng URL thô theo chuẩn kiến trúc Object Storage."""
+        """Build raw URL according to Object Storage architecture."""
         endpoint = self._normalize_endpoint(settings.B2_ENDPOINT)
         if endpoint:
             encoded_name = quote(file_name)
@@ -58,16 +58,16 @@ class B2Service:
 
     def get_file_url(self, file_name: str) -> str:
         """
-        Trả về URL trực tiếp. 
-        Lưu ý: Vì Bucket của bạn cấu hình là PRIVATE, truy cập URL này từ trình duyệt sẽ trả về HTTP 403.
-        Sử dụng hàm generate_presigned_get_url() nếu cần link hiển thị lên UI.
+        Returns a direct URL to the file.
+        Note: Since the bucket is configured as PRIVATE, accessing this URL from a browser will return HTTP 403.
+        Use generate_presigned_get_url() if you need a link to display in the UI.
         """
         return self._build_raw_url(file_name)
 
     def generate_presigned_get_url(self, file_name: str, expires_in: int = 3600) -> str:
         """
-        [Tính năng bổ sung bắt buộc] Tạo Presigned URL để Front-end có quyền xem/tải ảnh.
-        Do policy của bạn đặt bucket là Private để tránh mất phí Egress vô tội vạ.
+        Generate a presigned URL for the frontend to view/download the image.
+        The bucket is configured as private to avoid unnecessary egress charges.
         """
         if not self.is_ready():
             raise ConnectionError("B2 S3 client is not configured.")
@@ -82,13 +82,13 @@ class B2Service:
             raise
 
     def upload_file(self, local_file_path: str, file_name: str, content_type: str = None) -> str:
-        """Thay thế cơ chế upload của Native API bằng chuẩn S3"""
+        """Upload a file to B2 using boto3 S3 standard."""
         if not self.is_ready():
             raise ConnectionError("B2 service is not ready.")
         
         try:
             logger.info(f"Uploading {file_name} to B2 via boto3...")
-            # Sử dụng boto3 upload_file tự động xử lý chia nhỏ file (multipart upload) với file lớn
+            # boto3 upload_file handles multipart uploads automatically for large files
             extra_args = {}
             if content_type:
                 extra_args["ContentType"] = content_type
@@ -108,7 +108,10 @@ class B2Service:
             raise
 
     def generate_presigned_put_url(self, file_name: str, content_type: str = None) -> str:
-        """Đã sửa lỗi cốt lõi: Bắt buộc đính kèm ContentType để vượt qua Preflight CORS"""
+        """
+        Generate a presigned PUT URL for direct file uploads.
+        ContentType must be included to pass CORS preflight checks.
+        """
         if not file_name:
             raise ValueError("file_name is required")
         if not self.s3_client:
@@ -119,7 +122,7 @@ class B2Service:
                 "Bucket": settings.B2_BUCKET_NAME, 
                 "Key": file_name
             }
-            # GIẢI QUYẾT LỖI CORS: Đưa ContentType vào payload để ký (Sign)
+            # Include ContentType in the signature to pass CORS checks
             if content_type:
                 params["ContentType"] = content_type
 
