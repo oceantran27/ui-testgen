@@ -1,76 +1,86 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
-import {
-  FiUploadCloud,
-  FiTrash2,
-  FiLoader,
-  FiImage,
-  FiChevronDown,
-  FiServer,
-  FiX,
-  FiChevronRight,
-} from "react-icons/fi";
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { apiClient } from "./api/client";
+import { useImageUpload } from "./hooks/useImageUpload";
+import { toCdnUrl } from "./utils/cdn";
+import { GalleryModal } from "./components/GalleryModal";
+import { AdminCRUD } from "./components/AdminCRUD";
+import { AnalysisResultDisplay } from "./components/AnalysisResultDisplay";
+import { AnalysisHistoryPanel } from "./components/AnalysisHistoryPanel";
+import { UploadPanel } from "./components/UploadPanel";
+import { ImageLightboxModal } from "./components/ImageLightboxModal";
+import { Error404Page } from "./components/Error404Page.tsx";
+import type { AnalysisRecord } from "./components/types";
 
 const API_BASE_URL = "/api/v1";
 
-// Define types for our data
-interface AnalysisRecord {
-  id: number;
-  image_path: string;
-  scenario_json: string;
-  created_at: string;
-}
-
-const AnalysisResultDisplay = ({
-  result,
-  showTitle = true,
-  className = "",
-}: {
-  result: string; // Accept a string
-  showTitle?: boolean;
-  className?: string;
-}) => {
-  if (!result) {
-    return null;
+const resolveImageSrc = (path: string): string => {
+  if (
+    /^(https?:)?\/\//i.test(path) ||
+    path.startsWith("data:") ||
+    path.startsWith("blob:")
+  ) {
+    return toCdnUrl(path);
   }
-
-  let displayContent = result;
-  try {
-    // Try to parse and format it as JSON for pretty printing
-    const jsonObj = JSON.parse(result);
-    displayContent = JSON.stringify(jsonObj, null, 2);
-  } catch (e) {
-    // If it's not a valid JSON string, just display the raw text
-  }
-
-  return (
-    <div className={`card ${className}`}>
-      {showTitle && (
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">
-          Analysis Result
-        </h2>
-      )}
-      <pre className="bg-gray-50/80 p-3 rounded-lg border border-gray-200/80 text-sm overflow-x-auto custom-scrollbar">
-        {displayContent}
-      </pre>
-    </div>
-  );
+  return path.startsWith("/") ? path : `/${path}`;
 };
 
-function App() {
+function LegacyHome() {
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDefaultGalleryOpen, setIsDefaultGalleryOpen] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchRecords();
+  const { uploadImage, isUploading, uploadError, progress, resetUploadState } =
+    useImageUpload();
+
+  const extractErrorMessage = useCallback((error: unknown): string => {
+    if (axios.isAxiosError(error)) {
+      const detail = error.response?.data?.detail;
+      if (typeof detail === "string" && detail.trim()) {
+        return detail;
+      }
+      return error.message || "An unknown error occurred.";
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return "An unknown error occurred.";
   }, []);
+
+  const redirectToErrorPage = useCallback(
+    (errorMessage: string) => {
+      navigate("/404", {
+        replace: true,
+        state: {
+          errorMessage,
+          at: new Date().toISOString(),
+        },
+      });
+    },
+    [navigate],
+  );
+
+  const notifyAndRedirectError = useCallback(
+    (error: unknown, toastId?: string) => {
+      const message = extractErrorMessage(error);
+      toast.error(message, toastId ? { id: toastId } : undefined);
+      redirectToErrorPage(message);
+    },
+    [extractErrorMessage, redirectToErrorPage],
+  );
 
   const handleToggleExpand = (recordId: number) => {
     setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
@@ -79,81 +89,155 @@ function App() {
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
 
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const blob = items[i].getAsFile();
-          if (blob) {
-            if (filePreview) {
-              URL.revokeObjectURL(filePreview);
-            }
-            const newFile = new File([blob], "pasted-image.png", {
-              type: blob.type,
-            });
-            setFile(newFile);
-            setFilePreview(URL.createObjectURL(newFile));
-            setAnalysisResult(null);
-            toast.success("Image pasted!");
-          }
+      for (let i = 0; i < items.length; i += 1) {
+        if (!items[i].type.includes("image")) {
+          continue;
+        }
+
+        const blob = items[i].getAsFile();
+        if (!blob) {
           break;
         }
+
+        if (filePreview?.startsWith("blob:")) {
+          URL.revokeObjectURL(filePreview);
+        }
+
+        const newFile = new File([blob], "pasted-image.png", {
+          type: blob.type,
+        });
+        const localPreview = URL.createObjectURL(newFile);
+
+        setFile(newFile);
+        setFilePreview(localPreview);
+        setSelectedImageUrl(null);
+        setAnalysisResult(null);
+        resetUploadState();
+        toast.success("Image pasted!");
+        break;
       }
     };
 
     window.addEventListener("paste", handlePaste);
-
     return () => {
       window.removeEventListener("paste", handlePaste);
     };
-  }, [filePreview]);
+  }, [filePreview, resetUploadState]);
 
-  // Clean up object URL on component unmount
   useEffect(() => {
     return () => {
-      if (filePreview) {
+      if (filePreview?.startsWith("blob:")) {
         URL.revokeObjectURL(filePreview);
       }
     };
   }, [filePreview]);
 
-  const fetchRecords = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/records`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch records.");
+  const fetchRecords = useCallback(
+    async (options?: { showToast?: boolean }) => {
+      const toastId = options?.showToast
+        ? toast.loading("Loading records...")
+        : undefined;
+      try {
+        const response = await fetch(`${API_BASE_URL}/records`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch records.");
+        }
+        const data: AnalysisRecord[] = await response.json();
+        setRecords(
+          data.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          ),
+        );
+        if (toastId) {
+          toast.success("Loaded records successfully.", { id: toastId });
+        }
+      } catch (err) {
+        notifyAndRedirectError(err, toastId);
       }
-      const data: AnalysisRecord[] = await response.json();
-      setRecords(
-        data.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        ),
-      );
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "An unknown error occurred.";
-      toast.error(message);
-    }
-  };
+    },
+    [notifyAndRedirectError],
+  );
+
+  useEffect(() => {
+    void fetchRecords({ showToast: true });
+  }, [fetchRecords]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (filePreview) {
+    if (filePreview?.startsWith("blob:")) {
       URL.revokeObjectURL(filePreview);
     }
 
     if (event.target.files && event.target.files.length > 0) {
       const newFile = event.target.files[0];
+      const localPreview = URL.createObjectURL(newFile);
+
       setFile(newFile);
-      setFilePreview(URL.createObjectURL(newFile));
+      setFilePreview(localPreview);
+      setSelectedImageUrl(null);
       setAnalysisResult(null);
-    } else {
-      setFile(null);
-      setFilePreview(null);
+      resetUploadState();
+      return;
+    }
+
+    setFile(null);
+    setFilePreview(null);
+    setSelectedImageUrl(null);
+  };
+
+  const handleDirectUploadClick = async () => {
+    if (!file) {
+      toast.error("Please select a file first.");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading image to B2...");
+    try {
+      const result = await uploadImage(file);
+      const cdnUrl = result.cdnUrl || result.fileUrl;
+      setSelectedImageUrl(cdnUrl);
+      setFilePreview(cdnUrl);
+      toast.success("Uploaded to B2 successfully.", { id: toastId });
+    } catch (error) {
+      notifyAndRedirectError(error, toastId);
+    }
+  };
+
+  const analyzeByImageUrl = async (imageUrl: string) => {
+    const toastId = toast.loading("Analyzing screenshot...");
+    setIsLoading(true);
+    setAnalysisResult(null);
+
+    try {
+      const response = await apiClient.post("/api/analyze", {
+        image_url: imageUrl,
+      });
+      const payload = response.data;
+      const result =
+        typeof payload === "string"
+          ? payload
+          : JSON.stringify(payload, null, 2);
+      setAnalysisResult(result);
+      toast.success("Analysis complete!", { id: toastId });
+      void fetchRecords();
+    } catch (err) {
+      notifyAndRedirectError(err, toastId);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleAnalyzeClick = async () => {
+    if (selectedImageUrl) {
+      await analyzeByImageUrl(selectedImageUrl);
+      return;
+    }
+
     if (!file) {
       toast.error("Please select a file to analyze.");
       return;
@@ -173,7 +257,6 @@ function App() {
       });
 
       if (!response.ok) {
-        // For text errors, we need to handle them differently
         const errorText = await response.text();
         throw new Error(errorText || "Analysis failed.");
       }
@@ -181,11 +264,9 @@ function App() {
       const result: string = await response.text();
       setAnalysisResult(result);
       toast.success("Analysis complete!", { id: toastId });
-      fetchRecords(); // Refresh records
+      void fetchRecords();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "An unknown error occurred.";
-      toast.error(message, { id: toastId });
+      notifyAndRedirectError(err, toastId);
     } finally {
       setIsLoading(false);
     }
@@ -215,209 +296,129 @@ function App() {
 
       toast.success("Record deleted.", { id: toastId });
 
-      if (historyImageSrc?.endsWith(recordToDelete.image_path)) {
+      if (historyImageSrc === resolveImageSrc(recordToDelete.image_path)) {
         setHistoryModalOpen(false);
         setHistoryImageSrc(null);
       }
       setRecords(records.filter((r) => r.id !== recordId));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "An unknown error occurred.";
-      toast.error(message, { id: toastId });
+      notifyAndRedirectError(err, toastId);
     }
   };
 
+  const selectedPreviewLabel = useMemo(() => {
+    if (selectedImageUrl) {
+      return "Selected source: B2/Gallery";
+    }
+    if (file) {
+      return `Selected source: Local file (${file.name})`;
+    }
+    return "Selected source: none";
+  }, [selectedImageUrl, file]);
+
   return (
     <>
-      <div className="min-h-screen text-gray-800 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 text-gray-800">
         <Toaster
           position="top-center"
           reverseOrder={false}
           toastOptions={{
             className:
-              "bg-white/80 backdrop-blur-sm border border-gray-200/80 shadow-lg rounded-xl",
+              "rounded-xl border border-gray-200/80 bg-white/80 shadow-lg backdrop-blur-sm",
             style: {
               color: "#333",
             },
           }}
         />
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <header className="text-center mb-12">
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-gradient from-blue-600 to-indigo-500">
+          <header className="mb-12 text-center">
+            <h1 className="text-gradient from-blue-600 to-indigo-500 text-5xl font-extrabold sm:text-6xl">
               UI TestGen
             </h1>
-            <p className="text-gray-500 mt-3 text-lg">
+            <p className="mt-3 text-lg text-gray-500">
               Generate UI test scenarios from screenshots using AI
             </p>
+            <div className="mt-4">
+              <Link
+                className="font-semibold text-blue-600 hover:text-blue-800"
+                to="/admin"
+              >
+                Go to Admin Dashboard
+              </Link>
+            </div>
           </header>
 
-          <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="card">
-                <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
-                  <FiUploadCloud className="mr-3 text-blue-500" />
-                  Analyze New Screenshot
-                </h2>
-                <div className="flex items-center space-x-4">
-                  <label className="file-input-label">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                    <span className="truncate">
-                      {file ? file.name : "Choose a file..."}
-                    </span>
-                  </label>
-                  <button
-                    onClick={handleAnalyzeClick}
-                    disabled={isLoading || !file}
-                    className="btn btn-primary"
-                  >
-                    {isLoading ? (
-                      <FiLoader className="animate-spin -ml-1 mr-2" />
-                    ) : null}
-                    {isLoading ? "Analyzing..." : "Analyze"}
-                  </button>
-                </div>
-                {filePreview && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-600 mb-2">
-                      Selected image preview:
-                    </p>
-                    <img
-                      src={filePreview}
-                      alt="Selected preview"
-                      className="w-full h-auto max-w-xs max-h-48 object-contain rounded-lg border border-gray-200 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                      onClick={() => setIsModalOpen(true)}
-                    />
-                  </div>
-                )}
-              </div>
+          <main className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="space-y-8 lg:col-span-2">
+              <UploadPanel
+                file={file}
+                selectedImageUrl={selectedImageUrl}
+                filePreview={filePreview}
+                isLoading={isLoading}
+                isUploading={isUploading}
+                progress={progress}
+                uploadError={uploadError}
+                selectedPreviewLabel={selectedPreviewLabel}
+                onFileChange={handleFileChange}
+                onAnalyzeClick={() => void handleAnalyzeClick()}
+                onDirectUploadClick={() => void handleDirectUploadClick()}
+                onOpenDefaultGallery={() => setIsDefaultGalleryOpen(true)}
+                onOpenPreviewModal={() => setIsModalOpen(true)}
+              />
 
               {analysisResult && (
                 <AnalysisResultDisplay result={analysisResult} />
               )}
             </div>
 
-            {/* Right Column (History) */}
-            <div className="card lg:col-span-3 row-span-2">
-              <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center">
-                <FiServer className="mr-3 text-blue-500" />
-                Analysis History
-              </h2>
-              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
-                {records.length === 0 && (
-                  <div className="text-center text-gray-500 py-10">
-                    <FiImage className="mx-auto text-4xl mb-2" />
-                    <p>No analysis records found.</p>
-                    <p className="text-sm">
-                      Upload a screenshot to get started.
-                    </p>
-                  </div>
-                )}
-                {records.map((record) => (
-                  <div
-                    key={record.id}
-                    className="group flex items-start space-x-4 p-4 rounded-xl bg-gray-50/80 border border-transparent hover:border-gray-200 transition-all"
-                  >
-                    <div
-                      className="w-24 h-16 flex-shrink-0 bg-gray-200 rounded-md cursor-pointer"
-                      onClick={() =>
-                        handleHistoryImageClick(`/${record.image_path}`)
-                      }
-                    >
-                      <img
-                        src={`/${record.image_path}`}
-                        alt={`Record ${record.id}`}
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <p className="font-semibold text-gray-700">
-                          Record ID: {record.id}
-                        </p>
-                        <button
-                          onClick={() => handleToggleExpand(record.id)}
-                          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center"
-                        >
-                          {expandedRecordId === record.id
-                            ? "Collapse"
-                            : "Expand"}
-                          {expandedRecordId === record.id ? (
-                            <FiChevronDown className="ml-1" />
-                          ) : (
-                            <FiChevronRight className="ml-1" />
-                          )}
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        {new Date(record.created_at).toLocaleString()}
-                      </p>
-                      {expandedRecordId === record.id && (
-                        <AnalysisResultDisplay
-                          result={record.scenario_json}
-                          showTitle={false}
-                          className="mt-2"
-                        />
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteRecord(record.id)}
-                      className="text-gray-400 hover:text-red-500 hover:bg-red-100/50 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                      aria-label="Delete record"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <AnalysisHistoryPanel
+              records={records}
+              expandedRecordId={expandedRecordId}
+              onToggleExpand={handleToggleExpand}
+              onHistoryImageClick={handleHistoryImageClick}
+              onDeleteRecord={(recordId) => void handleDeleteRecord(recordId)}
+              resolveImageSrc={resolveImageSrc}
+            />
           </main>
         </div>
       </div>
-      {isModalOpen && filePreview && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
-            onClick={() => setIsModalOpen(false)}
-          >
-            <FiX />
-          </button>
-          <img
-            src={filePreview}
-            alt="Selected screenshot"
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking on image
-          />
-        </div>
-      )}
-      {historyModalOpen && historyImageSrc && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
-          onClick={() => setHistoryModalOpen(false)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
-            onClick={() => setHistoryModalOpen(false)}
-          >
-            <FiX />
-          </button>
-          <img
-            src={historyImageSrc}
-            alt="History screenshot"
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking on image
-          />
-        </div>
-      )}
+
+      <ImageLightboxModal
+        isOpen={isModalOpen}
+        imageSrc={filePreview}
+        alt="Selected screenshot"
+        onClose={() => setIsModalOpen(false)}
+      />
+      <ImageLightboxModal
+        isOpen={historyModalOpen}
+        imageSrc={historyImageSrc}
+        alt="History screenshot"
+        onClose={() => setHistoryModalOpen(false)}
+      />
+
+      <GalleryModal
+        isOpen={isDefaultGalleryOpen}
+        onClose={() => setIsDefaultGalleryOpen(false)}
+        selectedImage={selectedImageUrl}
+        onSelectImage={(url) => {
+          setSelectedImageUrl(toCdnUrl(url));
+          setFile(null);
+          setFilePreview(toCdnUrl(url));
+        }}
+        analyze={analyzeByImageUrl}
+      />
     </>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LegacyHome />} />
+      <Route path="/admin" element={<AdminCRUD />} />
+      <Route path="/404" element={<Error404Page />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
+    </Routes>
   );
 }
 
