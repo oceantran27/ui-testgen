@@ -50,6 +50,11 @@ os.makedirs("uploads", exist_ok=True)
 # Mount the 'uploads' directory to serve static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
 # Set all CORS enabled origins
 if True: # Always enable CORS for development
     app.add_middleware(

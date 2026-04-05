@@ -1,6 +1,7 @@
-import json
 import logging
-from urllib.parse import quote
+from datetime import datetime, timezone
+from typing import Any
+from urllib.parse import quote, unquote, urlparse
 
 import boto3
 from botocore.config import Config
@@ -57,29 +58,39 @@ class B2Service:
         raise ConnectionError("Could not build B2 download URL.")
 
     def get_file_url(self, file_name: str) -> str:
-        """
-        Returns a direct URL to the file.
-        Note: Since the bucket is configured as PRIVATE, accessing this URL from a browser will return HTTP 403.
-        Use generate_presigned_get_url() if you need a link to display in the UI.
-        """
+        """Return the raw object URL for a key."""
         return self._build_raw_url(file_name)
 
-    def generate_presigned_get_url(self, file_name: str, expires_in: int = 3600) -> str:
-        """
-        Generate a presigned URL for the frontend to view/download the image.
-        The bucket is configured as private to avoid unnecessary egress charges.
-        """
-        if not self.is_ready():
-            raise ConnectionError("B2 S3 client is not configured.")
+    @staticmethod
+    def extract_key_from_url(file_url: str) -> str | None:
+        if not file_url:
+            return None
         try:
-            return self.s3_client.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": settings.B2_BUCKET_NAME, "Key": file_name},
-                ExpiresIn=expires_in
-            )
-        except Exception as e:
-            logger.error(f"Failed to generate GET presigned URL: {e}")
-            raise
+            parsed = urlparse(file_url)
+            path = parsed.path.strip("/")
+            if not path:
+                return None
+
+            bucket_name = (settings.B2_BUCKET_NAME or "").strip("/")
+            candidates = [path]
+
+            if bucket_name and path.startswith(f"{bucket_name}/"):
+                candidates.insert(0, path[len(bucket_name) + 1 :])
+
+            # Some URL shapes include vendor prefixes before bucket/key.
+            if bucket_name and f"/{bucket_name}/" in f"/{path}":
+                suffix = path.split(f"{bucket_name}/", 1)[-1]
+                if suffix:
+                    candidates.insert(0, suffix)
+
+            for candidate in candidates:
+                normalized = unquote(candidate).strip("/")
+                if normalized:
+                    return normalized
+
+            return None
+        except Exception:
+            return None
 
     def upload_file(self, local_file_path: str, file_name: str, content_type: str = None) -> str:
         """Upload a file to B2 using boto3 S3 standard."""
@@ -136,36 +147,96 @@ class B2Service:
             logger.error(f"Failed to generate B2 presigned PUT URL: {e}")
             raise TimeoutError("Timed out while generating B2 presigned URL") from e
 
-    def get_json_file(self, file_name: str) -> list | dict | None:
+    def generate_presigned_get_url(self, file_name: str) -> str:
+        """Generate a presigned GET URL for private object downloads."""
+        if not file_name:
+            raise ValueError("file_name is required")
         if not self.s3_client:
-            logger.warning("B2 S3 client not configured, cannot read from B2.")
-            return None
-        try:
-            response = self.s3_client.get_object(Bucket=settings.B2_BUCKET_NAME, Key=file_name)
-            content = response['Body'].read().decode('utf-8')
-            return json.loads(content)
-        except ClientError as e:
-            if e.response.get('Error', {}).get('Code') == 'NoSuchKey':
-                return None
-            logger.error(f"Failed to read JSON from B2: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Failed to read JSON from B2: {e}")
-            return None
+            raise ConnectionError("B2 S3 client is not configured.")
 
-    def put_json_file(self, file_name: str, data: list | dict) -> bool:
-        if not self.s3_client:
-            logger.warning("B2 S3 client not configured, cannot save to B2.")
+        try:
+            return self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": settings.B2_BUCKET_NAME, "Key": file_name},
+                ExpiresIn=settings.B2_PRESIGNED_GET_EXPIRES_SECONDS,
+                HttpMethod="GET",
+            )
+        except (ConnectTimeoutError, ReadTimeoutError, BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to generate B2 presigned GET URL: {e}")
+            raise TimeoutError("Timed out while generating B2 presigned download URL") from e
+
+    def list_keys(self, prefix: str, older_than: datetime | None = None) -> list[str]:
+        if not self.is_ready():
+            return []
+
+        keys: list[str] = []
+        token: str | None = None
+        safe_prefix = (prefix or "").strip().strip("/")
+        if safe_prefix:
+            safe_prefix = f"{safe_prefix}/"
+
+        while True:
+            params: dict[str, Any] = {
+                "Bucket": settings.B2_BUCKET_NAME,
+                "Prefix": safe_prefix,
+                "MaxKeys": 1000,
+            }
+            if token:
+                params["ContinuationToken"] = token
+
+            response = self.s3_client.list_objects_v2(**params)
+            for obj in response.get("Contents", []):
+                key = obj.get("Key")
+                if not key:
+                    continue
+
+                if older_than is not None:
+                    last_modified = obj.get("LastModified")
+                    if not isinstance(last_modified, datetime):
+                        continue
+                    cutoff = older_than
+                    if cutoff.tzinfo is None:
+                        cutoff = cutoff.replace(tzinfo=timezone.utc)
+                    if last_modified >= cutoff:
+                        continue
+
+                keys.append(key)
+
+            if not response.get("IsTruncated"):
+                break
+            token = response.get("NextContinuationToken")
+            if not token:
+                break
+
+        return keys
+
+    def delete_file(self, key: str) -> bool:
+        if not self.is_ready() or not key:
             return False
         try:
-            content = json.dumps(data, ensure_ascii=False)
-            self.s3_client.put_object(
-                Bucket=settings.B2_BUCKET_NAME,
-                Key=file_name,
-                Body=content.encode('utf-8'),
-                ContentType="application/json"
-            )
+            self.s3_client.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=key)
             return True
         except Exception as e:
-            logger.error(f"Failed to write JSON to B2: {e}")
+            logger.error(f"Failed to delete file from B2 ({key}): {e}")
             return False
+
+    def delete_files(self, keys: list[str]) -> int:
+        if not self.is_ready() or not keys:
+            return 0
+
+        deleted = 0
+        chunk_size = 1000
+        for i in range(0, len(keys), chunk_size):
+            chunk = [k for k in keys[i:i + chunk_size] if k]
+            if not chunk:
+                continue
+            try:
+                response = self.s3_client.delete_objects(
+                    Bucket=settings.B2_BUCKET_NAME,
+                    Delete={"Objects": [{"Key": key} for key in chunk], "Quiet": True},
+                )
+                deleted += len(response.get("Deleted", []))
+            except Exception as e:
+                logger.error(f"Failed to batch delete files from B2: {e}")
+        return deleted
+

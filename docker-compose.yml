@@ -3,10 +3,22 @@ services:
   backend:
     build:
       context: ./be
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     volumes:
       - ./be/uploads:/app/uploads
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     container_name: ui-testgen-be
     restart: unless-stopped
 
@@ -16,6 +28,7 @@ services:
     ports:
       - "3030:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     container_name: ui-testgen-fe
     restart: unless-stopped
