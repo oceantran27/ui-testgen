@@ -3,7 +3,6 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { apiClient } from "./api/client";
-import { useImageUpload } from "./hooks/useImageUpload";
 import { toCdnUrl } from "./utils/cdn";
 import { GalleryModal } from "./components/GalleryModal";
 import { AdminCRUD } from "./components/AdminCRUD";
@@ -13,8 +12,6 @@ import { UploadPanel } from "./components/UploadPanel";
 import { ImageLightboxModal } from "./components/ImageLightboxModal";
 import { Error404Page } from "./components/Error404Page.tsx";
 import type { AnalysisRecord } from "./components/types";
-
-const API_BASE_URL = "/api/v1";
 
 const resolveImageSrc = (path: string): string => {
   if (
@@ -41,8 +38,9 @@ function LegacyHome() {
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
-  const { uploadImage, isUploading, uploadError, progress, resetUploadState } =
-    useImageUpload();
+  const resetUploadState = useCallback(() => {
+    // Keep compatibility with existing handlers that clear upload-related UX state.
+  }, []);
 
   const extractErrorMessage = useCallback((error: unknown): string => {
     if (axios.isAxiosError(error)) {
@@ -142,11 +140,8 @@ function LegacyHome() {
         ? toast.loading("Loading records...")
         : undefined;
       try {
-        const response = await fetch(`${API_BASE_URL}/records`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch records.");
-        }
-        const data: AnalysisRecord[] = await response.json();
+        const response = await apiClient.get<AnalysisRecord[]>("records");
+        const data = response.data;
         setRecords(
           data.sort(
             (a, b) =>
@@ -190,32 +185,15 @@ function LegacyHome() {
     setSelectedImageUrl(null);
   };
 
-  const handleDirectUploadClick = async () => {
-    if (!file) {
-      toast.error("Please select a file first.");
-      return;
-    }
-
-    const toastId = toast.loading("Uploading image to B2...");
-    try {
-      const result = await uploadImage(file);
-      const cdnUrl = result.cdnUrl || result.fileUrl;
-      setSelectedImageUrl(cdnUrl);
-      setFilePreview(cdnUrl);
-      toast.success("Uploaded to B2 successfully.", { id: toastId });
-    } catch (error) {
-      notifyAndRedirectError(error, toastId);
-    }
-  };
-
-  const analyzeByImageUrl = async (imageUrl: string) => {
+  const analyzeByImageUrl = async (imageUrl: string, fileKey?: string) => {
     const toastId = toast.loading("Analyzing screenshot...");
     setIsLoading(true);
     setAnalysisResult(null);
 
     try {
-      const response = await apiClient.post("/api/analyze", {
+      const response = await apiClient.post("api/analyze", {
         image_url: imageUrl,
+        file_key: fileKey,
       });
       const payload = response.data;
       const result =
@@ -251,17 +229,12 @@ function LegacyHome() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Analysis failed.");
-      }
-
-      const result: string = await response.text();
+      const response = await apiClient.post<string>("analyze", formData);
+      const payload = response.data;
+      const result =
+        typeof payload === "string"
+          ? payload
+          : JSON.stringify(payload, null, 2);
       setAnalysisResult(result);
       toast.success("Analysis complete!", { id: toastId });
       void fetchRecords();
@@ -286,13 +259,7 @@ function LegacyHome() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/records/${recordId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete record.");
-      }
+      await apiClient.delete(`records/${recordId}`);
 
       toast.success("Record deleted.", { id: toastId });
 
@@ -319,17 +286,6 @@ function LegacyHome() {
   return (
     <>
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 text-gray-800">
-        <Toaster
-          position="top-center"
-          reverseOrder={false}
-          toastOptions={{
-            className:
-              "rounded-xl border border-gray-200/80 bg-white/80 shadow-lg backdrop-blur-sm",
-            style: {
-              color: "#333",
-            },
-          }}
-        />
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
           <header className="mb-12 text-center">
             <h1 className="text-gradient from-blue-600 to-indigo-500 text-5xl font-extrabold sm:text-6xl">
@@ -355,13 +311,9 @@ function LegacyHome() {
                 selectedImageUrl={selectedImageUrl}
                 filePreview={filePreview}
                 isLoading={isLoading}
-                isUploading={isUploading}
-                progress={progress}
-                uploadError={uploadError}
                 selectedPreviewLabel={selectedPreviewLabel}
                 onFileChange={handleFileChange}
                 onAnalyzeClick={() => void handleAnalyzeClick()}
-                onDirectUploadClick={() => void handleDirectUploadClick()}
                 onOpenDefaultGallery={() => setIsDefaultGalleryOpen(true)}
                 onOpenPreviewModal={() => setIsModalOpen(true)}
               />
@@ -413,12 +365,25 @@ function LegacyHome() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LegacyHome />} />
-      <Route path="/admin" element={<AdminCRUD />} />
-      <Route path="/404" element={<Error404Page />} />
-      <Route path="*" element={<Navigate to="/404" replace />} />
-    </Routes>
+    <>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          className:
+            "rounded-xl border border-gray-200/80 bg-white/80 shadow-lg backdrop-blur-sm",
+          style: {
+            color: "#333",
+          },
+        }}
+      />
+      <Routes>
+        <Route path="/" element={<LegacyHome />} />
+        <Route path="/admin" element={<AdminCRUD />} />
+        <Route path="/404" element={<Error404Page />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+    </>
   );
 }
 

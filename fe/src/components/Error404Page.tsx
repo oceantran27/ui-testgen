@@ -25,7 +25,7 @@ export function Error404Page() {
     const fetchLogs = async () => {
       try {
         const response = await apiClient.get<BackendLogResponse>(
-          "/api/v1/logs/backend",
+          "logs/backend",
           {
             params: { lines: 200 },
           },

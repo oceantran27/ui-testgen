@@ -3,21 +3,6 @@ import axios from "axios";
 import { apiClient } from "../api/client";
 import { toCdnUrl } from "../utils/cdn";
 
-interface PresignedResponse {
-  upload_url?: string;
-  uploadUrl?: string;
-  file_url?: string;
-  fileUrl?: string;
-  file_key?: string;
-  fileKey?: string;
-  session_id?: string;
-  sessionId?: string;
-  notify_url?: string;
-  notifyUrl?: string;
-  headers?: Record<string, string>;
-  method?: string;
-}
-
 interface UploadResult {
   fileUrl: string;
   cdnUrl: string;
@@ -25,8 +10,7 @@ interface UploadResult {
   sessionId?: string;
 }
 
-const PRESIGNED_URL_ENDPOINT = "/api/v1/presigned-url";
-const SESSION_SAVE_ENDPOINT = "/api/v1/upload-session";
+type UploadTarget = "user" | "default";
 
 // Generate UUID v4
 function generateSessionId(): string {
@@ -43,7 +27,10 @@ export const useImageUpload = () => {
     setProgress(0);
   };
 
-  const uploadImage = async (file: File): Promise<UploadResult> => {
+  const uploadImage = async (
+    file: File,
+    target: UploadTarget = "user",
+  ): Promise<UploadResult> => {
     setIsUploading(true);
     setUploadError(null);
     setProgress(0);
@@ -53,25 +40,27 @@ export const useImageUpload = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await axios.post<{ file_url: string; file_key: string }>(
-        "/api/v1/upload-to-b2",
-        formData,
-        {
-          // Don't set Content-Type header manually when using FormData
-          // axios will automatically set "multipart/form-data; boundary=..." with correct boundary
-          headers: {},
-          onUploadProgress: (evt) => {
-            if (evt.total) {
-              setProgress(Math.round((evt.loaded / evt.total) * 100));
-            }
-          },
+      const response = await apiClient.post<{
+        file_url: string;
+        file_key: string;
+      }>("upload-to-b2", formData, {
+        params: {
+          input_type: target,
         },
-      );
+        // Don't set Content-Type header manually when using FormData
+        // axios will automatically set "multipart/form-data; boundary=..." with correct boundary
+        headers: {},
+        onUploadProgress: (evt) => {
+          if (evt.total) {
+            setProgress(Math.round((evt.loaded / evt.total) * 100));
+          }
+        },
+      });
 
       const fileUrl = response.data.file_url;
       const fileKey = response.data.file_key;
       const sessionId = generateSessionId();
-      const notifyEndpoint = "/api/v1/upload-session";
+      const notifyEndpoint = "upload-session";
 
       // Notify session
       await apiClient.post(notifyEndpoint, {

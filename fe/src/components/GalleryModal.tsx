@@ -9,11 +9,17 @@ interface GalleryModalProps {
   onClose: () => void;
   selectedImage: string | null;
   onSelectImage: (url: string) => void;
-  analyze: (url: string) => Promise<void>;
+  analyze: (url: string, fileKey?: string) => Promise<void>;
 }
 
 const extractImageUrl = (item: DefaultInput): string => {
   return item.cdn_url ?? item.image_url ?? item.imageUrl ?? "";
+};
+
+const DEFAULTS_ENDPOINT = "api/defaults";
+
+const getImageLabel = (item: DefaultInput): string => {
+  return item.file_key ?? item.b2_key ?? `Default input ${item.id}`;
 };
 
 export function GalleryModal({
@@ -38,7 +44,7 @@ export function GalleryModal({
       try {
         const response = await apiClient.get<
           DefaultInput[] | { items: DefaultInput[] }
-        >("/api/defaults");
+        >(DEFAULTS_ENDPOINT);
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.items;
@@ -69,9 +75,9 @@ export function GalleryModal({
     [items],
   );
 
-  const handleSelect = async (url: string) => {
+  const handleSelect = async (url: string, fileKey?: string) => {
     onSelectImage(url);
-    await analyze(url);
+    await analyze(url, fileKey);
     onClose();
   };
 
@@ -110,7 +116,9 @@ export function GalleryModal({
               <button
                 key={item.id}
                 type="button"
-                onClick={() => void handleSelect(imageUrl)}
+                onClick={() =>
+                  void handleSelect(imageUrl, item.file_key ?? item.b2_key)
+                }
                 className={`overflow-hidden rounded-xl border text-left transition ${
                   selectedImage === imageUrl
                     ? "border-amber-400 ring-2 ring-amber-200"
@@ -119,12 +127,12 @@ export function GalleryModal({
               >
                 <img
                   src={imageUrl}
-                  alt={item.title}
+                  alt={getImageLabel(item)}
                   className="h-36 w-full object-cover"
                 />
                 <div className="bg-slate-50 px-3 py-2">
                   <p className="truncate text-sm font-semibold text-slate-700">
-                    {item.title}
+                    {getImageLabel(item)}
                   </p>
                 </div>
               </button>

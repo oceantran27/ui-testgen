@@ -6,13 +6,9 @@ interface UploadPanelProps {
   selectedImageUrl: string | null;
   filePreview: string | null;
   isLoading: boolean;
-  isUploading: boolean;
-  progress: number;
-  uploadError: string | null;
   selectedPreviewLabel: string;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onAnalyzeClick: () => void;
-  onDirectUploadClick: () => void;
   onOpenDefaultGallery: () => void;
   onOpenPreviewModal: () => void;
 }
@@ -22,13 +18,9 @@ export function UploadPanel({
   selectedImageUrl,
   filePreview,
   isLoading,
-  isUploading,
-  progress,
-  uploadError,
   selectedPreviewLabel,
   onFileChange,
   onAnalyzeClick,
-  onDirectUploadClick,
   onOpenDefaultGallery,
   onOpenPreviewModal,
 }: UploadPanelProps) {
@@ -65,13 +57,6 @@ export function UploadPanel({
 
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={onDirectUploadClick}
-            disabled={!file || isUploading}
-            className="btn bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:bg-gray-400"
-          >
-            {isUploading ? "Uploading..." : "Upload to B2"}
-          </button>
-          <button
             onClick={onOpenDefaultGallery}
             className="btn bg-slate-700 px-4 py-2 text-sm text-white hover:bg-slate-800"
           >
@@ -82,12 +67,6 @@ export function UploadPanel({
         <p className="text-xs font-medium text-gray-500">
           {selectedPreviewLabel}
         </p>
-        {isUploading && (
-          <p className="text-sm text-blue-600">
-            Direct upload progress: {progress}%
-          </p>
-        )}
-        {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
       </div>
 
       {filePreview && (
