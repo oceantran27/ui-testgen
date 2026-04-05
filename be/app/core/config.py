@@ -25,19 +25,19 @@ class Settings(BaseSettings):
 
     # B2 S3-compatible presigned upload settings
     B2_PRESIGNED_EXPIRES_SECONDS: int = 3600
+    B2_PRESIGNED_GET_EXPIRES_SECONDS: int = 3600
 
     # Supabase
     SUPABASE_URL: Optional[str] = None
     SUPABASE_KEY: Optional[str] = None
+    SUPABASE_ANALYSIS_TABLE: str = "user_goals_history"
 
-    # Redis / Upstash
-    REDIS_URL: Optional[str] = None
-    DEFAULT_INPUTS_CACHE_KEY: str = "default_inputs:all"
-    DEFAULT_INPUTS_CACHE_TTL_SECONDS: int = 3600
-    USER_SESSION_TTL_SECONDS: int = 3600
+    # Data retention
+    DATA_RETENTION_DAYS: int = 15
 
-    # Admin auth
-    ADMIN_API_KEY: Optional[str] = None
+    # B2 object prefixes
+    B2_DEFAULT_INPUTS_PREFIX: str = "default-inputs"
+    B2_USER_INPUTS_PREFIX: str = "user-inputs"
 
     @model_validator(mode='after')
     def normalize_storage_and_b2_credentials(self) -> "Settings":
@@ -48,6 +48,14 @@ class Settings(BaseSettings):
         if storage_type not in {"local", "b2", "auto"}:
             storage_type = "local"
         self.STORAGE_TYPE = storage_type
+
+        self.SUPABASE_ANALYSIS_TABLE = (self.SUPABASE_ANALYSIS_TABLE or "user_goals_history").strip()
+
+        self.B2_DEFAULT_INPUTS_PREFIX = (self.B2_DEFAULT_INPUTS_PREFIX or "default-inputs").strip().strip("/")
+        self.B2_USER_INPUTS_PREFIX = (self.B2_USER_INPUTS_PREFIX or "user-inputs").strip().strip("/")
+
+        if self.DATA_RETENTION_DAYS <= 0:
+            self.DATA_RETENTION_DAYS = 15
 
         return self
     
