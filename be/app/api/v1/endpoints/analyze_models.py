@@ -7,6 +7,7 @@ class AnalyzeByImageRequest(BaseModel):
     image_url: str
     file_key: Optional[str] = None
     model: Optional[str] = "gemini-2.5-flash"
+    include_evaluation: bool = True
 
 
 class UploadSessionPayload(BaseModel):
