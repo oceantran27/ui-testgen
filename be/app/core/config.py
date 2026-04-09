@@ -14,6 +14,14 @@ class Settings(BaseSettings):
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
 
+    # Module 1 - Vision Extractor
+    VISION_EXTRACTOR_PROMPT_PATH: str = "app/prompts/vision_extractor_system_prompt.txt"
+
+    # Module 2 - Evaluator & Rationalizer
+    EVALUATOR_RATIONALIZER_PROMPT_PATH: str = "app/prompts/evaluator_rationalizer_system_prompt.txt"
+    EVALUATOR_RATIONALIZER_PROMPT_VERSION: str = "v1"
+
+
     # Backblaze B2
     B2_KEY_ID: Optional[str] = None
     B2_KEY_NAME: Optional[str] = None
@@ -56,6 +64,21 @@ class Settings(BaseSettings):
 
         if self.DATA_RETENTION_DAYS <= 0:
             self.DATA_RETENTION_DAYS = 15
+
+        if not self.VISION_EXTRACTOR_PROMPT_PATH:
+            self.VISION_EXTRACTOR_PROMPT_PATH = "app/prompts/vision_extractor_system_prompt.txt"
+
+        if not self.EVALUATOR_RATIONALIZER_PROMPT_PATH:
+            self.EVALUATOR_RATIONALIZER_PROMPT_PATH = "app/prompts/evaluator_rationalizer_system_prompt.txt"
+
+        if not self.EVALUATOR_RATIONALIZER_PROMPT_VERSION:
+            self.EVALUATOR_RATIONALIZER_PROMPT_VERSION = "v1"
+
+        self.EVALUATOR_WEIGHT_BUSINESS_CRITICALITY = max(0.0, self.EVALUATOR_WEIGHT_BUSINESS_CRITICALITY)
+        self.EVALUATOR_WEIGHT_USER_IMPACT = max(0.0, self.EVALUATOR_WEIGHT_USER_IMPACT)
+        self.EVALUATOR_WEIGHT_FLOW_CLARITY = max(0.0, self.EVALUATOR_WEIGHT_FLOW_CLARITY)
+        self.EVALUATOR_WEIGHT_ACTIONABILITY = max(0.0, self.EVALUATOR_WEIGHT_ACTIONABILITY)
+        self.EVALUATOR_WEIGHT_EVIDENCE_STRENGTH = max(0.0, self.EVALUATOR_WEIGHT_EVIDENCE_STRENGTH)
 
         return self
     

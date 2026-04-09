@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import os
 import re
@@ -12,23 +13,13 @@ from fastapi import HTTPException, UploadFile
 
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
+from app.modules.analysis_orchestrator.service import analysis_orchestrator
 from app.services.b2_service import B2Service
-from app.services.gemini_service import GeminiService
-from app.services.openai_service import OpenAIService
 from app.services.supabase_service import SupabaseService
 
 from .json_utils import extract_and_minify_json
 
 logger = logging.getLogger(__name__)
-
-openai_service = OpenAIService()
-
-try:
-    gemini_service = GeminiService()
-except Exception as exc:
-    # Keep API process alive and report configuration issues when Gemini is requested.
-    logger.warning("Gemini service unavailable during startup: %s", exc)
-    gemini_service = None
 
 b2_service = B2Service()
 supabase_service = SupabaseService()
@@ -100,23 +91,20 @@ def download_remote_image(image_url: str) -> str:
 
 
 def resolve_model_result(file_path: str, model: str | None) -> str:
-    selected_model = (model or "gemini-2.5-flash").strip().lower()
+    try:
+        result = analysis_orchestrator.analyze_image(
+            image_path=file_path,
+            model_name=model,
+            include_evaluation=False,
+        )
+    except Exception as exc:
+        raise AIProcessingError(f"AI Processing failed: {exc}")
 
-    if selected_model == "openai":
-        return openai_service.analyze_image(file_path)
-    if selected_model in {"gemini", "gemini-2.5-flash"}:
-        if gemini_service is None:
-            raise AIProcessingError("Gemini service is not configured. Please set GEMINI_API_KEY.")
-        return gemini_service.analyze_image(file_path)
-    if selected_model == "gemini-1.5-flash":
-        if not settings.GEMINI_API_KEY:
-            raise AIProcessingError("Gemini service is not configured. Please set GEMINI_API_KEY.")
-        temp_service = GeminiService(model_name="gemini-1.5-flash")
-        return temp_service.analyze_image(file_path)
-
-    if gemini_service is None:
-        raise AIProcessingError("Gemini service is not configured. Please set GEMINI_API_KEY.")
-    return gemini_service.analyze_image(file_path)
+    return json.dumps(
+        result.model_dump(mode="json", exclude_none=True),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
 
 def record_to_legacy_response(record: dict) -> dict:

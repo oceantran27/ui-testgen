@@ -1,15 +1,17 @@
 import os
 import uuid
 import logging
+import json
 from collections import deque
 from typing import List, Optional
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Query
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse
 
 from app.schemas.analysis import AnalysisRecordInDB
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
+from app.modules.analysis_orchestrator.service import analysis_orchestrator
 
 from .analyze_models import (
     AnalyzeByImageRequest,
@@ -25,13 +27,11 @@ from .analyze_utils import (
     decode_default_input_id,
     download_remote_image,
     encode_default_input_id,
-    extract_and_minify_json,
     get_b2_upload_prefix,
     is_user_upload_key,
     record_to_legacy_response,
     resolve_default_input_image_url,
     resolve_image_url_for_analysis,
-    resolve_model_result,
     safe_file_extension,
     safe_remove_local_file,
     save_analysis_record_task,
@@ -185,8 +185,13 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
     file_path = download_remote_image(analysis_image_url)
 
     try:
-        scenario_result = resolve_model_result(file_path, payload.model)
+        analysis_result = analysis_orchestrator.analyze_image(
+            image_path=file_path,
+            model_name=payload.model,
+            include_evaluation=payload.include_evaluation,
+        )
     except AIProcessingError as e:
+        logger.error("AI processing failed during URL analysis: %s", e)
         safe_remove_local_file(file_path)
         raise HTTPException(status_code=502, detail=str(e))
     except Exception as e:
@@ -194,26 +199,32 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         logger.error(f"Internal Server Error during URL analysis: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    cleaned_scenario_json = extract_and_minify_json(scenario_result)
-    if cleaned_scenario_json and supabase_service.is_ready():
+    serialized_result = json.dumps(
+        analysis_result.model_dump(mode="json", exclude_none=True),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+    if serialized_result and supabase_service.is_ready():
         try:
             supabase_service.create_analysis_record(
                 image_url=payload.image_url,
-                user_goal=cleaned_scenario_json,
+                user_goal=serialized_result,
             )
         except Exception as e:
             logger.error(f"Could not save URL analysis record to Supabase: {e}")
 
     safe_remove_local_file(file_path)
 
-    return PlainTextResponse(content=scenario_result)
+    return JSONResponse(content=analysis_result.model_dump(mode="json", exclude_none=True))
 
 
 @router.post("/analyze")
 async def analyze_screenshot(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    model: Optional[str] = Query("gemini-2.5-flash", description="Model to use: 'openai', 'gemini', 'gemini-2.5-flash', 'gemini-1.5-flash'")
+    model: Optional[str] = Query("gemini-2.5-flash", description="Model to use: 'openai', 'gemini', 'gemini-2.5-flash', 'gemini-1.5-flash'"),
+    include_evaluation: bool = Query(True, description="Set false to skip Module 2 evaluation and rationale."),
 ):
     cleanup_expired_data_if_needed()
 
@@ -222,9 +233,14 @@ async def analyze_screenshot(
 
     # 2. Call AI Service with the local file path
     try:
-        scenario_result = resolve_model_result(file_path, model)
+        analysis_result = analysis_orchestrator.analyze_image(
+            image_path=file_path,
+            model_name=model,
+            include_evaluation=include_evaluation,
+        )
 
     except AIProcessingError as e:
+        logger.error("AI processing failed during file analysis: %s", e)
         # Clean up file if AI fails
         safe_remove_local_file(file_path)
         raise HTTPException(status_code=502, detail=str(e))
@@ -233,11 +249,17 @@ async def analyze_screenshot(
         logger.error(f"Internal Server Error during analysis: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    # 3. Trigger Background Task for Persistence
-    background_tasks.add_task(save_analysis_record_task, file_path, scenario_result)
+    serialized_result = json.dumps(
+        analysis_result.model_dump(mode="json", exclude_none=True),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
-    # 4. Return the raw result as plain text
-    return PlainTextResponse(content=scenario_result)
+    # 3. Trigger Background Task for Persistence
+    background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
+
+    # 4. Return structured JSON response
+    return JSONResponse(content=analysis_result.model_dump(mode="json", exclude_none=True))
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
