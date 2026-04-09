@@ -4,6 +4,127 @@ interface AnalysisResultDisplayProps {
   className?: string;
 }
 
+interface ScenarioDisplayItem {
+  scenarioId: string;
+  userGoal: string;
+  rationale: string;
+  coreAlignment: number | null;
+  frequency: number | null;
+  businessRisk: number | null;
+  finalScore: number | null;
+  rankPosition: number | null;
+}
+
+const asRecord = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+};
+
+const toNumberOrNull = (value: unknown): number | null => {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+};
+
+const readScores = (
+  value: Record<string, unknown> | null,
+): {
+  coreAlignment: number | null;
+  frequency: number | null;
+  businessRisk: number | null;
+} => {
+  if (!value) {
+    return {
+      coreAlignment: null,
+      frequency: null,
+      businessRisk: null,
+    };
+  }
+
+  return {
+    coreAlignment: toNumberOrNull(value.core_alignment),
+    frequency: toNumberOrNull(value.frequency),
+    businessRisk: toNumberOrNull(value.business_risk),
+  };
+};
+
+const normalizeScenarioItem = (
+  raw: unknown,
+  index: number,
+): ScenarioDisplayItem | null => {
+  const record = asRecord(raw);
+  if (!record) {
+    return null;
+  }
+
+  const evaluation = asRecord(record.evaluation);
+  const rootScores = asRecord(record.scores);
+  const evaluationScores = evaluation ? asRecord(evaluation.scores) : null;
+  const scores = readScores(rootScores ?? evaluationScores);
+
+  const scenarioIdRaw = record.scenario_id ?? record.id;
+  const userGoalRaw = record.user_goal;
+  const rationaleRaw = record.rationale ?? evaluation?.rationale;
+
+  const scenarioId =
+    typeof scenarioIdRaw === "string" && scenarioIdRaw.trim()
+      ? scenarioIdRaw
+      : `SCENARIO_${index + 1}`;
+  const userGoal =
+    typeof userGoalRaw === "string" && userGoalRaw.trim() ? userGoalRaw : "N/A";
+  const rationale =
+    typeof rationaleRaw === "string" && rationaleRaw.trim()
+      ? rationaleRaw
+      : "No rationale provided.";
+
+  return {
+    scenarioId,
+    userGoal,
+    rationale,
+    coreAlignment: scores.coreAlignment,
+    frequency: scores.frequency,
+    businessRisk: scores.businessRisk,
+    finalScore: toNumberOrNull(record.final_score),
+    rankPosition: toNumberOrNull(record.rank_position),
+  };
+};
+
+const extractScenarioItems = (payload: unknown): ScenarioDisplayItem[] => {
+  if (Array.isArray(payload)) {
+    return payload
+      .map((item, index) => normalizeScenarioItem(item, index))
+      .filter((item): item is ScenarioDisplayItem => Boolean(item));
+  }
+
+  const root = asRecord(payload);
+  if (!root) {
+    return [];
+  }
+
+  const rankedScenarios = root.ranked_scenarios;
+  if (Array.isArray(rankedScenarios)) {
+    return rankedScenarios
+      .map((item, index) => normalizeScenarioItem(item, index))
+      .filter((item): item is ScenarioDisplayItem => Boolean(item));
+  }
+
+  const rootScenarios = root.scenarios;
+  if (Array.isArray(rootScenarios)) {
+    return rootScenarios
+      .map((item, index) => normalizeScenarioItem(item, index))
+      .filter((item): item is ScenarioDisplayItem => Boolean(item));
+  }
+
+  const extractionResult = asRecord(root.extraction_result);
+  if (extractionResult && Array.isArray(extractionResult.scenarios)) {
+    return extractionResult.scenarios
+      .map((item, index) => normalizeScenarioItem(item, index))
+      .filter((item): item is ScenarioDisplayItem => Boolean(item));
+  }
+
+  return [];
+};
+
 export function AnalysisResultDisplay({
   result,
   showTitle = true,
@@ -14,23 +135,124 @@ export function AnalysisResultDisplay({
   }
 
   let displayContent = result;
+  let isJson = false;
+  let scenarios: ScenarioDisplayItem[] = [];
   try {
     const jsonObj = JSON.parse(result);
     displayContent = JSON.stringify(jsonObj, null, 2);
+    isJson = true;
+    scenarios = extractScenarioItems(jsonObj);
   } catch {
     // Keep plain text output when the response is not valid JSON.
   }
 
   return (
-    <div className={`card ${className}`}>
+    <div className={`card relative overflow-hidden ${className}`}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-linear-to-r from-blue-100/40 via-indigo-100/30 to-transparent" />
+
       {showTitle && (
-        <h2 className="mb-4 text-2xl font-bold text-gray-700">
-          Analysis Result
-        </h2>
+        <div className="relative mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-gradient from-blue-700 to-indigo-600 text-2xl font-extrabold">
+            Analysis Result
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${
+                isJson
+                  ? "border-blue-200 bg-blue-50 text-blue-700"
+                  : "border-amber-200 bg-amber-50 text-amber-700"
+              }`}
+            >
+              {isJson ? "JSON formatted" : "Plain text"}
+            </span>
+            {scenarios.length > 0 && (
+              <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700">
+                {scenarios.length} scenario{scenarios.length > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        </div>
       )}
-      <pre className="custom-scrollbar overflow-x-auto rounded-lg border border-gray-200/80 bg-gray-50/80 p-3 text-sm">
-        {displayContent}
-      </pre>
+
+      {scenarios.length > 0 ? (
+        <div className="custom-scrollbar relative max-h-112 space-y-3 overflow-y-auto pr-1">
+          {scenarios.map((scenario, index) => (
+            <details
+              key={`${scenario.scenarioId}-${index}`}
+              className="group overflow-hidden rounded-xl border border-gray-200/90 bg-gray-50/90 shadow-inner"
+              open={index === 0}
+            >
+              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 border-b border-gray-200/70 bg-white/70 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 wrap-anywhere">
+                    {scenario.scenarioId}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500 wrap-anywhere">
+                    {scenario.userGoal}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {scenario.finalScore !== null && (
+                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      Score: {scenario.finalScore}
+                    </span>
+                  )}
+                  {scenario.rankPosition !== null && (
+                    <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                      Rank #{scenario.rankPosition}
+                    </span>
+                  )}
+                  <span className="text-sm text-gray-400 transition-transform group-open:rotate-180">
+                    ▾
+                  </span>
+                </div>
+              </summary>
+
+              <div className="space-y-3 px-4 py-3 text-sm">
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    User Goal
+                  </p>
+                  <p className="text-gray-800 wrap-anywhere">
+                    {scenario.userGoal}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Rationale
+                  </p>
+                  <p className="text-gray-700 whitespace-pre-wrap wrap-anywhere">
+                    {scenario.rationale}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Scores
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      Core: {scenario.coreAlignment ?? "N/A"}
+                    </span>
+                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                      Frequency: {scenario.frequency ?? "N/A"}
+                    </span>
+                    <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                      Risk: {scenario.businessRisk ?? "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      ) : (
+        <pre className="custom-scrollbar relative max-h-112 overflow-y-auto overflow-x-hidden rounded-xl border border-gray-200/80 bg-gray-50/90 p-4 font-mono text-sm leading-6 text-gray-800 whitespace-pre-wrap wrap-anywhere shadow-inner">
+          {displayContent}
+        </pre>
+      )}
     </div>
   );
 }
