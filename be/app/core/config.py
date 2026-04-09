@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     EVALUATOR_RATIONALIZER_PROMPT_PATH: str = "app/prompts/evaluator_rationalizer_system_prompt.txt"
     EVALUATOR_RATIONALIZER_PROMPT_VERSION: str = "v1"
 
+    # Module 3 - Deterministic Ranker
+    RANKER_WEIGHT_CORE_ALIGNMENT: float = 0.4
+    RANKER_WEIGHT_FREQUENCY: float = 0.2
+    RANKER_WEIGHT_BUSINESS_RISK: float = 0.4
+    RANKER_VERSION: str = "v1"
+    RANKER_ENABLE_PANDAS: bool = True
+
 
     # Backblaze B2
     B2_KEY_ID: Optional[str] = None
@@ -73,6 +80,13 @@ class Settings(BaseSettings):
 
         if not self.EVALUATOR_RATIONALIZER_PROMPT_VERSION:
             self.EVALUATOR_RATIONALIZER_PROMPT_VERSION = "v1"
+
+        self.RANKER_WEIGHT_CORE_ALIGNMENT = max(0.0, self.RANKER_WEIGHT_CORE_ALIGNMENT)
+        self.RANKER_WEIGHT_FREQUENCY = max(0.0, self.RANKER_WEIGHT_FREQUENCY)
+        self.RANKER_WEIGHT_BUSINESS_RISK = max(0.0, self.RANKER_WEIGHT_BUSINESS_RISK)
+
+        if not self.RANKER_VERSION:
+            self.RANKER_VERSION = "v1"
 
         return self
     

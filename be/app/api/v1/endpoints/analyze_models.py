@@ -18,6 +18,11 @@ class Module2ScenarioResponse(BaseModel):
     scores: ScenarioEvaluationScores
 
 
+class Module3RankedScenarioResponse(Module2ScenarioResponse):
+    final_score: float
+    rank_position: int
+
+
 class UploadSessionPayload(BaseModel):
     session_id: str
     file_key: str

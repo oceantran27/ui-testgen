@@ -12,12 +12,14 @@ from app.schemas.analysis import AnalysisRecordInDB
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.analysis_orchestrator.service import analysis_orchestrator
+from app.modules.deterministic_ranker.service import deterministic_ranker_service
 
 from .analyze_models import (
     AnalyzeByImageRequest,
     DefaultInputCreate,
     DefaultInputUpdate,
     Module2ScenarioResponse,
+    Module3RankedScenarioResponse,
     PresignedUploadRequest,
     UploadSessionPayload,
 )
@@ -63,6 +65,26 @@ def build_module_2_api_response(analysis_result) -> list[dict]:
         )
 
     return response_items
+
+
+def build_module_3_api_response(module_2_response: list[dict]) -> list[dict]:
+    ranker_result = deterministic_ranker_service.rank(module_2_response)
+    logger.info(
+        "Module 3 response: %s",
+        json.dumps(
+            ranker_result.model_dump(mode="json", exclude_none=True),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
+    )
+
+    return [
+        Module3RankedScenarioResponse.model_validate(item.model_dump(mode="json")).model_dump(
+            mode="json",
+            exclude_none=True,
+        )
+        for item in ranker_result.ranked_scenarios
+    ]
 
 @router.post("/presigned-url")
 def create_presigned_upload_url(payload: PresignedUploadRequest):
@@ -193,7 +215,7 @@ def save_upload_session(payload: UploadSessionPayload):
     return {"ok": True}
 
 
-@router.post("/api/analyze", response_model=List[Module2ScenarioResponse])
+@router.post("/api/analyze", response_model=List[Module3RankedScenarioResponse])
 async def analyze_by_image_url(payload: AnalyzeByImageRequest):
     cleanup_expired_data_if_needed()
 
@@ -221,12 +243,13 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
     module_2_response = build_module_2_api_response(analysis_result)
+    module_3_response = build_module_3_api_response(module_2_response)
     logger.info(
-        "Final API Module 2 response: %s",
-        json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":")),
+        "Final API Module 3 response: %s",
+        json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
     )
 
-    serialized_result = json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":"))
+    serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
 
     if serialized_result and supabase_service.is_ready():
         try:
@@ -239,10 +262,10 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
 
     safe_remove_local_file(file_path)
 
-    return JSONResponse(content=module_2_response)
+    return JSONResponse(content=module_3_response)
 
 
-@router.post("/analyze", response_model=List[Module2ScenarioResponse])
+@router.post("/analyze", response_model=List[Module3RankedScenarioResponse])
 async def analyze_screenshot(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
@@ -271,18 +294,19 @@ async def analyze_screenshot(
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
     module_2_response = build_module_2_api_response(analysis_result)
+    module_3_response = build_module_3_api_response(module_2_response)
     logger.info(
-        "Final API Module 2 response: %s",
-        json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":")),
+        "Final API Module 3 response: %s",
+        json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
     )
 
-    serialized_result = json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":"))
+    serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
 
     # 3. Trigger Background Task for Persistence
     background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
 
     # 4. Return structured JSON response
-    return JSONResponse(content=module_2_response)
+    return JSONResponse(content=module_3_response)
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
