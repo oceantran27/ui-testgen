@@ -95,7 +95,6 @@ def resolve_model_result(file_path: str, model: str | None) -> str:
         result = analysis_orchestrator.analyze_image(
             image_path=file_path,
             model_name=model,
-            include_evaluation=False,
         )
     except Exception as exc:
         raise AIProcessingError(f"AI Processing failed: {exc}")
@@ -266,7 +265,12 @@ def cleanup_expired_data_if_needed() -> None:
 
 def save_analysis_record_task(image_path: str, scenario_result: str) -> None:
     try:
-        cleaned_scenario_json = extract_and_minify_json(scenario_result)
+        try:
+            parsed_result = json.loads(scenario_result)
+            cleaned_scenario_json = json.dumps(parsed_result, ensure_ascii=False, separators=(",", ":"))
+        except Exception:
+            cleaned_scenario_json = extract_and_minify_json(scenario_result)
+
         if not cleaned_scenario_json:
             logger.error("Skipping save: could not extract valid JSON from model output.")
             return

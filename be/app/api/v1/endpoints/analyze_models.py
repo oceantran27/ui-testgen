@@ -2,12 +2,20 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from app.modules.evaluator_rationalizer.models import ScenarioEvaluationScores
+
 
 class AnalyzeByImageRequest(BaseModel):
     image_url: str
     file_key: Optional[str] = None
     model: Optional[str] = "gemini-2.5-flash"
-    include_evaluation: bool = True
+
+
+class Module2ScenarioResponse(BaseModel):
+    scenario_id: str
+    user_goal: str
+    rationale: str
+    scores: ScenarioEvaluationScores
 
 
 class UploadSessionPayload(BaseModel):

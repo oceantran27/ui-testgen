@@ -17,6 +17,7 @@ from .analyze_models import (
     AnalyzeByImageRequest,
     DefaultInputCreate,
     DefaultInputUpdate,
+    Module2ScenarioResponse,
     PresignedUploadRequest,
     UploadSessionPayload,
 )
@@ -41,6 +42,27 @@ from .analyze_utils import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def build_module_2_api_response(analysis_result) -> list[dict]:
+    response_items: list[dict] = []
+
+    for scenario in analysis_result.extraction_result.scenarios:
+        if scenario.evaluation is None:
+            raise AIProcessingError(
+                f"Missing evaluation in Module 2 response for scenario id '{scenario.id}'"
+            )
+
+        response_items.append(
+            Module2ScenarioResponse(
+                scenario_id=scenario.id,
+                user_goal=scenario.user_goal,
+                rationale=scenario.evaluation.rationale,
+                scores=scenario.evaluation.scores,
+            ).model_dump(mode="json", exclude_none=True)
+        )
+
+    return response_items
 
 @router.post("/presigned-url")
 def create_presigned_upload_url(payload: PresignedUploadRequest):
@@ -171,7 +193,7 @@ def save_upload_session(payload: UploadSessionPayload):
     return {"ok": True}
 
 
-@router.post("/api/analyze")
+@router.post("/api/analyze", response_model=List[Module2ScenarioResponse])
 async def analyze_by_image_url(payload: AnalyzeByImageRequest):
     cleanup_expired_data_if_needed()
 
@@ -188,7 +210,6 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         analysis_result = analysis_orchestrator.analyze_image(
             image_path=file_path,
             model_name=payload.model,
-            include_evaluation=payload.include_evaluation,
         )
     except AIProcessingError as e:
         logger.error("AI processing failed during URL analysis: %s", e)
@@ -199,11 +220,13 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         logger.error(f"Internal Server Error during URL analysis: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    serialized_result = json.dumps(
-        analysis_result.model_dump(mode="json", exclude_none=True),
-        ensure_ascii=False,
-        separators=(",", ":"),
+    module_2_response = build_module_2_api_response(analysis_result)
+    logger.info(
+        "Final API Module 2 response: %s",
+        json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":")),
     )
+
+    serialized_result = json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":"))
 
     if serialized_result and supabase_service.is_ready():
         try:
@@ -216,15 +239,14 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
 
     safe_remove_local_file(file_path)
 
-    return JSONResponse(content=analysis_result.model_dump(mode="json", exclude_none=True))
+    return JSONResponse(content=module_2_response)
 
 
-@router.post("/analyze")
+@router.post("/analyze", response_model=List[Module2ScenarioResponse])
 async def analyze_screenshot(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     model: Optional[str] = Query("gemini-2.5-flash", description="Model to use: 'openai', 'gemini', 'gemini-2.5-flash', 'gemini-1.5-flash'"),
-    include_evaluation: bool = Query(True, description="Set false to skip Module 2 evaluation and rationale."),
 ):
     cleanup_expired_data_if_needed()
 
@@ -236,7 +258,6 @@ async def analyze_screenshot(
         analysis_result = analysis_orchestrator.analyze_image(
             image_path=file_path,
             model_name=model,
-            include_evaluation=include_evaluation,
         )
 
     except AIProcessingError as e:
@@ -249,17 +270,19 @@ async def analyze_screenshot(
         logger.error(f"Internal Server Error during analysis: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    serialized_result = json.dumps(
-        analysis_result.model_dump(mode="json", exclude_none=True),
-        ensure_ascii=False,
-        separators=(",", ":"),
+    module_2_response = build_module_2_api_response(analysis_result)
+    logger.info(
+        "Final API Module 2 response: %s",
+        json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":")),
     )
+
+    serialized_result = json.dumps(module_2_response, ensure_ascii=False, separators=(",", ":"))
 
     # 3. Trigger Background Task for Persistence
     background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
 
     # 4. Return structured JSON response
-    return JSONResponse(content=analysis_result.model_dump(mode="json", exclude_none=True))
+    return JSONResponse(content=module_2_response)
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
