@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AnalyzeByImageRequest(BaseModel):
@@ -18,6 +18,28 @@ class Module3RankedScenarioResponse(BaseModel):
     UX_score: int
     final_score: float
     rank_position: int
+
+
+class DebateEventResponse(BaseModel):
+    event_id: str
+    sequence: int
+    timestamp: str
+    request_id: str
+    batch_id: Optional[str] = None
+    scenario_id: Optional[str] = None
+    role: str
+    event_type: str
+    message: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class DebateEventsPollResponse(BaseModel):
+    request_id: str
+    batch_id: Optional[str] = None
+    next_seq: int
+    completed: bool
+    status: str
+    events: list[DebateEventResponse]
 
 
 class UploadSessionPayload(BaseModel):

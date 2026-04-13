@@ -1,17 +1,24 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { apiClient } from "./api/client";
 import { toCdnUrl } from "./utils/cdn";
 import { GalleryModal } from "./components/GalleryModal";
-import { AdminCRUD } from "./components/AdminCRUD";
+import { AdminCRUD } from "./components/AdminCRUD.tsx";
 import { AnalysisResultDisplay } from "./components/AnalysisResultDisplay";
 import { AnalysisHistoryPanel } from "./components/AnalysisHistoryPanel";
 import { UploadPanel } from "./components/UploadPanel";
+import { DebateFloatingBubble } from "./components/DebateFloatingBubble";
+import { DebateTranscriptModal } from "./components/DebateTranscriptModal";
 import { ImageLightboxModal } from "./components/ImageLightboxModal";
 import { Error404Page } from "./components/Error404Page.tsx";
-import type { AnalysisRecord } from "./components/types";
+import type {
+  AnalysisRecord,
+  DebateEvent,
+  DebateEventsPollResponse,
+  DebateStreamStatus,
+} from "./components/types";
 
 const resolveImageSrc = (path: string): string => {
   if (
@@ -22,6 +29,18 @@ const resolveImageSrc = (path: string): string => {
     return toCdnUrl(path);
   }
   return path.startsWith("/") ? path : `/${path}`;
+};
+
+const createCorrelationId = (prefix: "req" | "batch"): string => {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}-${suffix}`;
 };
 
 function LegacyHome() {
@@ -37,6 +56,20 @@ function LegacyHome() {
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [debateRequestId, setDebateRequestId] = useState<string | null>(null);
+  const [debateEvents, setDebateEvents] = useState<DebateEvent[]>([]);
+  const [debateStreamStatus, setDebateStreamStatus] =
+    useState<DebateStreamStatus>("idle");
+  const [debatePollingError, setDebatePollingError] = useState<string | null>(
+    null,
+  );
+  const [debateUnreadCount, setDebateUnreadCount] = useState(0);
+  const [isDebateModalOpen, setIsDebateModalOpen] = useState(false);
+  const [debatePollNonce, setDebatePollNonce] = useState(0);
+
+  const debateNextSeqRef = useRef(0);
+  const debateRetryRef = useRef(0);
+  const debateModalOpenRef = useRef(false);
 
   const resetUploadState = useCallback(() => {
     // Keep compatibility with existing handlers that clear upload-related UX state.
@@ -79,6 +112,41 @@ function LegacyHome() {
     },
     [extractErrorMessage, redirectToErrorPage],
   );
+
+  const startDebateStream = useCallback((requestId: string) => {
+    setDebateRequestId(requestId);
+    setDebateEvents([]);
+    setDebateStreamStatus("running");
+    setDebatePollingError(null);
+    setDebateUnreadCount(0);
+    debateNextSeqRef.current = 0;
+    debateRetryRef.current = 0;
+    setDebatePollNonce((value) => value + 1);
+  }, []);
+
+  const openDebateModal = useCallback(() => {
+    setIsDebateModalOpen(true);
+    setDebateUnreadCount(0);
+  }, []);
+
+  const retryDebatePolling = useCallback(() => {
+    if (!debateRequestId) {
+      return;
+    }
+    debateRetryRef.current = 0;
+    setDebatePollingError(null);
+    setDebateStreamStatus((current) =>
+      current === "completed" || current === "failed" ? current : "running",
+    );
+    setDebatePollNonce((value) => value + 1);
+  }, [debateRequestId]);
+
+  useEffect(() => {
+    debateModalOpenRef.current = isDebateModalOpen;
+    if (isDebateModalOpen) {
+      setDebateUnreadCount(0);
+    }
+  }, [isDebateModalOpen]);
 
   const handleToggleExpand = (recordId: number) => {
     setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
@@ -163,6 +231,110 @@ function LegacyHome() {
     void fetchRecords({ showToast: true });
   }, [fetchRecords]);
 
+  useEffect(() => {
+    if (!debateRequestId) {
+      return;
+    }
+
+    let isCancelled = false;
+    let timerId: number | null = null;
+
+    const scheduleNext = (delayMs: number) => {
+      timerId = window.setTimeout(() => {
+        void pollDebateEvents();
+      }, delayMs);
+    };
+
+    const pollDebateEvents = async () => {
+      try {
+        const response = await apiClient.get<DebateEventsPollResponse>(
+          `debate-events/${encodeURIComponent(debateRequestId)}`,
+          {
+            params: {
+              since_seq: debateNextSeqRef.current,
+              limit: 120,
+            },
+          },
+        );
+
+        if (isCancelled) {
+          return;
+        }
+
+        const payload = response.data;
+        const incoming = Array.isArray(payload.events) ? payload.events : [];
+
+        if (incoming.length > 0) {
+          setDebateEvents((previous) => {
+            const seen = new Set(previous.map((event) => event.sequence));
+            const merged = [...previous];
+
+            for (const event of incoming) {
+              if (seen.has(event.sequence)) {
+                continue;
+              }
+              merged.push(event);
+              seen.add(event.sequence);
+            }
+
+            merged.sort((left, right) => left.sequence - right.sequence);
+            return merged;
+          });
+
+          if (!debateModalOpenRef.current) {
+            setDebateUnreadCount((count) => count + incoming.length);
+          }
+        }
+
+        if (Number.isFinite(payload.next_seq)) {
+          debateNextSeqRef.current = payload.next_seq;
+        }
+
+        debateRetryRef.current = 0;
+        setDebatePollingError(null);
+
+        if (payload.completed) {
+          const terminalStatus =
+            String(payload.status).toLowerCase() === "failed"
+              ? "failed"
+              : "completed";
+          setDebateStreamStatus(terminalStatus);
+          return;
+        }
+
+        setDebateStreamStatus("running");
+        scheduleNext(1200);
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          setDebateStreamStatus("expired");
+          setDebatePollingError(
+            "Debate stream was not found or already expired.",
+          );
+          return;
+        }
+
+        debateRetryRef.current += 1;
+        const delayMs = Math.min(5000, 1000 + debateRetryRef.current * 700);
+        setDebateStreamStatus("error");
+        setDebatePollingError(extractErrorMessage(error));
+        scheduleNext(delayMs);
+      }
+    };
+
+    void pollDebateEvents();
+
+    return () => {
+      isCancelled = true;
+      if (timerId !== null) {
+        window.clearTimeout(timerId);
+      }
+    };
+  }, [debatePollNonce, debateRequestId, extractErrorMessage]);
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (filePreview?.startsWith("blob:")) {
       URL.revokeObjectURL(filePreview);
@@ -187,14 +359,27 @@ function LegacyHome() {
 
   const analyzeByImageUrl = async (imageUrl: string, fileKey?: string) => {
     const toastId = toast.loading("Analyzing screenshot...");
+    const requestId = createCorrelationId("req");
+    const batchId = createCorrelationId("batch");
+
+    startDebateStream(requestId);
     setIsLoading(true);
     setAnalysisResult(null);
 
     try {
-      const response = await apiClient.post("api/analyze", {
-        image_url: imageUrl,
-        file_key: fileKey,
-      });
+      const response = await apiClient.post(
+        "api/analyze",
+        {
+          image_url: imageUrl,
+          file_key: fileKey,
+        },
+        {
+          headers: {
+            "X-Request-Id": requestId,
+            "X-Batch-Id": batchId,
+          },
+        },
+      );
       const payload = response.data;
       const result =
         typeof payload === "string"
@@ -204,6 +389,7 @@ function LegacyHome() {
       toast.success("Analysis complete!", { id: toastId });
       void fetchRecords();
     } catch (err) {
+      setDebateStreamStatus("failed");
       notifyAndRedirectError(err, toastId);
     } finally {
       setIsLoading(false);
@@ -224,12 +410,21 @@ function LegacyHome() {
     setIsLoading(true);
     setAnalysisResult(null);
     const toastId = toast.loading("Analyzing screenshot...");
+    const requestId = createCorrelationId("req");
+    const batchId = createCorrelationId("batch");
+
+    startDebateStream(requestId);
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await apiClient.post<string>("analyze", formData);
+      const response = await apiClient.post<string>("analyze", formData, {
+        headers: {
+          "X-Request-Id": requestId,
+          "X-Batch-Id": batchId,
+        },
+      });
       const payload = response.data;
       const result =
         typeof payload === "string"
@@ -239,6 +434,7 @@ function LegacyHome() {
       toast.success("Analysis complete!", { id: toastId });
       void fetchRecords();
     } catch (err) {
+      setDebateStreamStatus("failed");
       notifyAndRedirectError(err, toastId);
     } finally {
       setIsLoading(false);
@@ -282,6 +478,15 @@ function LegacyHome() {
     }
     return "Selected source: none";
   }, [selectedImageUrl, file]);
+
+  const showDebateBubble = useMemo(() => {
+    if (!debateRequestId) {
+      return false;
+    }
+    return (
+      isLoading || debateEvents.length > 0 || debateStreamStatus !== "idle"
+    );
+  }, [debateEvents.length, debateRequestId, debateStreamStatus, isLoading]);
 
   return (
     <>
@@ -334,6 +539,24 @@ function LegacyHome() {
           </main>
         </div>
       </div>
+
+      <DebateFloatingBubble
+        visible={showDebateBubble}
+        status={debateStreamStatus}
+        eventCount={debateEvents.length}
+        unreadCount={debateUnreadCount}
+        onOpen={openDebateModal}
+      />
+
+      <DebateTranscriptModal
+        isOpen={isDebateModalOpen}
+        requestId={debateRequestId}
+        status={debateStreamStatus}
+        events={debateEvents}
+        errorMessage={debatePollingError}
+        onClose={() => setIsDebateModalOpen(false)}
+        onRetry={retryDebatePolling}
+      />
 
       <ImageLightboxModal
         isOpen={isModalOpen}

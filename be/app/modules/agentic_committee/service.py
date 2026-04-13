@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.core.log_context import merge_with_log_context
 from app.core.model_selection import normalize_analysis_model_name
+from app.modules.agentic_committee.event_stream import committee_debate_event_stream
 from app.modules.agentic_committee.graph import CommitteeGraphState, build_committee_graph
 from app.modules.agentic_committee.llm_client import (
     CommitteeLLMClient,
@@ -639,6 +640,12 @@ class AgenticCommitteeService:
         event_payload = self._build_structured_event(event=event, payload=payload)
         legacy_payload = self._serialize_json(payload)
         structured_payload = self._serialize_json(event_payload)
+
+        if settings.COMMITTEE_EVENT_STREAM_ENABLED:
+            committee_debate_event_stream.publish_log_event(
+                event_payload,
+                level=logging.getLevelName(level),
+            )
 
         if settings.COMMITTEE_LOG_LEGACY_ENABLED:
             logger.log(level, "Committee debate [%s]: %s", event, legacy_payload)

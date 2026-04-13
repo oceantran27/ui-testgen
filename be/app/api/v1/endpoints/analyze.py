@@ -5,7 +5,7 @@ import json
 from collections import deque
 from typing import List, Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Query
+from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Header, Query
 from fastapi.responses import JSONResponse
 
 from app.core.log_context import bind_log_context, merge_with_log_context
@@ -13,10 +13,12 @@ from app.core.model_selection import normalize_analysis_model_name
 from app.schemas.analysis import AnalysisRecordInDB
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
+from app.modules.agentic_committee.event_stream import committee_debate_event_stream
 from app.modules.analysis_orchestrator.service import analysis_orchestrator
 
 from .analyze_models import (
     AnalyzeByImageRequest,
+    DebateEventsPollResponse,
     DefaultInputCreate,
     DefaultInputUpdate,
     Module3RankedScenarioResponse,
@@ -50,13 +52,75 @@ def _json_compact(payload: dict) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
-def _build_request_context(*, model_name: str | None, source: str) -> dict[str, str]:
+def _sanitize_context_id(raw_value: str | None) -> str | None:
+    if raw_value is None:
+        return None
+
+    normalized = str(raw_value).strip()
+    if not normalized:
+        return None
+
+    if len(normalized) > 128:
+        normalized = normalized[:128]
+
+    return normalized
+
+
+def _build_request_context(
+    *,
+    model_name: str | None,
+    source: str,
+    request_id: str | None = None,
+    batch_id: str | None = None,
+) -> dict[str, str]:
+    normalized_request_id = _sanitize_context_id(request_id) or str(uuid.uuid4())
+    normalized_batch_id = _sanitize_context_id(batch_id) or str(uuid.uuid4())
+
     return {
-        "request_id": str(uuid.uuid4()),
-        "batch_id": str(uuid.uuid4()),
+        "request_id": normalized_request_id,
+        "batch_id": normalized_batch_id,
         "model_name": normalize_analysis_model_name(model_name),
         "analysis_source": source,
     }
+
+
+def _build_response_headers(request_context: dict[str, str]) -> dict[str, str]:
+    return {
+        "X-Request-Id": request_context["request_id"],
+        "X-Batch-Id": request_context["batch_id"],
+        "Access-Control-Expose-Headers": "X-Request-Id,X-Batch-Id",
+    }
+
+
+def _register_debate_stream(request_context: dict[str, str]) -> None:
+    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
+        return
+
+    committee_debate_event_stream.register_request(
+        request_id=request_context["request_id"],
+        batch_id=request_context["batch_id"],
+        metadata={
+            "analysis_source": request_context.get("analysis_source"),
+            "model_name": request_context.get("model_name"),
+        },
+    )
+
+
+def _mark_debate_stream_terminal(
+    request_context: dict[str, str],
+    *,
+    status: str,
+    reason: str | None = None,
+) -> None:
+    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
+        return
+
+    committee_debate_event_stream.mark_terminal(
+        request_id=request_context["request_id"],
+        batch_id=request_context["batch_id"],
+        status=status,
+        reason=reason,
+    )
 
 
 def _log_api_event(event_type: str, **payload):
@@ -167,6 +231,28 @@ def read_backend_logs(lines: int = Query(200, ge=1, le=2000)):
         logger.error(f"Failed to read backend logs: {e}")
         raise HTTPException(status_code=500, detail="Could not read backend logs.") from e
 
+
+@router.get("/debate-events/{request_id}", response_model=DebateEventsPollResponse)
+def read_debate_events(
+    request_id: str,
+    since_seq: int = Query(0, ge=0),
+    limit: int = Query(120, ge=1),
+):
+    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
+        raise HTTPException(status_code=503, detail="Debate event stream is disabled on server.")
+
+    safe_limit = min(limit, settings.COMMITTEE_EVENT_STREAM_POLL_MAX_LIMIT)
+    try:
+        snapshot = committee_debate_event_stream.read_events(
+            request_id=request_id,
+            since_seq=since_seq,
+            limit=safe_limit,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Debate stream not found or expired.") from exc
+
+    return DebateEventsPollResponse.model_validate(snapshot).model_dump(mode="json")
+
 @router.post("/upload-to-b2")
 async def upload_file_to_b2(
     file: UploadFile = File(...),
@@ -223,7 +309,11 @@ def save_upload_session(payload: UploadSessionPayload):
 
 
 @router.post("/api/analyze", response_model=List[Module3RankedScenarioResponse])
-async def analyze_by_image_url(payload: AnalyzeByImageRequest):
+async def analyze_by_image_url(
+    payload: AnalyzeByImageRequest,
+    x_request_id: Optional[str] = Header(default=None, alias="X-Request-Id"),
+    x_batch_id: Optional[str] = Header(default=None, alias="X-Batch-Id"),
+):
     cleanup_expired_data_if_needed()
 
     if not payload.image_url:
@@ -234,7 +324,13 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         payload.file_key,
     )
     file_path = download_remote_image(analysis_image_url)
-    request_context = _build_request_context(model_name=payload.model, source="image_url")
+    request_context = _build_request_context(
+        model_name=payload.model,
+        source="image_url",
+        request_id=x_request_id,
+        batch_id=x_batch_id,
+    )
+    _register_debate_stream(request_context)
 
     with bind_log_context(**request_context):
         _log_api_event(
@@ -252,11 +348,13 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
             logger.error("AI processing failed during URL analysis: %s", e)
             safe_remove_local_file(file_path)
             _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
+            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=502, detail=str(e))
         except Exception as e:
             safe_remove_local_file(file_path)
             logger.error(f"Internal Server Error during URL analysis: {e}")
             _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
+            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
         module_3_response = build_ranked_api_response(analysis_result)
@@ -281,8 +379,12 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
                 logger.error(f"Could not save URL analysis record to Supabase: {e}")
 
         safe_remove_local_file(file_path)
+        _mark_debate_stream_terminal(request_context, status="completed")
 
-        return JSONResponse(content=module_3_response)
+        return JSONResponse(
+            content=module_3_response,
+            headers=_build_response_headers(request_context),
+        )
 
 
 @router.post("/analyze", response_model=List[Module3RankedScenarioResponse])
@@ -290,12 +392,20 @@ async def analyze_screenshot(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     model: Optional[str] = Query("gemini-2.5-flash", description="Model to use: 'openai', 'gemini', 'gemini-2.5-flash', 'gemini-1.5-flash'"),
+    x_request_id: Optional[str] = Header(default=None, alias="X-Request-Id"),
+    x_batch_id: Optional[str] = Header(default=None, alias="X-Batch-Id"),
 ):
     cleanup_expired_data_if_needed()
 
     # 1. Save the uploaded file to a temporary local path for processing
     file_path = save_upload_file(file)
-    request_context = _build_request_context(model_name=model, source="file_upload")
+    request_context = _build_request_context(
+        model_name=model,
+        source="file_upload",
+        request_id=x_request_id,
+        batch_id=x_batch_id,
+    )
+    _register_debate_stream(request_context)
 
     # 2. Call AI Service with the local file path
     with bind_log_context(**request_context):
@@ -316,11 +426,13 @@ async def analyze_screenshot(
             # Clean up file if AI fails
             safe_remove_local_file(file_path)
             _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
+            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=502, detail=str(e))
         except Exception as e:
             safe_remove_local_file(file_path)
             logger.error(f"Internal Server Error during analysis: {e}")
             _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
+            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
         module_3_response = build_ranked_api_response(analysis_result)
@@ -337,9 +449,13 @@ async def analyze_screenshot(
 
         # 3. Trigger Background Task for Persistence
         background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
+        _mark_debate_stream_terminal(request_context, status="completed")
 
         # 4. Return structured JSON response
-        return JSONResponse(content=module_3_response)
+        return JSONResponse(
+            content=module_3_response,
+            headers=_build_response_headers(request_context),
+        )
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(
