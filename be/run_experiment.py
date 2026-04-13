@@ -56,7 +56,7 @@ def run_experiment():
     # Switch between providers/models here or override by env vars:
     # EXP_PROVIDER in {openai, gemini}, EXP_MODEL e.g. gemini-2.5-pro
     provider = os.getenv("EXP_PROVIDER", "gemini").strip().lower()
-    model_type = os.getenv("EXP_MODEL", "gemini-2.5-pro").strip()
+    model_type = os.getenv("EXP_MODEL", "gemini-2.5-flash").strip()
     
     results_dir = "experiment_results"
     os.makedirs(results_dir, exist_ok=True)

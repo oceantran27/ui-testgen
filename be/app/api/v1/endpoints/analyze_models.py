@@ -2,8 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.modules.evaluator_rationalizer.models import ScenarioEvaluationScores
-
 
 class AnalyzeByImageRequest(BaseModel):
     image_url: str
@@ -11,14 +9,13 @@ class AnalyzeByImageRequest(BaseModel):
     model: Optional[str] = "gemini-2.5-flash"
 
 
-class Module2ScenarioResponse(BaseModel):
+class Module3RankedScenarioResponse(BaseModel):
     scenario_id: str
     user_goal: str
-    rationale: str
-    scores: ScenarioEvaluationScores
-
-
-class Module3RankedScenarioResponse(Module2ScenarioResponse):
+    conflict_resolution_summary: str
+    BA_score: int
+    QA_score: int
+    UX_score: int
     final_score: float
     rank_position: int
 

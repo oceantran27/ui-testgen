@@ -22,6 +22,7 @@ class GeminiVisionProvider(BaseVisionProvider):
                 "temperature": 0.0,
             },
         )
+        self.model_name = model_name
         self.system_prompt = system_prompt
 
     def analyze_image(self, image_path: str) -> str:
@@ -45,9 +46,9 @@ class GeminiVisionProvider(BaseVisionProvider):
             response = self.model.generate_content([self.system_prompt, user_instruction, img])
             content = response.text
 
-            logger.info("--- RAW LLM OUTPUT START ---")
-            logger.info(content)
-            logger.info("--- RAW LLM OUTPUT END ---")
+            logger.debug("--- RAW LLM OUTPUT START (%s) ---", self.model_name)
+            logger.debug(content)
+            logger.debug("--- RAW LLM OUTPUT END (%s) ---", self.model_name)
 
             if not content:
                 raise AIProcessingError("Received empty response from Gemini")

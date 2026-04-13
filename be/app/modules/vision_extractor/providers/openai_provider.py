@@ -67,9 +67,9 @@ class OpenAIVisionProvider(BaseVisionProvider):
             )
 
             content = response.choices[0].message.content
-            logger.info("--- RAW LLM OUTPUT START ---")
-            logger.info(content)
-            logger.info("--- RAW LLM OUTPUT END ---")
+            logger.debug("--- RAW LLM OUTPUT START (%s) ---", self.model)
+            logger.debug(content)
+            logger.debug("--- RAW LLM OUTPUT END (%s) ---", self.model)
 
             if not content:
                 raise AIProcessingError("Received empty response from OpenAI")

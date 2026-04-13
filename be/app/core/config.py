@@ -17,16 +17,22 @@ class Settings(BaseSettings):
     # Module 1 - Vision Extractor
     VISION_EXTRACTOR_PROMPT_PATH: str = "app/prompts/vision_extractor_system_prompt.txt"
 
-    # Module 2 - Evaluator & Rationalizer
-    EVALUATOR_RATIONALIZER_PROMPT_PATH: str = "app/prompts/evaluator_rationalizer_system_prompt.txt"
-    EVALUATOR_RATIONALIZER_PROMPT_VERSION: str = "v1"
-
-    # Module 3 - Deterministic Ranker
-    RANKER_WEIGHT_CORE_ALIGNMENT: float = 0.4
-    RANKER_WEIGHT_FREQUENCY: float = 0.2
-    RANKER_WEIGHT_BUSINESS_RISK: float = 0.4
-    RANKER_VERSION: str = "v1"
-    RANKER_ENABLE_PANDAS: bool = True
+    # Multi-Agent Committee
+    COMMITTEE_MAX_FAILSAFE_ROUNDS: int = 5
+    COMMITTEE_SCORE_DELTA_THRESHOLD: float = 1.0
+    COMMITTEE_LLM_TIMEOUT_SECONDS: int = 45
+    COMMITTEE_MAX_CONCURRENCY: int = 5
+    COMMITTEE_WEIGHT_BA: float = 0.4
+    COMMITTEE_WEIGHT_QA: float = 0.3
+    COMMITTEE_WEIGHT_UX: float = 0.3
+    COMMITTEE_RANKER_VERSION: str = "v1"
+    COMMITTEE_AGENT_BA_PROMPT_PATH: str = "app/prompts/committee_agent1_business_analyst_system_prompt.txt"
+    COMMITTEE_AGENT_QA_PROMPT_PATH: str = "app/prompts/committee_agent2_security_qa_system_prompt.txt"
+    COMMITTEE_AGENT_UX_PROMPT_PATH: str = "app/prompts/committee_agent3_ux_expert_system_prompt.txt"
+    COMMITTEE_AGENT_JUDGE_PROMPT_PATH: str = "app/prompts/committee_agent4_judge_moderator_system_prompt.txt"
+    COMMITTEE_LOG_STRUCTURED_ENABLED: bool = True
+    COMMITTEE_LOG_LEGACY_ENABLED: bool = True
+    COMMITTEE_LOG_MAX_TEXT_CHARS: int = 320
 
 
     # Backblaze B2
@@ -75,18 +81,39 @@ class Settings(BaseSettings):
         if not self.VISION_EXTRACTOR_PROMPT_PATH:
             self.VISION_EXTRACTOR_PROMPT_PATH = "app/prompts/vision_extractor_system_prompt.txt"
 
-        if not self.EVALUATOR_RATIONALIZER_PROMPT_PATH:
-            self.EVALUATOR_RATIONALIZER_PROMPT_PATH = "app/prompts/evaluator_rationalizer_system_prompt.txt"
+        if self.COMMITTEE_MAX_FAILSAFE_ROUNDS <= 0:
+            self.COMMITTEE_MAX_FAILSAFE_ROUNDS = 5
 
-        if not self.EVALUATOR_RATIONALIZER_PROMPT_VERSION:
-            self.EVALUATOR_RATIONALIZER_PROMPT_VERSION = "v1"
+        if self.COMMITTEE_SCORE_DELTA_THRESHOLD < 0:
+            self.COMMITTEE_SCORE_DELTA_THRESHOLD = 1.0
 
-        self.RANKER_WEIGHT_CORE_ALIGNMENT = max(0.0, self.RANKER_WEIGHT_CORE_ALIGNMENT)
-        self.RANKER_WEIGHT_FREQUENCY = max(0.0, self.RANKER_WEIGHT_FREQUENCY)
-        self.RANKER_WEIGHT_BUSINESS_RISK = max(0.0, self.RANKER_WEIGHT_BUSINESS_RISK)
+        if self.COMMITTEE_LLM_TIMEOUT_SECONDS <= 0:
+            self.COMMITTEE_LLM_TIMEOUT_SECONDS = 45
 
-        if not self.RANKER_VERSION:
-            self.RANKER_VERSION = "v1"
+        if self.COMMITTEE_MAX_CONCURRENCY <= 0:
+            self.COMMITTEE_MAX_CONCURRENCY = 5
+
+        self.COMMITTEE_WEIGHT_BA = max(0.0, self.COMMITTEE_WEIGHT_BA)
+        self.COMMITTEE_WEIGHT_QA = max(0.0, self.COMMITTEE_WEIGHT_QA)
+        self.COMMITTEE_WEIGHT_UX = max(0.0, self.COMMITTEE_WEIGHT_UX)
+
+        if not self.COMMITTEE_RANKER_VERSION:
+            self.COMMITTEE_RANKER_VERSION = "v1"
+
+        if not self.COMMITTEE_AGENT_BA_PROMPT_PATH:
+            self.COMMITTEE_AGENT_BA_PROMPT_PATH = "app/prompts/committee_agent1_business_analyst_system_prompt.txt"
+
+        if not self.COMMITTEE_AGENT_QA_PROMPT_PATH:
+            self.COMMITTEE_AGENT_QA_PROMPT_PATH = "app/prompts/committee_agent2_security_qa_system_prompt.txt"
+
+        if not self.COMMITTEE_AGENT_UX_PROMPT_PATH:
+            self.COMMITTEE_AGENT_UX_PROMPT_PATH = "app/prompts/committee_agent3_ux_expert_system_prompt.txt"
+
+        if not self.COMMITTEE_AGENT_JUDGE_PROMPT_PATH:
+            self.COMMITTEE_AGENT_JUDGE_PROMPT_PATH = "app/prompts/committee_agent4_judge_moderator_system_prompt.txt"
+
+        if self.COMMITTEE_LOG_MAX_TEXT_CHARS < 80:
+            self.COMMITTEE_LOG_MAX_TEXT_CHARS = 80
 
         return self
     

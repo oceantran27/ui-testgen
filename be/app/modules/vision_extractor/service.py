@@ -1,6 +1,7 @@
 import json
 import logging
 
+from app.core.model_selection import normalize_analysis_model_name
 from app.core.exceptions import AIProcessingError
 from app.modules.vision_extractor.json_processor import extract_and_minify_json
 from app.modules.vision_extractor.models import VisionExtractionPayload, VisionExtractionResult
@@ -15,7 +16,7 @@ class VisionExtractorService:
         self.provider_factory = provider_factory or VisionProviderFactory()
 
     def extract(self, image_path: str, model_name: str | None = None) -> VisionExtractionResult:
-        selected_model = (model_name or "gemini-2.5-flash").strip().lower()
+        selected_model = normalize_analysis_model_name(model_name)
         system_prompt = load_vision_extractor_prompt()
 
         provider = self.provider_factory.create_provider(selected_model, system_prompt)

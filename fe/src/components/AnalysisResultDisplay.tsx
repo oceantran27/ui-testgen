@@ -7,10 +7,10 @@ interface AnalysisResultDisplayProps {
 interface ScenarioDisplayItem {
   scenarioId: string;
   userGoal: string;
-  rationale: string;
-  coreAlignment: number | null;
-  frequency: number | null;
-  businessRisk: number | null;
+  conflictResolutionSummary: string;
+  baScore: number | null;
+  qaScore: number | null;
+  uxScore: number | null;
   finalScore: number | null;
   rankPosition: number | null;
 }
@@ -26,28 +26,6 @@ const toNumberOrNull = (value: unknown): number | null => {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 };
 
-const readScores = (
-  value: Record<string, unknown> | null,
-): {
-  coreAlignment: number | null;
-  frequency: number | null;
-  businessRisk: number | null;
-} => {
-  if (!value) {
-    return {
-      coreAlignment: null,
-      frequency: null,
-      businessRisk: null,
-    };
-  }
-
-  return {
-    coreAlignment: toNumberOrNull(value.core_alignment),
-    frequency: toNumberOrNull(value.frequency),
-    businessRisk: toNumberOrNull(value.business_risk),
-  };
-};
-
 const normalizeScenarioItem = (
   raw: unknown,
   index: number,
@@ -57,14 +35,9 @@ const normalizeScenarioItem = (
     return null;
   }
 
-  const evaluation = asRecord(record.evaluation);
-  const rootScores = asRecord(record.scores);
-  const evaluationScores = evaluation ? asRecord(evaluation.scores) : null;
-  const scores = readScores(rootScores ?? evaluationScores);
-
   const scenarioIdRaw = record.scenario_id ?? record.id;
   const userGoalRaw = record.user_goal;
-  const rationaleRaw = record.rationale ?? evaluation?.rationale;
+  const summaryRaw = record.conflict_resolution_summary;
 
   const scenarioId =
     typeof scenarioIdRaw === "string" && scenarioIdRaw.trim()
@@ -72,18 +45,18 @@ const normalizeScenarioItem = (
       : `SCENARIO_${index + 1}`;
   const userGoal =
     typeof userGoalRaw === "string" && userGoalRaw.trim() ? userGoalRaw : "N/A";
-  const rationale =
-    typeof rationaleRaw === "string" && rationaleRaw.trim()
-      ? rationaleRaw
-      : "No rationale provided.";
+  const conflictResolutionSummary =
+    typeof summaryRaw === "string" && summaryRaw.trim()
+      ? summaryRaw
+      : "No conflict resolution summary provided.";
 
   return {
     scenarioId,
     userGoal,
-    rationale,
-    coreAlignment: scores.coreAlignment,
-    frequency: scores.frequency,
-    businessRisk: scores.businessRisk,
+    conflictResolutionSummary,
+    baScore: toNumberOrNull(record.BA_score ?? record.ba_score),
+    qaScore: toNumberOrNull(record.QA_score ?? record.qa_score),
+    uxScore: toNumberOrNull(record.UX_score ?? record.ux_score),
     finalScore: toNumberOrNull(record.final_score),
     rankPosition: toNumberOrNull(record.rank_position),
   };
@@ -108,16 +81,8 @@ const extractScenarioItems = (payload: unknown): ScenarioDisplayItem[] => {
       .filter((item): item is ScenarioDisplayItem => Boolean(item));
   }
 
-  const rootScenarios = root.scenarios;
-  if (Array.isArray(rootScenarios)) {
-    return rootScenarios
-      .map((item, index) => normalizeScenarioItem(item, index))
-      .filter((item): item is ScenarioDisplayItem => Boolean(item));
-  }
-
-  const extractionResult = asRecord(root.extraction_result);
-  if (extractionResult && Array.isArray(extractionResult.scenarios)) {
-    return extractionResult.scenarios
+  if (Array.isArray(root.scenarios)) {
+    return root.scenarios
       .map((item, index) => normalizeScenarioItem(item, index))
       .filter((item): item is ScenarioDisplayItem => Boolean(item));
   }
@@ -221,26 +186,26 @@ export function AnalysisResultDisplay({
 
                 <div>
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Rationale
+                    Conflict Resolution Summary
                   </p>
                   <p className="text-gray-700 whitespace-pre-wrap wrap-anywhere">
-                    {scenario.rationale}
+                    {scenario.conflictResolutionSummary}
                   </p>
                 </div>
 
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Scores
+                    Component Scores
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                      Core: {scenario.coreAlignment ?? "N/A"}
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      Business (BA): {scenario.baScore ?? "N/A"}
                     </span>
-                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
-                      Frequency: {scenario.frequency ?? "N/A"}
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      Security (QA): {scenario.qaScore ?? "N/A"}
                     </span>
-                    <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                      Risk: {scenario.businessRisk ?? "N/A"}
+                    <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-700">
+                      UX: {scenario.uxScore ?? "N/A"}
                     </span>
                   </div>
                 </div>

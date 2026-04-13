@@ -8,17 +8,17 @@ from typing import List, Optional
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 
+from app.core.log_context import bind_log_context, merge_with_log_context
+from app.core.model_selection import normalize_analysis_model_name
 from app.schemas.analysis import AnalysisRecordInDB
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.analysis_orchestrator.service import analysis_orchestrator
-from app.modules.deterministic_ranker.service import deterministic_ranker_service
 
 from .analyze_models import (
     AnalyzeByImageRequest,
     DefaultInputCreate,
     DefaultInputUpdate,
-    Module2ScenarioResponse,
     Module3RankedScenarioResponse,
     PresignedUploadRequest,
     UploadSessionPayload,
@@ -46,44 +46,51 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def build_module_2_api_response(analysis_result) -> list[dict]:
-    response_items: list[dict] = []
-
-    for scenario in analysis_result.extraction_result.scenarios:
-        if scenario.evaluation is None:
-            raise AIProcessingError(
-                f"Missing evaluation in Module 2 response for scenario id '{scenario.id}'"
-            )
-
-        response_items.append(
-            Module2ScenarioResponse(
-                scenario_id=scenario.id,
-                user_goal=scenario.user_goal,
-                rationale=scenario.evaluation.rationale,
-                scores=scenario.evaluation.scores,
-            ).model_dump(mode="json", exclude_none=True)
-        )
-
-    return response_items
+def _json_compact(payload: dict) -> str:
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
-def build_module_3_api_response(module_2_response: list[dict]) -> list[dict]:
-    ranker_result = deterministic_ranker_service.rank(module_2_response)
+def _build_request_context(*, model_name: str | None, source: str) -> dict[str, str]:
+    return {
+        "request_id": str(uuid.uuid4()),
+        "batch_id": str(uuid.uuid4()),
+        "model_name": normalize_analysis_model_name(model_name),
+        "analysis_source": source,
+    }
+
+
+def _log_api_event(event_type: str, **payload):
     logger.info(
-        "Module 3 response: %s",
-        json.dumps(
-            ranker_result.model_dump(mode="json", exclude_none=True),
-            ensure_ascii=False,
-            separators=(",", ":"),
+        "Analyze API event: %s",
+        _json_compact(
+            merge_with_log_context(
+                {
+                    "service": "analyze_api",
+                    "event_type": event_type,
+                    **payload,
+                }
+            )
         ),
     )
+
+
+def build_ranked_api_response(analysis_result) -> list[dict]:
+    if analysis_result.ranker_metadata is not None:
+        logger.info(
+            "Module 4 metadata: %s",
+            json.dumps(
+                analysis_result.ranker_metadata.model_dump(mode="json", exclude_none=True),
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+        )
 
     return [
         Module3RankedScenarioResponse.model_validate(item.model_dump(mode="json")).model_dump(
             mode="json",
             exclude_none=True,
         )
-        for item in ranker_result.ranked_scenarios
+        for item in analysis_result.ranked_scenarios
     ]
 
 @router.post("/presigned-url")
@@ -227,42 +234,55 @@ async def analyze_by_image_url(payload: AnalyzeByImageRequest):
         payload.file_key,
     )
     file_path = download_remote_image(analysis_image_url)
+    request_context = _build_request_context(model_name=payload.model, source="image_url")
 
-    try:
-        analysis_result = analysis_orchestrator.analyze_image(
-            image_path=file_path,
-            model_name=payload.model,
+    with bind_log_context(**request_context):
+        _log_api_event(
+            "analyze_by_url_started",
+            image_url=analysis_image_url,
+            has_file_key=bool(payload.file_key),
         )
-    except AIProcessingError as e:
-        logger.error("AI processing failed during URL analysis: %s", e)
-        safe_remove_local_file(file_path)
-        raise HTTPException(status_code=502, detail=str(e))
-    except Exception as e:
-        safe_remove_local_file(file_path)
-        logger.error(f"Internal Server Error during URL analysis: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    module_2_response = build_module_2_api_response(analysis_result)
-    module_3_response = build_module_3_api_response(module_2_response)
-    logger.info(
-        "Final API Module 3 response: %s",
-        json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
-    )
-
-    serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
-
-    if serialized_result and supabase_service.is_ready():
         try:
-            supabase_service.create_analysis_record(
-                image_url=payload.image_url,
-                user_goal=serialized_result,
+            analysis_result = await analysis_orchestrator.analyze_image(
+                image_path=file_path,
+                model_name=payload.model,
             )
+        except AIProcessingError as e:
+            logger.error("AI processing failed during URL analysis: %s", e)
+            safe_remove_local_file(file_path)
+            _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
+            raise HTTPException(status_code=502, detail=str(e))
         except Exception as e:
-            logger.error(f"Could not save URL analysis record to Supabase: {e}")
+            safe_remove_local_file(file_path)
+            logger.error(f"Internal Server Error during URL analysis: {e}")
+            _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
+            raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    safe_remove_local_file(file_path)
+        module_3_response = build_ranked_api_response(analysis_result)
+        logger.info(
+            "Final API Module 3 response: %s",
+            json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
+        )
+        _log_api_event(
+            "analyze_by_url_completed",
+            scenario_count=len(module_3_response),
+        )
 
-    return JSONResponse(content=module_3_response)
+        serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
+
+        if serialized_result and supabase_service.is_ready():
+            try:
+                supabase_service.create_analysis_record(
+                    image_url=payload.image_url,
+                    user_goal=serialized_result,
+                )
+            except Exception as e:
+                logger.error(f"Could not save URL analysis record to Supabase: {e}")
+
+        safe_remove_local_file(file_path)
+
+        return JSONResponse(content=module_3_response)
 
 
 @router.post("/analyze", response_model=List[Module3RankedScenarioResponse])
@@ -275,38 +295,51 @@ async def analyze_screenshot(
 
     # 1. Save the uploaded file to a temporary local path for processing
     file_path = save_upload_file(file)
+    request_context = _build_request_context(model_name=model, source="file_upload")
 
     # 2. Call AI Service with the local file path
-    try:
-        analysis_result = analysis_orchestrator.analyze_image(
-            image_path=file_path,
-            model_name=model,
+    with bind_log_context(**request_context):
+        _log_api_event(
+            "analyze_by_file_started",
+            filename=file.filename,
+            content_type=file.content_type,
         )
 
-    except AIProcessingError as e:
-        logger.error("AI processing failed during file analysis: %s", e)
-        # Clean up file if AI fails
-        safe_remove_local_file(file_path)
-        raise HTTPException(status_code=502, detail=str(e))
-    except Exception as e:
-        safe_remove_local_file(file_path)
-        logger.error(f"Internal Server Error during analysis: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
+        try:
+            analysis_result = await analysis_orchestrator.analyze_image(
+                image_path=file_path,
+                model_name=model,
+            )
 
-    module_2_response = build_module_2_api_response(analysis_result)
-    module_3_response = build_module_3_api_response(module_2_response)
-    logger.info(
-        "Final API Module 3 response: %s",
-        json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
-    )
+        except AIProcessingError as e:
+            logger.error("AI processing failed during file analysis: %s", e)
+            # Clean up file if AI fails
+            safe_remove_local_file(file_path)
+            _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
+            raise HTTPException(status_code=502, detail=str(e))
+        except Exception as e:
+            safe_remove_local_file(file_path)
+            logger.error(f"Internal Server Error during analysis: {e}")
+            _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
+            raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-    serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
+        module_3_response = build_ranked_api_response(analysis_result)
+        logger.info(
+            "Final API Module 3 response: %s",
+            json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
+        )
+        _log_api_event(
+            "analyze_by_file_completed",
+            scenario_count=len(module_3_response),
+        )
 
-    # 3. Trigger Background Task for Persistence
-    background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
+        serialized_result = json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":"))
 
-    # 4. Return structured JSON response
-    return JSONResponse(content=module_3_response)
+        # 3. Trigger Background Task for Persistence
+        background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
+
+        # 4. Return structured JSON response
+        return JSONResponse(content=module_3_response)
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])
 def read_records(

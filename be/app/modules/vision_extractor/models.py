@@ -2,8 +2,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.modules.evaluator_rationalizer.models import ScenarioEvaluation
-
 ScenarioCategory = Literal[
     "authentication",
     "navigation",
@@ -37,6 +35,17 @@ class PageOverview(BaseModel):
     functionality: str
     target_users: str
     business_rules: list[str] = Field(default_factory=list)
+
+
+class ScenarioEvaluationScores(BaseModel):
+    core_alignment: int = Field(ge=1, le=10)
+    frequency: int = Field(ge=1, le=10)
+    business_risk: int = Field(ge=1, le=10)
+
+
+class ScenarioEvaluation(BaseModel):
+    rationale: str = Field(min_length=1)
+    scores: ScenarioEvaluationScores
 
 
 class ScenarioSpec(BaseModel):

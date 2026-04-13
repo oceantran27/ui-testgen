@@ -90,9 +90,9 @@ def download_remote_image(image_url: str) -> str:
         raise HTTPException(status_code=400, detail=f"Could not download image: {exc}")
 
 
-def resolve_model_result(file_path: str, model: str | None) -> str:
+async def resolve_model_result(file_path: str, model: str | None) -> str:
     try:
-        result = analysis_orchestrator.analyze_image(
+        result = await analysis_orchestrator.analyze_image(
             image_path=file_path,
             model_name=model,
         )
