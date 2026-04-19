@@ -1,0 +1,17 @@
+{
+  "visual_groups": [
+    {
+      "group_name": "Shopping Cart",
+      "elements": [
+        {
+          "id": "element_001",
+          "type": "button",
+          "label": "Checkout",
+          "text": "Proceed to Checkout",
+          "state": ["visible", "enabled"],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

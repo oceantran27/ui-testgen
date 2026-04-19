@@ -1,0 +1,29 @@
+{
+  "visual_groups": [
+    {
+      "group_name": "Checkout Header",
+      "elements": [
+        {
+          "id": "element_001",
+          "type": "text",
+          "label": "",
+          "text": "Shopping Cart",
+          "placeholder": "",
+          "input_value": "",
+          "state": ["visible"],
+          "children": []
+        },
+        {
+          "id": "element_002",
+          "type": "button",
+          "label": "Checkout",
+          "text": "Checkout",
+          "placeholder": "",
+          "input_value": "",
+          "state": ["visible", "enabled"],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

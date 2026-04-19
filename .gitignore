@@ -30,3 +30,6 @@ Thumbs.db
 
 uploads
 experiment_results
+reports
+
+*.pyc

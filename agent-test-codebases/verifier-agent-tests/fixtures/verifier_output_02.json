@@ -1,0 +1,38 @@
+{
+  "scenarios": [
+    {
+      "id": "SCN-001",
+      "actor": "End_User",
+      "category": "E2E_Workflow",
+      "given": "Given cart items are ready for checkout",
+      "when": "When the user confirms details and submits checkout",
+      "then": "Then the order is placed successfully",
+      "user_goal": "Place order",
+      "expected_outcome": "Order confirmation is shown",
+      "step_order": 1,
+      "referenced_element_ids": ["element_002"],
+      "source_rules": ["Workflow_Rules[0]"],
+      "visual_cues_expected": ["Checkout button is visible"],
+      "verification_status": "approved",
+      "rejection_reason": "",
+      "verifier_confidence_score": 0.93
+    },
+    {
+      "id": "SCN-002",
+      "actor": "End_User",
+      "category": "Form_Validation",
+      "given": "Given checkout form is visible",
+      "when": "When incomplete details are submitted",
+      "then": "Then validation feedback appears",
+      "user_goal": "See validation",
+      "expected_outcome": "Validation message is visible",
+      "step_order": 2,
+      "referenced_element_ids": ["element_002"],
+      "source_rules": ["Field_Level_Rules[0]"],
+      "visual_cues_expected": ["Validation text appears"],
+      "verification_status": "rejected",
+      "rejection_reason": "Validation text is not visible in viewport",
+      "verifier_confidence_score": 0.78
+    }
+  ]
+}

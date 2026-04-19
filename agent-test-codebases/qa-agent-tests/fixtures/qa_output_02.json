@@ -1,0 +1,18 @@
+{
+  "scenarios": [
+    {
+      "id": "SCN-001",
+      "actor": "End_User",
+      "category": "E2E_Workflow",
+      "given": "Given cart items are ready for checkout",
+      "when": "When the user confirms details and submits checkout",
+      "then": "Then the order is placed successfully",
+      "user_goal": "Place order",
+      "expected_outcome": "Order confirmation is shown",
+      "step_order": 1,
+      "referenced_element_ids": ["element_002"],
+      "source_rules": ["Workflow_Rules[0]"],
+      "visual_cues_expected": ["Checkout button is visible"]
+    }
+  ]
+}

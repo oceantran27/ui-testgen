@@ -1,0 +1,34 @@
+{
+  "page_overview": {
+    "page_type": "checkout",
+    "primary_goal": "Complete checkout",
+    "functionality": "Review cart and place order",
+    "target_users": "End users"
+  },
+  "business_rules": {
+    "Field_Level_Rules": [
+      {
+        "rule": {
+          "given": "Given the checkout form is visible",
+          "when": "When required fields are provided",
+          "then": "Then order submission remains available"
+        },
+        "element_ids": ["element_002"],
+        "confidence": 0.91
+      }
+    ],
+    "State_Rules": [],
+    "Workflow_Rules": [
+      {
+        "rule": {
+          "given": "Given items are in cart",
+          "when": "When the user confirms checkout",
+          "then": "Then order placement can proceed"
+        },
+        "element_ids": ["element_002"],
+        "confidence": 0.95
+      }
+    ],
+    "Validation_Rules": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "page_overview": {
+    "page_type": "checkout",
+    "primary_goal": "Complete checkout",
+    "functionality": "Collect user details and finalize purchase",
+    "target_users": "End users"
+  },
+  "business_rules": {
+    "Field_Level_Rules": [
+      {
+        "rule": {
+          "given": "Given the checkout form is visible",
+          "when": "When the user enters required shipping fields",
+          "then": "Then the form remains valid"
+        },
+        "element_ids": ["element_001"],
+        "confidence": 0.92
+      }
+    ],
+    "State_Rules": [],
+    "Workflow_Rules": [
+      {
+        "rule": {
+          "given": "Given cart items exist",
+          "when": "When the user confirms checkout",
+          "then": "Then order placement is allowed"
+        },
+        "element_ids": ["element_001"],
+        "confidence": 0.95
+      }
+    ],
+    "Validation_Rules": []
+  }
+}

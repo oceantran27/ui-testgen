@@ -1,0 +1,17 @@
+{
+  "visual_groups": [
+    {
+      "group_name": "Checkout Panel",
+      "elements": [
+        {
+          "id": "element_001",
+          "type": "button",
+          "label": "Place Order",
+          "text": "Place Order",
+          "state": ["visible", "enabled"],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
