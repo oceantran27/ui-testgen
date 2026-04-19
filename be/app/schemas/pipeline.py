@@ -1,15 +1,52 @@
+from __future__ import annotations
+
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
+class VisualGroup(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    group_name: str = Field(..., min_length=1)
+    elements: list[dict] = Field(default_factory=list)
+
+    @field_validator("elements", mode="before")
+    @classmethod
+    def normalize_elements(cls, value: object) -> object:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("elements must be a list")
+        return [item for item in value if isinstance(item, dict)]
+
+
+class VisualParserOutput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    visual_groups: list[VisualGroup]
+
+    @field_validator("visual_groups", mode="before")
+    @classmethod
+    def normalize_visual_groups(cls, value: object) -> object:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("visual_groups must be a list")
+        return [item for item in value if isinstance(item, dict)]
+
+
 class GherkinRule(BaseModel):
-    given: str
-    when: str
-    then: str
+    model_config = ConfigDict(extra="forbid")
+
+    given: str = Field(..., min_length=1)
+    when: str = Field(..., min_length=1)
+    then: str = Field(..., min_length=1)
 
 
-class BusinessRule(BaseModel):
+class BusinessRuleEntry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     rule: GherkinRule
     element_ids: list[str] = Field(default_factory=list)
     confidence: float = Field(..., ge=0.0, le=1.0)
@@ -21,17 +58,25 @@ class BusinessRule(BaseModel):
             return []
         if not isinstance(value, list):
             raise ValueError("element_ids must be a list")
-        return [str(item).strip() for item in value if str(item).strip()]
+
+        normalized = [str(item).strip() for item in value if str(item).strip()]
+        if not normalized:
+            raise ValueError("element_ids must contain at least one id")
+        return normalized
 
 
-class BusinessRules(BaseModel):
-    Field_Level_Rules: list[BusinessRule] = Field(default_factory=list)
-    State_Rules: list[BusinessRule] = Field(default_factory=list)
-    Workflow_Rules: list[BusinessRule] = Field(default_factory=list)
-    Validation_Rules: list[BusinessRule] = Field(default_factory=list)
+class BusinessRulesCategorized(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    Field_Level_Rules: list[BusinessRuleEntry] = Field(default_factory=list)
+    State_Rules: list[BusinessRuleEntry] = Field(default_factory=list)
+    Workflow_Rules: list[BusinessRuleEntry] = Field(default_factory=list)
+    Validation_Rules: list[BusinessRuleEntry] = Field(default_factory=list)
 
 
-class PageOverview(BaseModel):
+class PageOverviewBusinessAnalyst(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     page_type: Literal[
         "form_submission",
         "dashboard_view",
@@ -43,27 +88,35 @@ class PageOverview(BaseModel):
         "settings",
         "unknown",
     ] = "unknown"
-    primary_goal: str
-    functionality: str
-    target_users: str
+    primary_goal: str = ""
+    functionality: str = ""
+    target_users: str = ""
 
 
-class Scenario(BaseModel):
+
+class BusinessAnalystOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    page_overview: PageOverviewBusinessAnalyst
+    business_rules: BusinessRulesCategorized
+
+
+class RawScenario(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(..., min_length=1)
+    user_goal: str = Field(..., min_length=1)
     category: Literal[
         "E2E_Workflow",
         "Form_Validation",
         "State_Transition",
         "Navigation",
     ]
-    id: str
-    given: str
-    when: str
-    then: str
-    user_goal: str
-    actor: str
-    expected_outcome: str
+    actor: str = Field(..., min_length=1)
+    given: str = Field(..., min_length=1)
+    when: str = Field(..., min_length=1)
+    then: str = Field(..., min_length=1)
+    expected_outcome: str = Field(..., min_length=1)
     step_order: int = Field(..., ge=1)
     referenced_element_ids: list[str] = Field(default_factory=list)
     source_rules: list[str] = Field(default_factory=list)
@@ -101,7 +154,7 @@ class Scenario(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def validate_rejection_reason(self) -> "Scenario":
+    def validate_rejection_reason(self) -> "RawScenario":
         # Keep reason semantics consistent with verifier output policy.
         reason = self.rejection_reason.strip()
         if self.verification_status == "rejected" and not reason:
@@ -112,7 +165,7 @@ class Scenario(BaseModel):
         return self
 
 
-class AnalyzeResponse(BaseModel):
-    page_overview: PageOverview
-    business_rules: BusinessRules
-    scenarios: list[Scenario] = Field(default_factory=list)
+class RawScenarioList(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    scenarios: list[RawScenario] = Field(default_factory=list)

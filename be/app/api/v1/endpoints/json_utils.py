@@ -5,6 +5,13 @@ import re
 logger = logging.getLogger(__name__)
 
 
+def _compact_preview(value: str, limit: int = 240) -> str:
+    preview = " ".join(value.split())
+    if len(preview) <= limit:
+        return preview
+    return f"{preview[:limit]}..."
+
+
 def strip_json_comments(value: str) -> str:
     value = re.sub(r"/\*.*?\*/", "", value, flags=re.DOTALL)
     value = re.sub(r"(^|\s)//.*$", "", value, flags=re.MULTILINE)
@@ -77,9 +84,17 @@ def find_json_block(value: str) -> str | None:
     if wrapped:
         return wrapped
 
-    key = '"user_intents"'
-    key_idx = value.find(key)
-    if key_idx != -1:
+    focus_keys = (
+        '"visual_groups"',
+        '"page_overview"',
+        '"scenarios"',
+        '"user_intents"',
+    )
+    for key in focus_keys:
+        key_idx = value.find(key)
+        if key_idx == -1:
+            continue
+
         start_idx = value.rfind("{", 0, key_idx)
         focused = _find_balanced_json_object(value, start_idx)
         if focused:
@@ -98,5 +113,9 @@ def extract_and_minify_json(value: str) -> str | None:
         parsed = json.loads(cleaned)
         return json.dumps(parsed, ensure_ascii=False, separators=(",", ":"))
     except Exception as exc:
-        logger.error("Failed to parse extracted JSON: %s", exc)
+        logger.error(
+            "Failed to parse extracted JSON: %s | candidate_preview=%s",
+            exc,
+            _compact_preview(candidate),
+        )
         return None

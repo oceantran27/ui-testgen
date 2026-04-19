@@ -1,6 +1,8 @@
-from pydantic_settings import BaseSettings
 from typing import Optional
+
+from pydantic import Field, field_validator
 from pydantic import model_validator
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
@@ -8,54 +10,38 @@ class Settings(BaseSettings):
     PROJECT_VERSION: str = "1.0.0"
     PROJECT_DESCRIPTION: str = "API for UI TestGen, providing endpoints to analyze UI screenshots and generate test cases."
 
-    # OpenAI
-    OPENAI_API_KEY: Optional[str] = None
-    
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
 
-    # Backblaze B2
-    B2_KEY_ID: Optional[str] = None
-    B2_KEY_NAME: Optional[str] = None
-    B2_APPLICATION_KEY: Optional[str] = None
-    B2_BUCKET_NAME: Optional[str] = None
-    B2_ENDPOINT: Optional[str] = None
-    B2_REGION: Optional[str] = None
-    STORAGE_TYPE: str = "local"  # 'local' | 'b2' | 'auto' (legacy: 'db' -> 'local')
+    # Provider selection
+    LLM_PROVIDER: str = "gemini"
+    LLM_MODEL: str = "gemini-2.5-flash"
 
-    # B2 S3-compatible presigned upload settings
-    B2_PRESIGNED_EXPIRES_SECONDS: int = 3600
-    B2_PRESIGNED_GET_EXPIRES_SECONDS: int = 3600
+    # Runtime controls
+    LOG_LEVEL: str = "INFO"
+    CORS_ALLOW_ORIGINS: list[str] = Field(default_factory=lambda: ["*"])
+    LOG_RETENTION_DAYS: int = 3
 
-    # Supabase
-    SUPABASE_URL: Optional[str] = None
-    SUPABASE_KEY: Optional[str] = None
-    SUPABASE_ANALYSIS_TABLE: str = "user_goals_history"
-
-    # Data retention
-    DATA_RETENTION_DAYS: int = 15
-
-    # B2 object prefixes
-    B2_DEFAULT_INPUTS_PREFIX: str = "default-inputs"
-    B2_USER_INPUTS_PREFIX: str = "user-inputs"
+    @field_validator("CORS_ALLOW_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> object:
+        if isinstance(value, str):
+            normalized = value.strip()
+            if not normalized:
+                return ["*"]
+            if normalized.startswith("["):
+                return value
+            return [part.strip() for part in normalized.split(",") if part.strip()]
+        return value
 
     @model_validator(mode='after')
-    def normalize_storage_and_b2_credentials(self) -> "Settings":
+    def normalize_settings(self) -> "Settings":
+        self.LLM_PROVIDER = (self.LLM_PROVIDER or "gemini").strip().lower()
+        self.LLM_MODEL = (self.LLM_MODEL or "gemini-2.5-flash").strip()
+        self.LOG_LEVEL = (self.LOG_LEVEL or "INFO").strip().upper()
 
-        storage_type = (self.STORAGE_TYPE or "local").strip().lower()
-        if storage_type == "db":
-            storage_type = "local"
-        if storage_type not in {"local", "b2", "auto"}:
-            storage_type = "local"
-        self.STORAGE_TYPE = storage_type
-
-        self.SUPABASE_ANALYSIS_TABLE = (self.SUPABASE_ANALYSIS_TABLE or "user_goals_history").strip()
-
-        self.B2_DEFAULT_INPUTS_PREFIX = (self.B2_DEFAULT_INPUTS_PREFIX or "default-inputs").strip().strip("/")
-        self.B2_USER_INPUTS_PREFIX = (self.B2_USER_INPUTS_PREFIX or "user-inputs").strip().strip("/")
-
-        if self.DATA_RETENTION_DAYS <= 0:
-            self.DATA_RETENTION_DAYS = 15
+        if self.LOG_RETENTION_DAYS <= 0:
+            self.LOG_RETENTION_DAYS = 3
 
         return self
     
