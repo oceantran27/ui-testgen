@@ -88,7 +88,17 @@ class MultiAgentPipelineService:
         normalized["state"] = state_values
 
         raw_children = normalized.get("children", [])
-        normalized["children"] = raw_children if isinstance(raw_children, list) else []
+        if isinstance(raw_children, list):
+            normalized_children = []
+            for i, child in enumerate(raw_children):
+                if isinstance(child, dict):
+                    child_fallback = f"{fallback_id}_c{i+1}"
+                    normalized_children.append(
+                        MultiAgentPipelineService._normalize_visual_element(child, fallback_id=child_fallback)
+                    )
+            normalized["children"] = normalized_children
+        else:
+            normalized["children"] = []
 
         for key in ("type", "label", "text", "placeholder", "input_value"):
             if key in normalized and normalized[key] is not None:
