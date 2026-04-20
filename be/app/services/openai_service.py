@@ -1,20 +1,22 @@
 import base64
 import logging
+from typing import Any
 
 from openai import OpenAI
 
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
-from app.services.prompt_service import load_system_prompt
+from app.services.llm_provider import LLMProvider
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-class OpenAIService:
-    def __init__(self, model_name: str = "gpt-4.1"):
+class OpenAIService(LLMProvider):
+    provider_name = "openai"
+
+    def __init__(self, model_name: str = "gpt-4o-mini"):
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        self.model = model_name
-        self.system_prompt = load_system_prompt()
+        self.model_name = model_name
 
     def _encode_image(self, image_path: str) -> str:
         try:
@@ -24,30 +26,43 @@ class OpenAIService:
             logger.error(f"Failed to encode image: {e}")
             raise AIProcessingError(f"Failed to read image file: {str(e)}")
 
-    def analyze_image(self, image_path: str) -> str:
+    def generate(
+        self,
+        image_path: str,
+        *,
+        prompt_text: str,
+        temperature: float,
+        context_text: str | None = None,
+        user_instruction: str | None = None,
+    ) -> str:
         base64_image = self._encode_image(image_path)
         ext = image_path.lower().split(".")[-1]
         mime_type = "image/png" if ext == "png" else "image/jpeg"
 
+        user_text = ""
+        if context_text:
+            user_text += f"{context_text}\n\n"
+        if user_instruction:
+            user_text += f"{user_instruction}"
+            
+        if not user_text.strip():
+            user_text = "Analyze this image according to the system instructions."
+
         try:
             logger.info(f"Sending request to OpenAI for image: {image_path}")
             response = self.client.chat.completions.create(
-                model=self.model,
+                model=self.model_name,
                 messages=[
                     {
                         "role": "system",
-                        "content": self.system_prompt
+                        "content": prompt_text
                     },
                     {
                         "role": "user",
                         "content": [
                             {
                                 "type": "text",
-                                "text": (
-                                    "Analyze this web UI screenshot using the system instructions and return exactly one valid JSON object "
-                                    "that follows the required schema with page_overview, scenarios, and business_rules_and_constraints. "
-                                    "Do not return markdown, code fences, or extra text."
-                                )
+                                "text": user_text
                             },
                             {
                                 "type": "image_url",
@@ -59,9 +74,7 @@ class OpenAIService:
                         ]
                     }
                 ],
-                response_format={"type": "json_object"},
-                max_tokens=4000,
-                temperature=0
+                temperature=1
             )
             
             content = response.choices[0].message.content

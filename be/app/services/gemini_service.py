@@ -1,6 +1,7 @@
 import logging
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
 
 from app.core.config import settings
@@ -17,25 +18,8 @@ class GeminiService(LLMProvider):
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not configured in settings")
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
         self.model_name = model_name
-        # Cache Gemini model instances by temperature to reduce per-request overhead.
-        self._model_cache: dict[float, genai.GenerativeModel] = {}
-
-    def _build_model(self, temperature: float) -> genai.GenerativeModel:
-        normalized = float(temperature)
-        cached = self._model_cache.get(normalized)
-        if cached is not None:
-            return cached
-
-        model = genai.GenerativeModel(
-            self.model_name,
-            generation_config={
-                "temperature": normalized,
-            },
-        )
-        self._model_cache[normalized] = model
-        return model
 
     def generate(
         self,
@@ -63,8 +47,13 @@ class GeminiService(LLMProvider):
                 parts.append(user_instruction)
             parts.append(img)
 
-            model = self._build_model(temperature)
-            response = model.generate_content(parts)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=parts,
+                config=types.GenerateContentConfig(
+                    temperature=temperature,
+                )
+            )
             content = getattr(response, "text", None)
 
             logger.info("--- RAW LLM OUTPUT START ---")

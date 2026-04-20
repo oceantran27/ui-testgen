@@ -35,6 +35,11 @@ class LLMProviderFactory:
         normalized_provider = (provider_name or "").strip().lower()
         normalized_model = (model_name or "").strip()
 
+        if normalized_provider == "openai":
+            from app.services.openai_service import OpenAIService
+
+            return OpenAIService(model_name=normalized_model)
+
         if normalized_provider != "gemini":
             raise AIProcessingError(f"Unsupported provider: {provider_name}")
 
