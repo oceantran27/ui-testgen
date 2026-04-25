@@ -1,3 +1,5 @@
+import { BddResultDisplay, isBddResultJsonString } from "./BddResultDisplay";
+
 interface AnalysisResultDisplayProps {
   result: string;
   showTitle?: boolean;
@@ -87,6 +89,13 @@ const extractScenarioItems = (payload: unknown): ScenarioDisplayItem[] => {
       .filter((item): item is ScenarioDisplayItem => Boolean(item));
   }
 
+  const extraction = asRecord(root.extraction_result);
+  if (extraction && Array.isArray(extraction.scenarios)) {
+    return extraction.scenarios
+      .map((item, index) => normalizeScenarioItem(item, index))
+      .filter((item): item is ScenarioDisplayItem => Boolean(item));
+  }
+
   return [];
 };
 
@@ -97,6 +106,16 @@ export function AnalysisResultDisplay({
 }: AnalysisResultDisplayProps) {
   if (!result) {
     return null;
+  }
+
+  if (isBddResultJsonString(result)) {
+    return (
+      <BddResultDisplay
+        result={result}
+        showTitle={showTitle}
+        className={className}
+      />
+    );
   }
 
   let displayContent = result;

@@ -5,32 +5,20 @@ export interface AnalysisRecord {
   created_at: string;
 }
 
-export interface DebateEvent {
-  event_id: string;
-  sequence: number;
-  timestamp: string;
-  request_id: string;
-  batch_id?: string | null;
-  scenario_id?: string | null;
-  role: string;
-  event_type: string;
-  message: string;
-  metadata: Record<string, unknown>;
+export interface BddFeatureBlock {
+  name: string;
+  description?: string;
 }
 
-export interface DebateEventsPollResponse {
-  request_id: string;
-  batch_id?: string | null;
-  next_seq: number;
-  completed: boolean;
-  status: string;
-  events: DebateEvent[];
+export interface BddScenarioItem {
+  id: string;
+  title: string;
+  gherkin: string;
 }
 
-export type DebateStreamStatus =
-  | "idle"
-  | "running"
-  | "completed"
-  | "failed"
-  | "expired"
-  | "error";
+export interface BddHappyPathResult {
+  model: string;
+  feature: BddFeatureBlock;
+  scenarios: BddScenarioItem[];
+  combined_gherkin: string;
+}

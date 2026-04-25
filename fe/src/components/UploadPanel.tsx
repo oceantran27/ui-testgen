@@ -6,9 +6,11 @@ interface UploadPanelProps {
   selectedImageUrl: string | null;
   filePreview: string | null;
   isLoading: boolean;
+  isBddLoading: boolean;
   selectedPreviewLabel: string;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onAnalyzeClick: () => void;
+  onBddClick: () => void;
   onOpenDefaultGallery: () => void;
   onOpenPreviewModal: () => void;
 }
@@ -18,20 +20,28 @@ export function UploadPanel({
   selectedImageUrl,
   filePreview,
   isLoading,
+  isBddLoading,
   selectedPreviewLabel,
   onFileChange,
   onAnalyzeClick,
+  onBddClick,
   onOpenDefaultGallery,
   onOpenPreviewModal,
 }: UploadPanelProps) {
+  const busy = isLoading || isBddLoading;
   return (
     <div className="card">
       <h2 className="mb-4 flex items-center text-2xl font-bold text-gray-700">
         <FiUploadCloud className="mr-3 text-blue-500" />
-        Analyze New Screenshot
+        Screenshot: Analyze & BDD
       </h2>
+      <p className="mb-3 text-sm text-gray-500">
+        <strong className="text-gray-600">Analyze</strong> returns ranked
+        scenarios. <strong className="text-gray-600">Generate BDD</strong> returns
+        happy-path Gherkin (Gemini).
+      </p>
       <div className="flex flex-col gap-3">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-2">
           <label className="file-input-label">
             <input
               type="file"
@@ -45,13 +55,24 @@ export function UploadPanel({
           </label>
           <button
             onClick={onAnalyzeClick}
-            disabled={isLoading || (!file && !selectedImageUrl)}
+            disabled={busy || (!file && !selectedImageUrl)}
             className="btn btn-primary"
           >
             {isLoading ? (
               <FiLoader className="-ml-1 mr-2 animate-spin" />
             ) : null}
             {isLoading ? "Analyzing..." : "Analyze"}
+          </button>
+          <button
+            type="button"
+            onClick={onBddClick}
+            disabled={busy || (!file && !selectedImageUrl)}
+            className="btn border border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            {isBddLoading ? (
+              <FiLoader className="-ml-1 mr-2 animate-spin" />
+            ) : null}
+            {isBddLoading ? "Generating BDD..." : "Generate BDD"}
           </button>
         </div>
 
