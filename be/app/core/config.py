@@ -10,35 +10,22 @@ class Settings(BaseSettings):
 
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
-    
+
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
 
-    # Module 1 - Vision Extractor
-    VISION_EXTRACTOR_PROMPT_PATH: str = "app/prompts/vision_extractor_system_prompt.txt"
+    # Vision Extractor
+    VISION_EXTRACTOR_PROMPT_PATH: str = "app/llm_prompts/vision_extractor_system_prompt.txt"
 
-    # Multi-Agent Committee
-    COMMITTEE_MAX_FAILSAFE_ROUNDS: int = 5
-    COMMITTEE_SCORE_DELTA_THRESHOLD: float = 1.0
-    COMMITTEE_LLM_TIMEOUT_SECONDS: int = 45
-    COMMITTEE_MAX_CONCURRENCY: int = 5
-    COMMITTEE_WEIGHT_BA: float = 0.4
-    COMMITTEE_WEIGHT_QA: float = 0.3
-    COMMITTEE_WEIGHT_UX: float = 0.3
-    COMMITTEE_RANKER_VERSION: str = "v1"
-    COMMITTEE_AGENT_BA_PROMPT_PATH: str = "app/prompts/committee_agent1_business_analyst_system_prompt.txt"
-    COMMITTEE_AGENT_QA_PROMPT_PATH: str = "app/prompts/committee_agent2_security_qa_system_prompt.txt"
-    COMMITTEE_AGENT_UX_PROMPT_PATH: str = "app/prompts/committee_agent3_ux_expert_system_prompt.txt"
-    COMMITTEE_AGENT_JUDGE_PROMPT_PATH: str = "app/prompts/committee_agent4_judge_moderator_system_prompt.txt"
-    COMMITTEE_LOG_STRUCTURED_ENABLED: bool = True
-    COMMITTEE_LOG_LEGACY_ENABLED: bool = True
-    COMMITTEE_LOG_MAX_TEXT_CHARS: int = 320
-    COMMITTEE_EVENT_STREAM_ENABLED: bool = True
-    COMMITTEE_EVENT_STREAM_TTL_SECONDS: int = 3600
-    COMMITTEE_EVENT_STREAM_MAX_REQUESTS: int = 300
-    COMMITTEE_EVENT_STREAM_MAX_EVENTS_PER_REQUEST: int = 2500
-    COMMITTEE_EVENT_STREAM_POLL_MAX_LIMIT: int = 250
+    # BDD happy path (Gherkin from UI screenshot)
+    BDD_HAPPY_PATH_PROMPT_PATH: str = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
+    # Multi-image behavior flow clustering and ordering
+    BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH: str = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"
+    # Limits for POST /behavior-flows/organize
+    BEHAVIOR_FLOW_MAX_IMAGES: int = 40
+    BEHAVIOR_FLOW_MAX_FILE_BYTES: int = 12 * 1024 * 1024  # 12 MiB per file
+    BEHAVIOR_FLOW_MAX_IMAGE_EDGE: int = 1280  # max longer edge when resizing for Gemini (px)
 
     # Backblaze B2
     B2_KEY_ID: Optional[str] = None
@@ -84,56 +71,23 @@ class Settings(BaseSettings):
             self.DATA_RETENTION_DAYS = 15
 
         if not self.VISION_EXTRACTOR_PROMPT_PATH:
-            self.VISION_EXTRACTOR_PROMPT_PATH = "app/prompts/vision_extractor_system_prompt.txt"
+            self.VISION_EXTRACTOR_PROMPT_PATH = "app/llm_prompts/vision_extractor_system_prompt.txt"
 
-        if self.COMMITTEE_MAX_FAILSAFE_ROUNDS <= 0:
-            self.COMMITTEE_MAX_FAILSAFE_ROUNDS = 5
+        if not self.BDD_HAPPY_PATH_PROMPT_PATH:
+            self.BDD_HAPPY_PATH_PROMPT_PATH = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
-        if self.COMMITTEE_SCORE_DELTA_THRESHOLD < 0:
-            self.COMMITTEE_SCORE_DELTA_THRESHOLD = 1.0
+        if not self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH:
+            self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"
 
-        if self.COMMITTEE_LLM_TIMEOUT_SECONDS <= 0:
-            self.COMMITTEE_LLM_TIMEOUT_SECONDS = 45
-
-        if self.COMMITTEE_MAX_CONCURRENCY <= 0:
-            self.COMMITTEE_MAX_CONCURRENCY = 5
-
-        self.COMMITTEE_WEIGHT_BA = max(0.0, self.COMMITTEE_WEIGHT_BA)
-        self.COMMITTEE_WEIGHT_QA = max(0.0, self.COMMITTEE_WEIGHT_QA)
-        self.COMMITTEE_WEIGHT_UX = max(0.0, self.COMMITTEE_WEIGHT_UX)
-
-        if not self.COMMITTEE_RANKER_VERSION:
-            self.COMMITTEE_RANKER_VERSION = "v1"
-
-        if not self.COMMITTEE_AGENT_BA_PROMPT_PATH:
-            self.COMMITTEE_AGENT_BA_PROMPT_PATH = "app/prompts/committee_agent1_business_analyst_system_prompt.txt"
-
-        if not self.COMMITTEE_AGENT_QA_PROMPT_PATH:
-            self.COMMITTEE_AGENT_QA_PROMPT_PATH = "app/prompts/committee_agent2_security_qa_system_prompt.txt"
-
-        if not self.COMMITTEE_AGENT_UX_PROMPT_PATH:
-            self.COMMITTEE_AGENT_UX_PROMPT_PATH = "app/prompts/committee_agent3_ux_expert_system_prompt.txt"
-
-        if not self.COMMITTEE_AGENT_JUDGE_PROMPT_PATH:
-            self.COMMITTEE_AGENT_JUDGE_PROMPT_PATH = "app/prompts/committee_agent4_judge_moderator_system_prompt.txt"
-
-        if self.COMMITTEE_LOG_MAX_TEXT_CHARS < 80:
-            self.COMMITTEE_LOG_MAX_TEXT_CHARS = 80
-
-        if self.COMMITTEE_EVENT_STREAM_TTL_SECONDS < 60:
-            self.COMMITTEE_EVENT_STREAM_TTL_SECONDS = 60
-
-        if self.COMMITTEE_EVENT_STREAM_MAX_REQUESTS < 10:
-            self.COMMITTEE_EVENT_STREAM_MAX_REQUESTS = 10
-
-        if self.COMMITTEE_EVENT_STREAM_MAX_EVENTS_PER_REQUEST < 50:
-            self.COMMITTEE_EVENT_STREAM_MAX_EVENTS_PER_REQUEST = 50
-
-        if self.COMMITTEE_EVENT_STREAM_POLL_MAX_LIMIT < 10:
-            self.COMMITTEE_EVENT_STREAM_POLL_MAX_LIMIT = 10
+        if self.BEHAVIOR_FLOW_MAX_IMAGES <= 0:
+            self.BEHAVIOR_FLOW_MAX_IMAGES = 40
+        if self.BEHAVIOR_FLOW_MAX_FILE_BYTES <= 0:
+            self.BEHAVIOR_FLOW_MAX_FILE_BYTES = 12 * 1024 * 1024
+        if self.BEHAVIOR_FLOW_MAX_IMAGE_EDGE <= 0:
+            self.BEHAVIOR_FLOW_MAX_IMAGE_EDGE = 1280
 
         return self
-    
+
     class Config:
         env_file = ".env"
         case_sensitive = True

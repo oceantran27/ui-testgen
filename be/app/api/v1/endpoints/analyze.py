@@ -13,12 +13,11 @@ from app.core.model_selection import normalize_analysis_model_name
 from app.schemas.analysis import AnalysisRecordInDB
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
-from app.modules.agentic_committee.event_stream import committee_debate_event_stream
-from app.modules.analysis_orchestrator.service import analysis_orchestrator
+from app.modules.vision_extractor.models import VisionExtractionPayload
+from app.services.vision_analysis_service import vision_only_analysis_service
 
 from .analyze_models import (
     AnalyzeByImageRequest,
-    DebateEventsPollResponse,
     DefaultInputCreate,
     DefaultInputUpdate,
     Module3RankedScenarioResponse,
@@ -92,37 +91,6 @@ def _build_response_headers(request_context: dict[str, str]) -> dict[str, str]:
     }
 
 
-def _register_debate_stream(request_context: dict[str, str]) -> None:
-    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
-        return
-
-    committee_debate_event_stream.register_request(
-        request_id=request_context["request_id"],
-        batch_id=request_context["batch_id"],
-        metadata={
-            "analysis_source": request_context.get("analysis_source"),
-            "model_name": request_context.get("model_name"),
-        },
-    )
-
-
-def _mark_debate_stream_terminal(
-    request_context: dict[str, str],
-    *,
-    status: str,
-    reason: str | None = None,
-) -> None:
-    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
-        return
-
-    committee_debate_event_stream.mark_terminal(
-        request_id=request_context["request_id"],
-        batch_id=request_context["batch_id"],
-        status=status,
-        reason=reason,
-    )
-
-
 def _log_api_event(event_type: str, **payload):
     logger.info(
         "Analyze API event: %s",
@@ -138,23 +106,19 @@ def _log_api_event(event_type: str, **payload):
     )
 
 
-def build_ranked_api_response(analysis_result) -> list[dict]:
-    if analysis_result.ranker_metadata is not None:
-        logger.info(
-            "Module 4 metadata: %s",
-            json.dumps(
-                analysis_result.ranker_metadata.model_dump(mode="json", exclude_none=True),
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ),
-        )
-
+def build_module3_list_from_vision(vision: VisionExtractionPayload) -> list[dict]:
     return [
-        Module3RankedScenarioResponse.model_validate(item.model_dump(mode="json")).model_dump(
-            mode="json",
-            exclude_none=True,
-        )
-        for item in analysis_result.ranked_scenarios
+        Module3RankedScenarioResponse(
+            scenario_id=sc.id,
+            user_goal=sc.user_goal,
+            conflict_resolution_summary="",
+            BA_score=5,
+            QA_score=5,
+            UX_score=5,
+            final_score=5.0,
+            rank_position=idx,
+        ).model_dump(mode="json", exclude_none=True)
+        for idx, sc in enumerate(vision.scenarios, start=1)
     ]
 
 @router.post("/presigned-url")
@@ -231,27 +195,6 @@ def read_backend_logs(lines: int = Query(200, ge=1, le=2000)):
         logger.error(f"Failed to read backend logs: {e}")
         raise HTTPException(status_code=500, detail="Could not read backend logs.") from e
 
-
-@router.get("/debate-events/{request_id}", response_model=DebateEventsPollResponse)
-def read_debate_events(
-    request_id: str,
-    since_seq: int = Query(0, ge=0),
-    limit: int = Query(120, ge=1),
-):
-    if not settings.COMMITTEE_EVENT_STREAM_ENABLED:
-        raise HTTPException(status_code=503, detail="Debate event stream is disabled on server.")
-
-    safe_limit = min(limit, settings.COMMITTEE_EVENT_STREAM_POLL_MAX_LIMIT)
-    try:
-        snapshot = committee_debate_event_stream.read_events(
-            request_id=request_id,
-            since_seq=since_seq,
-            limit=safe_limit,
-        )
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Debate stream not found or expired.") from exc
-
-    return DebateEventsPollResponse.model_validate(snapshot).model_dump(mode="json")
 
 @router.post("/upload-to-b2")
 async def upload_file_to_b2(
@@ -330,7 +273,6 @@ async def analyze_by_image_url(
         request_id=x_request_id,
         batch_id=x_batch_id,
     )
-    _register_debate_stream(request_context)
 
     with bind_log_context(**request_context):
         _log_api_event(
@@ -340,7 +282,7 @@ async def analyze_by_image_url(
         )
 
         try:
-            analysis_result = await analysis_orchestrator.analyze_image(
+            analysis_result = await vision_only_analysis_service.analyze_image(
                 image_path=file_path,
                 model_name=payload.model,
             )
@@ -348,16 +290,14 @@ async def analyze_by_image_url(
             logger.error("AI processing failed during URL analysis: %s", e)
             safe_remove_local_file(file_path)
             _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
-            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=502, detail=str(e))
         except Exception as e:
             safe_remove_local_file(file_path)
             logger.error(f"Internal Server Error during URL analysis: {e}")
             _log_api_event("analyze_by_url_failed", reason=str(e), error_type=e.__class__.__name__)
-            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-        module_3_response = build_ranked_api_response(analysis_result)
+        module_3_response = build_module3_list_from_vision(analysis_result.extraction_result)
         logger.info(
             "Final API Module 3 response: %s",
             json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
@@ -379,7 +319,6 @@ async def analyze_by_image_url(
                 logger.error(f"Could not save URL analysis record to Supabase: {e}")
 
         safe_remove_local_file(file_path)
-        _mark_debate_stream_terminal(request_context, status="completed")
 
         return JSONResponse(
             content=module_3_response,
@@ -405,7 +344,6 @@ async def analyze_screenshot(
         request_id=x_request_id,
         batch_id=x_batch_id,
     )
-    _register_debate_stream(request_context)
 
     # 2. Call AI Service with the local file path
     with bind_log_context(**request_context):
@@ -416,7 +354,7 @@ async def analyze_screenshot(
         )
 
         try:
-            analysis_result = await analysis_orchestrator.analyze_image(
+            analysis_result = await vision_only_analysis_service.analyze_image(
                 image_path=file_path,
                 model_name=model,
             )
@@ -426,16 +364,14 @@ async def analyze_screenshot(
             # Clean up file if AI fails
             safe_remove_local_file(file_path)
             _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
-            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=502, detail=str(e))
         except Exception as e:
             safe_remove_local_file(file_path)
             logger.error(f"Internal Server Error during analysis: {e}")
             _log_api_event("analyze_by_file_failed", reason=str(e), error_type=e.__class__.__name__)
-            _mark_debate_stream_terminal(request_context, status="failed", reason=str(e))
             raise HTTPException(status_code=500, detail="Internal Server Error during analysis")
 
-        module_3_response = build_ranked_api_response(analysis_result)
+        module_3_response = build_module3_list_from_vision(analysis_result.extraction_result)
         logger.info(
             "Final API Module 3 response: %s",
             json.dumps(module_3_response, ensure_ascii=False, separators=(",", ":")),
@@ -449,7 +385,6 @@ async def analyze_screenshot(
 
         # 3. Trigger Background Task for Persistence
         background_tasks.add_task(save_analysis_record_task, file_path, serialized_result)
-        _mark_debate_stream_terminal(request_context, status="completed")
 
         # 4. Return structured JSON response
         return JSONResponse(

@@ -13,7 +13,7 @@ from fastapi import HTTPException, UploadFile
 
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
-from app.modules.analysis_orchestrator.service import analysis_orchestrator
+from app.services.vision_analysis_service import VisionOnlyAnalysisService, vision_only_analysis_service
 from app.services.b2_service import B2Service
 from app.services.supabase_service import SupabaseService
 
@@ -92,18 +92,14 @@ def download_remote_image(image_url: str) -> str:
 
 async def resolve_model_result(file_path: str, model: str | None) -> str:
     try:
-        result = await analysis_orchestrator.analyze_image(
+        result = await vision_only_analysis_service.analyze_image(
             image_path=file_path,
             model_name=model,
         )
     except Exception as exc:
         raise AIProcessingError(f"AI Processing failed: {exc}")
 
-    return json.dumps(
-        result.model_dump(mode="json", exclude_none=True),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
+    return VisionOnlyAnalysisService.serialize_for_storage(result)
 
 
 def record_to_legacy_response(record: dict) -> dict:
