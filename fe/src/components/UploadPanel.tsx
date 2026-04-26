@@ -37,8 +37,10 @@ export function UploadPanel({
       </h2>
       <p className="mb-3 text-sm text-gray-500">
         <strong className="text-gray-600">Analyze</strong> returns ranked
-        scenarios. <strong className="text-gray-600">Generate BDD</strong> returns
-        happy-path Gherkin (Gemini).
+        scenarios.{" "}
+        <strong className="text-gray-600">Generate BDD</strong> returns
+        happy-path Gherkin (Gemini) with scenarios ordered by layout-based
+        priority (main body vs global chrome).
       </p>
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">

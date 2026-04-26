@@ -19,6 +19,21 @@ You receive a SINGLE viewport screenshot of a Web UI. Your job is STRICTLY happy
 4. Voice: Use first-person "I" OR third-person "the user" consistently. NEVER mix.
 5. Format: Prefer `Scenario`. Use `Scenario Outline` ONLY for the exact same flow needing a small data table.
 
+# Priority (layout + action; required per scenario)
+Classify each scenario using **only the screenshot**: infer the **MAIN content body** (the central column or hero area where the page’s primary subject lives) versus **GLOBAL CHROME** (regions that persist for app-wide navigation: top header/app bar, footer, persistent left/right app-shell sidebar, global menus, profile icon in the chrome).
+
+Set `priority` to exactly one of: `"primary"`, `"secondary"`, `"utility"`.
+
+- **primary**: Core / outcome-driving interaction **inside the MAIN content body** (e.g. checkout button, primary form submission, selecting a representative product card or list row per merge rules).
+- **secondary**: Supporting interactions **still inside the MAIN content body** (e.g. search bar **in the main column**, filters, sorting, pagination, in-content tabs that refine the main view).
+- **utility**: Interactions **outside the main body** — **global chrome only** (e.g. header navigation, footer links, top app bar, persistent side nav / app shell sidebar, profile or account entry in the chrome).
+
+**Disambiguation (use pixel position and layout):**
+- The same control type can differ by placement: e.g. **Search** in the **main column** → `secondary`; **Search** in the **header/top chrome** → `utility`.
+- Filters **in the main content block** (same band as the grid/list) → `secondary`. Filters or nav **in a fixed app-shell sidebar** used for global app navigation → usually `utility`.
+
+Do **not** use business guesswork (“why the user came here”); use **where** the control sits relative to main body vs chrome.
+
 # Output Format
 Return ONLY a raw, valid JSON object exactly matching the schema below. NO markdown formatting (no ```json), NO commentary, NO trailing commas.
 
@@ -32,17 +47,18 @@ Return ONLY a raw, valid JSON object exactly matching the schema below. NO markd
       "id": "string (e.g., BDD-001)",
       "title": "string (Short title)",
       "gherkin": "string (Full Gherkin with \\n. Use exact keywords: Given, When, Then, And)",
-      "confidence": number // 0.0 to 1.0. Score ONLY the outcome assertions in `Then` and outcome-continuing `And` (1.0 = visible/immediate, 0.0 = completely guessed).
+      "confidence": number, // 0.0 to 1.0. Score ONLY the outcome assertions in `Then` and outcome-continuing `And` (1.0 = visible/immediate, 0.0 = completely guessed).
+      "priority": "primary" | "secondary" | "utility"
     }
   ]
 }
 
 # Examples
 Example 1 (Repeating list - merged into one class):
-{"feature":{"name":"Fruit list","description":"A product catalog page listing items for selection."},"scenarios":[{"id":"BDD-001","title":"View product details","gherkin":"Scenario: View product details\n    Given the user is on the fruit catalog\n    When the user selects the product \"Apple\" from the list\n    Then the product details for \"Apple\" are displayed\n","confidence":0.75}]}
+{"feature":{"name":"Fruit list","description":"A product catalog page listing items for selection."},"scenarios":[{"id":"BDD-001","title":"View product details","gherkin":"Scenario: View product details\n    Given the user is on the fruit catalog\n    When the user selects the product \"Apple\" from the list\n    Then the product details for \"Apple\" are displayed\n","confidence":0.75,"priority":"primary"}]}
 
 Example 2 (No interactive elements):
 {"feature":{"name":"Static splash","description":"A marketing page with no interactive controls in this view."},"scenarios":[]}
 
 Example 3 (Multiple goals/regions):
-{"feature":{"name":"Store browse","description":"A shop with global navigation, search, and a product grid."},"scenarios":[{"id":"BDD-001","title":"Open account from header","gherkin":"Scenario: Open account from header\n    Given the user is on the store home page\n    When the user chooses \"Account\" in the header\n    Then the sign-in or account area is shown\n","confidence":0.6},{"id":"BDD-002","title":"View a product from the grid","gherkin":"Scenario: View a product from the grid\n    Given the user is on the store home page\n    When the user selects the first visible product in the grid\n    Then the product details for that product are displayed\n","confidence":0.7}]}
+{"feature":{"name":"Store browse","description":"A shop with global navigation, search, and a product grid."},"scenarios":[{"id":"BDD-001","title":"Open account from header","gherkin":"Scenario: Open account from header\n    Given the user is on the store home page\n    When the user chooses \"Account\" in the header\n    Then the sign-in or account area is shown\n","confidence":0.6,"priority":"utility"},{"id":"BDD-002","title":"View a product from the grid","gherkin":"Scenario: View a product from the grid\n    Given the user is on the store home page\n    When the user selects the first visible product in the grid\n    Then the product details for that product are displayed\n","confidence":0.7,"priority":"primary"}]}

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
 
-    # Vision Extractor
+    # Vision Extractor (behavior-level JSON)
     VISION_EXTRACTOR_PROMPT_PATH: str = "app/llm_prompts/vision_extractor_system_prompt.txt"
 
     # BDD happy path (Gherkin from UI screenshot)
@@ -92,5 +92,6 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
         extra = "ignore"
+
 
 settings = Settings()

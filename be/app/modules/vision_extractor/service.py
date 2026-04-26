@@ -15,7 +15,11 @@ class VisionExtractorService:
     def __init__(self, provider_factory: VisionProviderFactory | None = None):
         self.provider_factory = provider_factory or VisionProviderFactory()
 
-    def extract(self, image_path: str, model_name: str | None = None) -> VisionExtractionResult:
+    def extract(
+        self,
+        image_path: str,
+        model_name: str | None = None,
+    ) -> VisionExtractionResult:
         selected_model = normalize_analysis_model_name(model_name)
         system_prompt = load_vision_extractor_prompt()
 
@@ -30,7 +34,7 @@ class VisionExtractorService:
             payload = VisionExtractionPayload.model_validate(json.loads(normalized_output))
         except Exception as exc:
             logger.error("Vision extractor output schema mismatch: %s", exc)
-            raise AIProcessingError(f"Vision extractor output schema mismatch: {exc}")
+            raise AIProcessingError(f"Vision extractor output schema mismatch: {exc}") from exc
 
         return VisionExtractionResult(
             model=selected_model,

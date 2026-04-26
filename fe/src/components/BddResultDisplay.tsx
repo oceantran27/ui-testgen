@@ -1,9 +1,49 @@
 import { useCallback, useState } from "react";
-import type { BddHappyPathResult } from "./types";
+import type {
+  BddHappyPathRankedResponse,
+  BddHappyPathResult,
+  BddScenarioItem,
+  BddScenarioPriority,
+} from "./types";
+
+const priorityLabel: Record<BddScenarioPriority, string> = {
+  primary: "Primary",
+  secondary: "Secondary",
+  utility: "Utility",
+};
+
+function priorityBadgeClass(p: BddScenarioPriority): string {
+  switch (p) {
+    case "primary":
+      return "bg-emerald-100 text-emerald-900 ring-emerald-200/80";
+    case "secondary":
+      return "bg-amber-100 text-amber-900 ring-amber-200/80";
+    default:
+      return "bg-slate-100 text-slate-800 ring-slate-200/80";
+  }
+}
+
+function scenarioLayoutPriority(
+  sc: BddScenarioItem,
+): BddScenarioPriority | undefined {
+  return sc.priority ?? sc.tier;
+}
 
 const parseBdd = (result: string): BddHappyPathResult | null => {
   try {
     return JSON.parse(result) as BddHappyPathResult;
+  } catch {
+    return null;
+  }
+};
+
+const parseBddRanked = (result: string): BddHappyPathRankedResponse | null => {
+  try {
+    const o = JSON.parse(result) as BddHappyPathRankedResponse;
+    if (!o.bdd || !o.vision) {
+      return null;
+    }
+    return o;
   } catch {
     return null;
   }
@@ -15,12 +55,75 @@ interface BddResultDisplayProps {
   className?: string;
 }
 
+function BddScenarioList({
+  data,
+}: {
+  data: BddHappyPathResult;
+}) {
+  return (
+    <>
+      {data.scenarios.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-gray-300/90 bg-gray-50/80 px-4 py-6 text-center text-sm text-gray-600">
+          No scenarios were generated: no meaningful equivalence partitions
+          were identified for this view (per system rules). The feature
+          above still describes the page.
+        </p>
+      ) : null}
+      {data.scenarios.map((sc, index) => {
+        const layoutPriority = scenarioLayoutPriority(sc);
+        return (
+        <details
+          key={`${sc.id}-${index}`}
+          className="group overflow-hidden rounded-xl border border-gray-200/90 bg-gray-50/90 shadow-inner"
+          open={index === 0}
+        >
+          <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 border-b border-gray-200/70 bg-white/70 px-4 py-3 [&::-webkit-details-marker]:hidden">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <p className="text-xs font-medium text-gray-500">{sc.id}</p>
+                {layoutPriority ? (
+                  <span
+                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ${priorityBadgeClass(layoutPriority)}`}
+                    title="Layout-based priority (main body vs global chrome)"
+                  >
+                    {priorityLabel[layoutPriority]}
+                  </span>
+                ) : null}
+                {typeof sc.confidence === "number" ? (
+                  <span
+                    className="text-xs tabular-nums text-teal-700"
+                    title="Model confidence for Then-clause assertions (0–1)"
+                  >
+                    Then confidence: {sc.confidence.toFixed(2)}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-sm font-semibold text-gray-800 wrap-anywhere">
+                {sc.title}
+              </p>
+            </div>
+            <span className="text-sm text-gray-400 transition-transform group-open:rotate-180">
+              ▾
+            </span>
+          </summary>
+          <pre className="custom-scrollbar max-h-80 overflow-auto px-4 py-3 font-mono text-sm leading-6 text-gray-800 wrap-anywhere whitespace-pre-wrap">
+            {sc.gherkin}
+          </pre>
+        </details>
+        );
+      })}
+    </>
+  );
+}
+
 export function BddResultDisplay({
   result,
   showTitle = true,
   className = "",
 }: BddResultDisplayProps) {
-  const data = parseBdd(result);
+  const rankedNested = parseBddRanked(result);
+  const dataFlat = parseBdd(result);
+  const data = rankedNested?.bdd ?? dataFlat;
   const [combinedOpen, setCombinedOpen] = useState(true);
 
   const onCopy = useCallback(async (text: string) => {
@@ -52,7 +155,11 @@ export function BddResultDisplay({
             BDD (Happy path)
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            {data.model} — Gherkin-style scenarios
+            {data.model} — Gherkin-style scenarios (ordered by layout priority:
+            primary → secondary → utility)
+            {rankedNested
+              ? ` — vision: ${rankedNested.vision_model}`
+              : null}
           </p>
         </div>
       )}
@@ -73,28 +180,7 @@ export function BddResultDisplay({
         </div>
 
         <div className="space-y-3">
-          {data.scenarios.map((sc, index) => (
-            <details
-              key={`${sc.id}-${index}`}
-              className="group overflow-hidden rounded-xl border border-gray-200/90 bg-gray-50/90 shadow-inner"
-              open={index === 0}
-            >
-              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 border-b border-gray-200/70 bg-white/70 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-gray-500">{sc.id}</p>
-                  <p className="text-sm font-semibold text-gray-800 wrap-anywhere">
-                    {sc.title}
-                  </p>
-                </div>
-                <span className="text-sm text-gray-400 transition-transform group-open:rotate-180">
-                  ▾
-                </span>
-              </summary>
-              <pre className="custom-scrollbar max-h-80 overflow-auto px-4 py-3 font-mono text-sm leading-6 text-gray-800 wrap-anywhere whitespace-pre-wrap">
-                {sc.gherkin}
-              </pre>
-            </details>
-          ))}
+          <BddScenarioList data={data} />
         </div>
 
         {data.combined_gherkin ? (
@@ -134,6 +220,18 @@ export function isBddResultJsonString(result: string): boolean {
       return false;
     }
     const o = obj as Record<string, unknown>;
+    if (o.bdd && o.vision) {
+      const inner = o.bdd as Record<string, unknown>;
+      const feature = inner.feature;
+      if (!feature || typeof feature !== "object" || feature === null) {
+        return false;
+      }
+      const name = (feature as Record<string, unknown>).name;
+      if (typeof name !== "string" || !name.trim()) {
+        return false;
+      }
+      return true;
+    }
     const feature = o.feature;
     if (!feature || typeof feature !== "object" || feature === null) {
       return false;
@@ -143,11 +241,17 @@ export function isBddResultJsonString(result: string): boolean {
       return false;
     }
     const scenarios = o.scenarios;
-    if (!Array.isArray(scenarios) || scenarios.length === 0) {
+    if (!Array.isArray(scenarios)) {
       return false;
     }
+    if (scenarios.length === 0) {
+      return true;
+    }
     const first = scenarios[0] as Record<string, unknown> | undefined;
-    return Boolean(first && typeof first.gherkin === "string");
+    if (!first || typeof first.gherkin !== "string") {
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }

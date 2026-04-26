@@ -25,4 +25,4 @@ def load_vision_extractor_prompt() -> str:
         return resolved_path.read_text(encoding="utf-8")
     except Exception as exc:
         logger.error("Failed to load vision extractor prompt from %s: %s", resolved_path, exc)
-        raise AIProcessingError(f"Failed to load vision extractor prompt: {exc}")
+        raise AIProcessingError(f"Failed to load vision extractor prompt: {exc}") from exc

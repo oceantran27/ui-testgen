@@ -10,11 +10,28 @@ from PIL import Image
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.vision_extractor.json_processor import extract_and_minify_json
-from app.schemas.bdd_happy_path import BddFeatureBlock, BddHappyPathResult, BddScenarioItem
+from app.schemas.bdd_happy_path import (
+    BddFeatureBlock,
+    BddHappyPathResult,
+    BddScenarioItem,
+    BddScenarioPriority,
+)
 
 logger = logging.getLogger(__name__)
 
 BDD_HAPPY_PATH_MODEL = "gemini-2.5-flash"
+
+# Lower sorts first. Backend sorts scenarios by layout-based priority after LLM output.
+PRIORITY_SORT_ORDER: dict[BddScenarioPriority, int] = {
+    "primary": 0,
+    "secondary": 1,
+    "utility": 2,
+}
+
+
+def sort_scenarios_by_priority(scenarios: list[BddScenarioItem]) -> list[BddScenarioItem]:
+    """Stable relative order: primary, then secondary, then utility; ties broken by id."""
+    return sorted(scenarios, key=lambda s: (PRIORITY_SORT_ORDER[s.priority], s.id))
 
 
 def _resolve_prompt_path() -> Path:
@@ -32,7 +49,7 @@ def _load_bdd_happy_path_prompt() -> str:
         raise AIProcessingError(f"Failed to load BDD happy path prompt: {exc}")
 
 
-def _build_combined_gherkin(feature: BddFeatureBlock, scenarios: list[BddScenarioItem]) -> str:
+def build_combined_gherkin(feature: BddFeatureBlock, scenarios: list[BddScenarioItem]) -> str:
     lines: list[str] = [
         f"Feature: {feature.name}",
     ]
@@ -61,17 +78,18 @@ def _parse_bdd_payload(raw: str) -> BddHappyPathResult:
     scenarios_data = data.get("scenarios") or data.get("Scenarios")
     try:
         feature = BddFeatureBlock.model_validate(feature_raw)
-        if not isinstance(scenarios_data, list) or not scenarios_data:
-            raise ValueError("scenarios must be a non-empty array")
+        if not isinstance(scenarios_data, list):
+            raise ValueError("scenarios must be an array (may be empty)")
         scenarios = [BddScenarioItem.model_validate(s) for s in scenarios_data]
     except Exception as exc:
         raise AIProcessingError(f"Invalid BDD payload shape: {exc}") from exc
 
+    scenarios = sort_scenarios_by_priority(scenarios)
     return BddHappyPathResult(
         model=BDD_HAPPY_PATH_MODEL,
         feature=feature,
         scenarios=scenarios,
-        combined_gherkin=_build_combined_gherkin(feature, scenarios),
+        combined_gherkin=build_combined_gherkin(feature, scenarios),
     )
 
 
@@ -91,8 +109,14 @@ def _run_gemini_bdd_sync(image_path: str) -> BddHappyPathResult:
         raise AIProcessingError(f"Failed to read image file: {exc}") from exc
     user_instruction = (
         "You are given a single viewport screenshot of a Web UI. "
-        "Using the system instructions, produce the required JSON only: "
-        "feature plus scenarios (happy path, Gherkin in each gherkin field). "
+        "Follow the system instructions: cover every distinct, visible happy-path success flow "
+        "in the full viewport (including header, sidebars, and footer) after merging repeated "
+        "list/card rows and duplicate entry points for the same goal, as one scenario per "
+        "equivalence class. Return only the required JSON: feature, scenarios (one object per class; "
+        "empty array only when allowed in the system prompt), each with a full gherkin string, "
+        "a 0.0-1.0 confidence score for the Then step and any And that continues the same outcome, "
+        "and a required priority field: primary, secondary, or utility based on main body vs global chrome "
+        "(see system prompt). "
         "Do not add markdown, explanations, or text outside the JSON object."
     )
     try:

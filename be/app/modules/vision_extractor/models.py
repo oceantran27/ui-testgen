@@ -30,22 +30,31 @@ ScenarioActor = Literal[
     "other",
 ]
 
+GoalTier = Literal["primary", "enabling", "secondary", "utility"]
+
+StructuralRegion = Literal[
+    "main",
+    "form",
+    "header",
+    "nav",
+    "sidebar",
+    "footer",
+    "modal",
+    "toast",
+    "unknown",
+]
+
+
+class InteractionFootprint(BaseModel):
+    approx_step_count: int = Field(ge=1, le=10, description="Minimal user steps for happy path from current view")
+    uses_multi_field_form: bool = False
+
 
 class PageOverview(BaseModel):
     functionality: str
     target_users: str
     business_rules: list[str] = Field(default_factory=list)
-
-
-class ScenarioEvaluationScores(BaseModel):
-    core_alignment: int = Field(ge=1, le=10)
-    frequency: int = Field(ge=1, le=10)
-    business_risk: int = Field(ge=1, le=10)
-
-
-class ScenarioEvaluation(BaseModel):
-    rationale: str = Field(min_length=1)
-    scores: ScenarioEvaluationScores
+    primary_scenario_ids: list[str] | None = None
 
 
 class ScenarioSpec(BaseModel):
@@ -54,7 +63,10 @@ class ScenarioSpec(BaseModel):
     category: ScenarioCategory
     actor: ScenarioActor
     expected_outcome: str
-    evaluation: ScenarioEvaluation | None = None
+    goal_tier: GoalTier | None = None
+    structural_region: StructuralRegion | None = None
+    interaction_footprint: InteractionFootprint | None = None
+    evidence_literals: list[str] = Field(default_factory=list)
 
 
 class VisionExtractionPayload(BaseModel):
