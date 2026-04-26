@@ -8,6 +8,8 @@ pydantic-settings==2.1.0
 requests==2.31.0
 httpx==0.27.2
 numpy==1.26.4
+sentence-transformers>=2.2.0
+torch>=2.0.0
 google-generativeai
 pillow
 b2sdk==2.10.4
