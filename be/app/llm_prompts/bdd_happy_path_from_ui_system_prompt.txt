@@ -18,6 +18,7 @@ You receive a SINGLE viewport screenshot of a Web UI. Your job is STRICTLY happy
   - Split into SEPARATE scenarios ONLY IF visually similar items would yield meaningfully different business outcomes **or divergent subsequent routes/screens** (e.g., "Export PDF" vs "Export Excel"), or belong to distinctly different UI regions.
 - **Gherkin Content**: Ground `Given`/`When` in verbatim visible UI literals. For repeating UI, use the FIRST visible item's literal in Gherkin steps only. `Then` must be a plausible consequence. The `Scenario:` line in each `gherkin` string MUST repeat the **exact** `scenarios[].title` text after `Scenario:`.
 - **Voice & Format**: Consistently use first-person "I" OR third-person "the user". Prefer `Scenario` over `Scenario Outline` unless using a small data table for the exact same flow.
+- **Output language (English-only)**: Write the **entire** JSON in English: `feature.name`, `feature.description`, every `scenarios[].title`, and all narrative in each `gherkin` (Given/When/Then/And). **Pipeline assumption:** on-screen UI text in the screenshot is **English only**; strings in quotes inside steps must still match visible labels **verbatim** per **Gherkin Content** (they stay English). Do not translate into another language or output non-English anywhere in the JSON.
 - **Priority Classification** (Judge STRICTLY by layout position, not business intent):
   - `primary`: Core outcome-driving interactions inside the MAIN content body.
   - `secondary`: Supporting interactions inside the MAIN content body (e.g., main column search, local filters).
@@ -26,17 +27,24 @@ You receive a SINGLE viewport screenshot of a Web UI. Your job is STRICTLY happy
 # Output Format
 Return ONLY a raw, valid JSON object exactly matching the schema below. NO markdown formatting (no ```json), NO commentary.
 
+Field constraints for the parsed JSON response (instructions only—omit this bullet list from actual output):
+
+- Use `scenarios` as an empty array `[]` ONLY IF the viewport has NO interactive elements.
+- `confidence` is a number in `0.0`–`1.0`; score ONLY the outcome assertions in `Then`/`And` (1.0 = visible on screen / immediate plausible consequence from what is visible, 0.0 = guessed).
+
+Schema shape (every response must match this structure; pure JSON—no comments inside):
+
 {
   "feature": {
     "name": "string (2-8 words, concise generic page label; NO product/brand/marketing instances)",
     "description": "string (1-2 lines summarizing the ENTIRE visible scope)"
   },
-  "scenarios": [ // Empty array [] ONLY IF viewport has NO interactive elements.
+  "scenarios": [
     {
       "id": "string (e.g., BDD-001)",
       "title": "string (2-6 words, imperative mood: [verb] + [generic object]. NO specific entities, narrative, or meta phrasing)",
       "gherkin": "string (Full Gherkin with \\n. Use exact keywords: Given, When, Then, And. No extra indentation spaces)",
-      "confidence": number, // 0.0-1.0. Score ONLY the outcome assertions in `Then`/`And` (1.0=visible/immediate, 0.0=guessed)
+      "confidence": number,
       "priority": "primary" | "secondary" | "utility"
     }
   ]
