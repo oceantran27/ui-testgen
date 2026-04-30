@@ -7,10 +7,12 @@ interface UploadPanelProps {
   filePreview: string | null;
   isLoading: boolean;
   isBddLoading: boolean;
+  isBddRankedLoading: boolean;
   selectedPreviewLabel: string;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onAnalyzeClick: () => void;
   onBddClick: () => void;
+  onBddRankedClick: () => void;
   onOpenDefaultGallery: () => void;
   onOpenPreviewModal: () => void;
 }
@@ -21,14 +23,16 @@ export function UploadPanel({
   filePreview,
   isLoading,
   isBddLoading,
+  isBddRankedLoading,
   selectedPreviewLabel,
   onFileChange,
   onAnalyzeClick,
   onBddClick,
+  onBddRankedClick,
   onOpenDefaultGallery,
   onOpenPreviewModal,
 }: UploadPanelProps) {
-  const busy = isLoading || isBddLoading;
+  const busy = isLoading || isBddLoading || isBddRankedLoading;
   return (
     <div className="card">
       <h2 className="mb-4 flex items-center text-2xl font-bold text-gray-700">
@@ -37,10 +41,12 @@ export function UploadPanel({
       </h2>
       <p className="mb-3 text-sm text-gray-500">
         <strong className="text-gray-600">Analyze</strong> returns ranked
-        scenarios.{" "}
+        scenarios from the vision pipeline.{" "}
         <strong className="text-gray-600">Generate BDD</strong> returns
-        happy-path Gherkin (Gemini) with scenarios ordered by layout-based
-        priority (main body vs global chrome).
+        happy-path Gherkin in model order.{" "}
+        <strong className="text-gray-600">Generate BDD (ranked)</strong> runs
+        the same generation, then a follow-up step reorders scenarios using
+        inferred <span className="italic">business intent</span>.
       </p>
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -75,6 +81,18 @@ export function UploadPanel({
               <FiLoader className="-ml-1 mr-2 animate-spin" />
             ) : null}
             {isBddLoading ? "Generating BDD..." : "Generate BDD"}
+          </button>
+          <button
+            type="button"
+            title="Second LLM pass reorders scenarios by business intent"
+            onClick={onBddRankedClick}
+            disabled={busy || (!file && !selectedImageUrl)}
+            className="btn border border-teal-700 bg-teal-700 text-white hover:bg-teal-800"
+          >
+            {isBddRankedLoading ? (
+              <FiLoader className="-ml-1 mr-2 animate-spin" />
+            ) : null}
+            {isBddRankedLoading ? "Ranking BDD..." : "Generate BDD (ranked)"}
           </button>
         </div>
 

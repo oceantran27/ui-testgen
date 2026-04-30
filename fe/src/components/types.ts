@@ -6,24 +6,18 @@ export interface AnalysisRecord {
 }
 
 export interface BddFeatureBlock {
+  /** Short generic page/screen name; no product/brand instance. Letter case is not prescribed. */
   name: string;
   description?: string;
+  /** Inferred business goals for this screen; used for the ranked BDD step (may be ""). */
+  business_intent: string;
 }
-
-export type BddScenarioPriority = "primary" | "secondary" | "utility";
-/** @deprecated Use BddScenarioPriority */
-export type BddScenarioTier = BddScenarioPriority;
 
 export interface BddScenarioItem {
   id: string;
+  /** Imperative (2–6 words); generic object only; specifics live in gherkin. Case not prescribed. */
   title: string;
   gherkin: string;
-  /** 0–1: model confidence for Then-clause assertions (API always sends for new runs). */
-  confidence?: number;
-  /** Layout-based order (main body vs chrome); API sorts primary → secondary → utility. */
-  priority?: BddScenarioPriority;
-  /** Legacy stored JSON / older API responses */
-  tier?: BddScenarioPriority;
 }
 
 export interface BddHappyPathResult {

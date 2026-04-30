@@ -2,32 +2,7 @@ import { useCallback, useState } from "react";
 import type {
   BddHappyPathRankedResponse,
   BddHappyPathResult,
-  BddScenarioItem,
-  BddScenarioPriority,
 } from "./types";
-
-const priorityLabel: Record<BddScenarioPriority, string> = {
-  primary: "Primary",
-  secondary: "Secondary",
-  utility: "Utility",
-};
-
-function priorityBadgeClass(p: BddScenarioPriority): string {
-  switch (p) {
-    case "primary":
-      return "bg-emerald-100 text-emerald-900 ring-emerald-200/80";
-    case "secondary":
-      return "bg-amber-100 text-amber-900 ring-amber-200/80";
-    default:
-      return "bg-slate-100 text-slate-800 ring-slate-200/80";
-  }
-}
-
-function scenarioLayoutPriority(
-  sc: BddScenarioItem,
-): BddScenarioPriority | undefined {
-  return sc.priority ?? sc.tier;
-}
 
 const parseBdd = (result: string): BddHappyPathResult | null => {
   try {
@@ -64,14 +39,12 @@ function BddScenarioList({
     <>
       {data.scenarios.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gray-300/90 bg-gray-50/80 px-4 py-6 text-center text-sm text-gray-600">
-          No scenarios were generated: no meaningful equivalence partitions
-          were identified for this view (per system rules). The feature
-          above still describes the page.
+          No happy-path scenarios were generated: the viewport has no
+          interactive elements to cover, or nothing matched the generation
+          rules. The feature block above still summarizes the visible page.
         </p>
       ) : null}
-      {data.scenarios.map((sc, index) => {
-        const layoutPriority = scenarioLayoutPriority(sc);
-        return (
+      {data.scenarios.map((sc, index) => (
         <details
           key={`${sc.id}-${index}`}
           className="group overflow-hidden rounded-xl border border-gray-200/90 bg-gray-50/90 shadow-inner"
@@ -81,22 +54,6 @@ function BddScenarioList({
             <div className="min-w-0">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                 <p className="text-xs font-medium text-gray-500">{sc.id}</p>
-                {layoutPriority ? (
-                  <span
-                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ${priorityBadgeClass(layoutPriority)}`}
-                    title="Layout-based priority (main body vs global chrome)"
-                  >
-                    {priorityLabel[layoutPriority]}
-                  </span>
-                ) : null}
-                {typeof sc.confidence === "number" ? (
-                  <span
-                    className="text-xs tabular-nums text-teal-700"
-                    title="Model confidence for Then-clause assertions (0–1)"
-                  >
-                    Then confidence: {sc.confidence.toFixed(2)}
-                  </span>
-                ) : null}
               </div>
               <p className="text-sm font-semibold text-gray-800 wrap-anywhere">
                 {sc.title}
@@ -110,8 +67,7 @@ function BddScenarioList({
             {sc.gherkin}
           </pre>
         </details>
-        );
-      })}
+      ))}
     </>
   );
 }
@@ -145,6 +101,10 @@ export function BddResultDisplay({
     );
   }
 
+  const subtitle = rankedNested
+    ? `${data.model} — Scenarios reordered by a follow-up LLM step using business intent. Vision bundle: ${rankedNested.vision_model}.`
+    : `${data.model} — Gherkin-style scenarios in the order returned by the model.`;
+
   return (
     <div className={`card relative overflow-hidden ${className}`}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-linear-to-r from-emerald-100/50 via-teal-100/30 to-transparent" />
@@ -154,13 +114,7 @@ export function BddResultDisplay({
           <h2 className="text-gradient from-emerald-700 to-teal-600 text-2xl font-extrabold">
             BDD (Happy path)
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {data.model} — Gherkin-style scenarios (ordered by layout priority:
-            primary → secondary → utility)
-            {rankedNested
-              ? ` — vision: ${rankedNested.vision_model}`
-              : null}
-          </p>
+          <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
         </div>
       )}
 
@@ -176,6 +130,16 @@ export function BddResultDisplay({
             <p className="mt-2 text-sm text-gray-600 wrap-anywhere">
               {data.feature.description}
             </p>
+          ) : null}
+          {(data.feature.business_intent ?? "").trim() ? (
+            <div className="mt-3 border-t border-gray-100 pt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Business intent
+              </p>
+              <p className="mt-1 text-sm text-gray-700 wrap-anywhere">
+                {(data.feature.business_intent ?? "").trim()}
+              </p>
+            </div>
           ) : null}
         </div>
 

@@ -3,7 +3,11 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { apiClient } from "./api/client";
-import { imageUrlToFile, postBddHappyPath } from "./api/bdd";
+import {
+  imageUrlToFile,
+  postBddHappyPath,
+  postBddHappyPathRanked,
+} from "./api/bdd";
 import { toCdnUrl } from "./utils/cdn";
 import { GalleryModal } from "./components/GalleryModal";
 import { AdminCRUD } from "./components/AdminCRUD.tsx";
@@ -49,14 +53,11 @@ function LegacyHome() {
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isBddLoading, setIsBddLoading] = useState(false);
+  const [isBddRankedLoading, setIsBddRankedLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-
-  const resetUploadState = useCallback(() => {
-    // Keep compatibility with existing handlers that clear upload-related UX state.
-  }, []);
 
   const extractErrorMessage = useCallback((error: unknown): string => {
     if (axios.isAxiosError(error)) {
@@ -131,7 +132,6 @@ function LegacyHome() {
         setSelectedImageUrl(null);
         setAnalysisResult(null);
         setBddResult(null);
-        resetUploadState();
         toast.success("Image pasted!");
         break;
       }
@@ -141,7 +141,7 @@ function LegacyHome() {
     return () => {
       window.removeEventListener("paste", handlePaste);
     };
-  }, [filePreview, resetUploadState]);
+  }, [filePreview]);
 
   useEffect(() => {
     return () => {
@@ -194,7 +194,6 @@ function LegacyHome() {
       setSelectedImageUrl(null);
       setAnalysisResult(null);
       setBddResult(null);
-      resetUploadState();
       return;
     }
 
@@ -273,6 +272,40 @@ function LegacyHome() {
       notifyAndRedirectError(err, toastId);
     } finally {
       setIsBddLoading(false);
+    }
+  };
+
+  const handleBddRankedClick = async () => {
+    if (!file && !selectedImageUrl) {
+      toast.error("Please select a screenshot (file or default image).");
+      return;
+    }
+
+    const toastId = toast.loading("Generating ranked BDD...");
+    const requestId = createCorrelationId("req");
+    const batchId = createCorrelationId("batch");
+
+    setIsBddRankedLoading(true);
+    setBddResult(null);
+
+    try {
+      const fileToSend = file
+        ? file
+        : await imageUrlToFile(
+            selectedImageUrl as string,
+            "screenshot.jpg",
+          );
+      const data = await postBddHappyPathRanked(fileToSend, {
+        "X-Request-Id": requestId,
+        "X-Batch-Id": batchId,
+      });
+      setBddResult(JSON.stringify(data, null, 2));
+      toast.success("Ranked BDD scenarios ready.", { id: toastId });
+      void fetchRecords();
+    } catch (err) {
+      notifyAndRedirectError(err, toastId);
+    } finally {
+      setIsBddRankedLoading(false);
     }
   };
 
@@ -394,10 +427,12 @@ function LegacyHome() {
                 filePreview={filePreview}
                 isLoading={isLoading}
                 isBddLoading={isBddLoading}
+                isBddRankedLoading={isBddRankedLoading}
                 selectedPreviewLabel={selectedPreviewLabel}
                 onFileChange={handleFileChange}
                 onAnalyzeClick={() => void handleAnalyzeClick()}
                 onBddClick={() => void handleBddClick()}
+                onBddRankedClick={() => void handleBddRankedClick()}
                 onOpenDefaultGallery={() => setIsDefaultGalleryOpen(true)}
                 onOpenPreviewModal={() => setIsModalOpen(true)}
               />
