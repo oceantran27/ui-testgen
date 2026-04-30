@@ -32,6 +32,11 @@ def load_bdd_happy_path_prompt() -> str:
     return _read_prompt_file(str(resolved), "BDD happy path prompt")
 
 
+def load_bdd_scenario_ranking_prompt() -> str:
+    resolved = _backend_root() / settings.BDD_SCENARIO_RANKING_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "BDD scenario ranking prompt")
+
+
 def load_behavior_flow_cluster_prompt() -> str:
     resolved = _backend_root() / settings.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH
     return _read_prompt_file(str(resolved), "behavior flow cluster prompt")

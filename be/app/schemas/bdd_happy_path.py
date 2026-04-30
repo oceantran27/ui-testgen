@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import AliasChoices, BaseModel, Field
-
-BddScenarioPriority = Literal["primary", "secondary", "utility"]
-# Backward-compatible alias for imports
-BddScenarioTier = BddScenarioPriority
+from pydantic import BaseModel, Field
 
 
 class BddFeatureBlock(BaseModel):
@@ -17,6 +11,12 @@ class BddFeatureBlock(BaseModel):
         ),
     )
     description: str = ""
+    business_intent: str = Field(
+        default="",
+        description=(
+            "Business value and primary user goals for this screen; used to rank scenarios. Empty when there are no scenarios."
+        ),
+    )
 
 
 class BddScenarioItem(BaseModel):
@@ -29,14 +29,6 @@ class BddScenarioItem(BaseModel):
         ),
     )
     gherkin: str = Field(min_length=1)
-    confidence: float = Field(ge=0.0, le=1.0, description="Model confidence for Then-clause predictions only (0-1).")
-    priority: BddScenarioPriority = Field(
-        description=(
-            "Layout-based order hint: primary = core action in main body; "
-            "secondary = supporting actions in main body; utility = global chrome (header/footer/app shell)."
-        ),
-        validation_alias=AliasChoices("priority", "tier"),
-    )
 
 
 class BddHappyPathResult(BaseModel):

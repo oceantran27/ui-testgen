@@ -10,19 +10,7 @@ from app.schemas.bdd_happy_path import (
     BddFeatureBlock,
     BddHappyPathResult,
     BddScenarioItem,
-    BddScenarioPriority,
 )
-
-PRIORITY_SORT_ORDER: dict[BddScenarioPriority, int] = {
-    "primary": 0,
-    "secondary": 1,
-    "utility": 2,
-}
-
-
-def sort_scenarios_by_priority(scenarios: list[BddScenarioItem]) -> list[BddScenarioItem]:
-    """Stable relative order: primary, then secondary, then utility; ties broken by id."""
-    return sorted(scenarios, key=lambda s: (PRIORITY_SORT_ORDER[s.priority], s.id))
 
 
 def build_combined_gherkin(feature: BddFeatureBlock, scenarios: list[BddScenarioItem]) -> str:
@@ -67,7 +55,6 @@ def parse_bdd_payload(raw: str, *, result_model: str) -> BddHappyPathResult:
     except Exception as exc:
         raise AIProcessingError(f"Invalid BDD payload shape: {exc}") from exc
 
-    scenarios = sort_scenarios_by_priority(scenarios)
     return BddHappyPathResult(
         model=result_model,
         feature=feature,

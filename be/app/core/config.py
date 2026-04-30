@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # BDD happy path (Gherkin from UI screenshot)
     BDD_HAPPY_PATH_PROMPT_PATH: str = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
+    # BDD scenario ordering by business_intent (text-only LLM)
+    BDD_SCENARIO_RANKING_PROMPT_PATH: str = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
+
     # Multi-image behavior flow clustering and ordering
     BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH: str = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"
     # Limits for POST /behavior-flows/organize
@@ -78,6 +81,9 @@ class Settings(BaseSettings):
 
         if not self.BDD_HAPPY_PATH_PROMPT_PATH:
             self.BDD_HAPPY_PATH_PROMPT_PATH = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
+
+        if not self.BDD_SCENARIO_RANKING_PROMPT_PATH:
+            self.BDD_SCENARIO_RANKING_PROMPT_PATH = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
 
         if not self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH:
             self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"

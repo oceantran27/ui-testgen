@@ -80,7 +80,6 @@ async def bdd_happy_path_from_image(
                     {
                         "event": "bdd_happy_path_completed",
                         "scenario_count": len(result.scenarios),
-                        "priority_sorted": True,
                     }
                 )
             ),
@@ -101,7 +100,7 @@ async def bdd_happy_path_ranked_from_image(
     x_batch_id: Optional[str] = Header(default=None, alias="X-Batch-Id"),
 ):
     """
-    Returns BDD with scenarios ordered by layout-based priority (primary, secondary, utility).
+    Returns BDD with scenarios reordered by a second LLM pass using `feature.business_intent`.
     `vision` is a placeholder for API shape compatibility.
     """
     file_path = save_upload_file(file)
