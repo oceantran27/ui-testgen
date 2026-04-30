@@ -10,13 +10,24 @@ BddScenarioTier = BddScenarioPriority
 
 
 class BddFeatureBlock(BaseModel):
-    name: str = Field(min_length=1)
+    name: str = Field(
+        min_length=1,
+        description=(
+            "Short generic page/screen label (2–8 words), no product or brand instance names; letter case is not prescribed."
+        ),
+    )
     description: str = ""
 
 
 class BddScenarioItem(BaseModel):
     id: str = Field(min_length=1)
-    title: str = Field(min_length=1)
+    title: str = Field(
+        min_length=1,
+        description=(
+            "Imperative label (2–6 words) at class level: verb + generic object; "
+            "no specific product, brand, or search string (those belong in gherkin). Letter case is not prescribed."
+        ),
+    )
     gherkin: str = Field(min_length=1)
     confidence: float = Field(ge=0.0, le=1.0, description="Model confidence for Then-clause predictions only (0-1).")
     priority: BddScenarioPriority = Field(
