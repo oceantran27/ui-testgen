@@ -17,7 +17,7 @@ COPY . .
 RUN mkdir -p uploads
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 18080
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "18080"]

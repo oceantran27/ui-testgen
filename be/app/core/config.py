@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     PROJECT_VERSION: str = "1.0.0"
     PROJECT_DESCRIPTION: str = "API for UI TestGen, providing endpoints to analyze UI screenshots and generate test cases."
 
+    # HTTP server (local `python main.py`; override via env BACKEND_PORT)
+    BACKEND_PORT: int = 18080
+
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
 

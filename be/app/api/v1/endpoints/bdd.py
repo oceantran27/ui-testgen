@@ -1,10 +1,9 @@
-import json
 import logging
-import uuid
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, File, Header, HTTPException, Response, UploadFile
 
+from app.api.v1.http_helpers import correlation_response_headers, ensure_correlation_ids, json_compact
 from app.core.exceptions import AIProcessingError
 from app.core.log_context import bind_log_context, merge_with_log_context
 from app.core.model_selection import normalize_analysis_model_name
@@ -19,39 +18,17 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def _json_compact(payload: dict) -> str:
-    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-
-
-def _sanitize_id(raw: str | None) -> str | None:
-    if raw is None:
-        return None
-    normalized = str(raw).strip()
-    if not normalized:
-        return None
-    if len(normalized) > 128:
-        return normalized[:128]
-    return normalized
-
-
 def _build_request_context(
     *,
     request_id: str | None = None,
     batch_id: str | None = None,
 ) -> dict[str, str]:
+    rid, bid = ensure_correlation_ids(request_id, batch_id)
     return {
-        "request_id": _sanitize_id(request_id) or str(uuid.uuid4()),
-        "batch_id": _sanitize_id(batch_id) or str(uuid.uuid4()),
+        "request_id": rid,
+        "batch_id": bid,
         "model_name": normalize_analysis_model_name("gemini-2.5-flash"),
         "analysis_source": "bdd_happy_path_file_upload",
-    }
-
-
-def _response_headers(ctx: dict[str, str]) -> dict[str, str]:
-    return {
-        "X-Request-Id": ctx["request_id"],
-        "X-Batch-Id": ctx["batch_id"],
-        "Access-Control-Expose-Headers": "X-Request-Id,X-Batch-Id",
     }
 
 
@@ -72,7 +49,7 @@ async def bdd_happy_path_from_image(
     with bind_log_context(**request_context):
         logger.info(
             "BDD happy path: started %s",
-            _json_compact(
+            json_compact(
                 merge_with_log_context(
                     {
                         "event": "bdd_happy_path_started",
@@ -94,11 +71,11 @@ async def bdd_happy_path_from_image(
                 status_code=500, detail="Internal server error during BDD generation"
             ) from exc
 
-        serialized = _json_compact(result.model_dump(mode="json"))
+        serialized = json_compact(result.model_dump(mode="json"))
         background_tasks.add_task(save_analysis_record_task, file_path, serialized)
         logger.info(
             "BDD happy path: completed %s",
-            _json_compact(
+            json_compact(
                 merge_with_log_context(
                     {
                         "event": "bdd_happy_path_completed",
@@ -108,7 +85,9 @@ async def bdd_happy_path_from_image(
                 )
             ),
         )
-        for header_name, header_value in _response_headers(request_context).items():
+        for header_name, header_value in correlation_response_headers(
+            request_context["request_id"], request_context["batch_id"]
+        ).items():
             response.headers[header_name] = header_value
         return result
 
@@ -134,7 +113,7 @@ async def bdd_happy_path_ranked_from_image(
     with bind_log_context(**request_context):
         logger.info(
             "BDD happy path ranked: started %s",
-            _json_compact(
+            json_compact(
                 merge_with_log_context(
                     {
                         "event": "bdd_happy_path_ranked_started",
@@ -156,11 +135,11 @@ async def bdd_happy_path_ranked_from_image(
                 status_code=500, detail="Internal server error during BDD ranked generation"
             ) from exc
 
-        serialized = _json_compact(result.model_dump(mode="json"))
+        serialized = json_compact(result.model_dump(mode="json"))
         background_tasks.add_task(save_analysis_record_task, file_path, serialized)
         logger.info(
             "BDD happy path ranked: completed %s",
-            _json_compact(
+            json_compact(
                 merge_with_log_context(
                     {
                         "event": "bdd_happy_path_ranked_completed",
@@ -169,6 +148,8 @@ async def bdd_happy_path_ranked_from_image(
                 )
             ),
         )
-        for header_name, header_value in _response_headers(request_context).items():
+        for header_name, header_value in correlation_response_headers(
+            request_context["request_id"], request_context["batch_id"]
+        ).items():
             response.headers[header_name] = header_value
         return result

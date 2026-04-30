@@ -42,6 +42,8 @@ class RunConfig:
     out_json: Path
     save_raw: bool
     out_raw: Path | None
+    # BDD generation model for bdd_happy_path_service.generate (e.g. gemini-2.5-pro, gemini-2.5-flash).
+    bdd_model: str = "gemini-2.5-flash"
     # Inclusive range on image id (stem). None = no bound.
     id_min: int | None = None
     id_max: int | None = None
@@ -90,11 +92,11 @@ def _write_checkpoint(
             logger.info("Checkpoint raw: %s", cfg.out_raw)
 
 
-async def _bdd_titles_for_image(image_path: Path) -> tuple[list[str], Any]:
+async def _bdd_titles_for_image(image_path: Path, *, bdd_model: str) -> tuple[list[str], Any]:
     from app.services.bdd_happy_path_service import bdd_happy_path_service
     from app.schemas.bdd_happy_path import BddHappyPathResult
 
-    result: BddHappyPathResult = await bdd_happy_path_service.generate(str(image_path))
+    result: BddHappyPathResult = await bdd_happy_path_service.generate(str(image_path), model=bdd_model)
     return [s.title for s in result.scenarios], result
 
 
@@ -143,7 +145,7 @@ async def run_experiment_async(cfg: RunConfig) -> None:
                 continue
             gt = gt_by_id[eid]
             try:
-                titles, bdd_result = await _bdd_titles_for_image(image_path)
+                titles, bdd_result = await _bdd_titles_for_image(image_path, bdd_model=cfg.bdd_model)
                 json_rows.append({"id": eid, "model_output": titles})
                 if cfg.save_raw and cfg.out_raw is not None:
                     raw_by_id[str(eid)] = bdd_result.model_dump(mode="json")

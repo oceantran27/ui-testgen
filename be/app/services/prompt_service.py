@@ -8,14 +8,30 @@ from app.core.exceptions import AIProcessingError
 logger = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=1)
-def load_system_prompt() -> str:
-    backend_root = Path(__file__).resolve().parents[2]
-    resolved_path = backend_root / settings.VISION_EXTRACTOR_PROMPT_PATH
+def _backend_root() -> Path:
+    return Path(__file__).resolve().parents[2]
 
+
+@lru_cache(maxsize=16)
+def _read_prompt_file(path_str: str, label: str) -> str:
     try:
-        with open(resolved_path, "r", encoding="utf-8") as prompt_file:
+        with open(path_str, "r", encoding="utf-8") as prompt_file:
             return prompt_file.read()
     except Exception as exc:
-        logger.error("Failed to load system prompt: %s", exc)
-        raise AIProcessingError(f"Failed to load system prompt: {str(exc)}")
+        logger.error("Failed to load %s: %s", label, exc)
+        raise AIProcessingError(f"Failed to load {label}: {str(exc)}") from exc
+
+
+def load_system_prompt() -> str:
+    resolved = _backend_root() / settings.VISION_EXTRACTOR_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "system prompt")
+
+
+def load_bdd_happy_path_prompt() -> str:
+    resolved = _backend_root() / settings.BDD_HAPPY_PATH_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "BDD happy path prompt")
+
+
+def load_behavior_flow_cluster_prompt() -> str:
+    resolved = _backend_root() / settings.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "behavior flow cluster prompt")

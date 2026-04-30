@@ -11,7 +11,7 @@ Or with explicit PYTHONPATH::
     set PYTHONPATH=.
     python -m experiments.bdd_title_eval --threshold 0.75
 
-Requires ``GEMINI_API_KEY`` (and usual app env) for BDD generation.
+Requires ``GEMINI_API_KEY`` (and usual app env) for BDD generation (default model: gemini-2.5-pro).
 
 Outputs (CSV, model_output JSON, optional raw) are checkpointed to disk after each
 successfully processed image; Ctrl+C saves the latest completed rows and exits with code 130.
@@ -91,6 +91,13 @@ def main() -> None:
         help="Cosine similarity threshold for matching a GT title to a model title (default: 0.75)",
     )
     p.add_argument(
+        "--bdd-model",
+        type=str,
+        default="gemini-2.5-pro",
+        metavar="ID",
+        help="Model id for bdd_happy_path_service.generate (default: gemini-2.5-pro)",
+    )
+    p.add_argument(
         "--encoder",
         type=str,
         default="BAAI/bge-base-en-v1.5",
@@ -143,6 +150,7 @@ def main() -> None:
         out_json=out_json.resolve(),
         save_raw=args.save_raw,
         out_raw=out_raw.resolve() if out_raw else None,
+        bdd_model=args.bdd_model,
         id_min=args.id_min,
         id_max=args.id_max,
     )

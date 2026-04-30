@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, File, Header, HTTPException, Response, UploadFile
 
+from app.api.v1.http_helpers import correlation_response_headers, ensure_correlation_ids, json_compact
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.core.log_context import bind_log_context, merge_with_log_context
@@ -19,31 +20,6 @@ logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = "uploads"
 MULTI_IMG_SUB = "multi-img-input"
-
-
-def _json_compact(payload: object) -> str:
-    if hasattr(payload, "model_dump"):
-        return json.dumps(
-            payload.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":")
-        )
-    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-
-
-def _sanitize_id_header(raw: str | None) -> str | None:
-    if raw is None:
-        return None
-    normalized = str(raw).strip()
-    if not normalized or len(normalized) > 128:
-        return None
-    return normalized
-
-
-def _response_headers(request_id: str, batch_id: str) -> dict[str, str]:
-    return {
-        "X-Request-Id": request_id,
-        "X-Batch-Id": batch_id,
-        "Access-Control-Expose-Headers": "X-Request-Id,X-Batch-Id",
-    }
 
 
 async def _write_upload_capped(uf: UploadFile, dest_path: str, max_bytes: int) -> None:
@@ -96,8 +72,7 @@ async def organize_behavior_flows(
     os.makedirs(out_dir, exist_ok=True)
 
     id_path_pairs: list[tuple[str, str]] = []
-    request_id = _sanitize_id_header(x_request_id) or str(uuid.uuid4())
-    batch_id = _sanitize_id_header(x_batch_id) or str(uuid.uuid4())
+    request_id, batch_id = ensure_correlation_ids(x_request_id, x_batch_id)
     # Convention: use headers like other endpoints; wire via Request if we need raw headers
     for idx, upload in enumerate(files, start=1):
         eid = f"img_{idx:03d}"
@@ -120,7 +95,7 @@ async def organize_behavior_flows(
     ):
         logger.info(
             "behavior_flows organize started %s",
-            _json_compact(merge_with_log_context({"n_files": len(files), "input_id": input_id})),
+            json_compact(merge_with_log_context({"n_files": len(files), "input_id": input_id})),
         )
         try:
             result = await behavior_flow_cluster_service.organize(
@@ -151,7 +126,7 @@ async def organize_behavior_flows(
     except OSError as exc:
         logger.warning("Could not write result.json for %s: %s", input_id, exc)
 
-    for h, v in _response_headers(request_id, batch_id).items():
+    for h, v in correlation_response_headers(request_id, batch_id).items():
         response.headers[h] = v
 
     return result

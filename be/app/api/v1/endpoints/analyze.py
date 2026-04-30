@@ -8,6 +8,7 @@ from typing import List, Optional
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Header, Query
 from fastapi.responses import JSONResponse
 
+from app.api.v1.http_helpers import correlation_response_headers, ensure_correlation_ids, json_compact
 from app.core.log_context import bind_log_context, merge_with_log_context
 from app.core.model_selection import normalize_analysis_model_name
 from app.schemas.analysis import AnalysisRecordInDB
@@ -47,24 +48,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def _json_compact(payload: dict) -> str:
-    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-
-
-def _sanitize_context_id(raw_value: str | None) -> str | None:
-    if raw_value is None:
-        return None
-
-    normalized = str(raw_value).strip()
-    if not normalized:
-        return None
-
-    if len(normalized) > 128:
-        normalized = normalized[:128]
-
-    return normalized
-
-
 def _build_request_context(
     *,
     model_name: str | None,
@@ -72,29 +55,19 @@ def _build_request_context(
     request_id: str | None = None,
     batch_id: str | None = None,
 ) -> dict[str, str]:
-    normalized_request_id = _sanitize_context_id(request_id) or str(uuid.uuid4())
-    normalized_batch_id = _sanitize_context_id(batch_id) or str(uuid.uuid4())
-
+    rid, bid = ensure_correlation_ids(request_id, batch_id)
     return {
-        "request_id": normalized_request_id,
-        "batch_id": normalized_batch_id,
+        "request_id": rid,
+        "batch_id": bid,
         "model_name": normalize_analysis_model_name(model_name),
         "analysis_source": source,
-    }
-
-
-def _build_response_headers(request_context: dict[str, str]) -> dict[str, str]:
-    return {
-        "X-Request-Id": request_context["request_id"],
-        "X-Batch-Id": request_context["batch_id"],
-        "Access-Control-Expose-Headers": "X-Request-Id,X-Batch-Id",
     }
 
 
 def _log_api_event(event_type: str, **payload):
     logger.info(
         "Analyze API event: %s",
-        _json_compact(
+        json_compact(
             merge_with_log_context(
                 {
                     "service": "analyze_api",
@@ -322,7 +295,9 @@ async def analyze_by_image_url(
 
         return JSONResponse(
             content=module_3_response,
-            headers=_build_response_headers(request_context),
+            headers=correlation_response_headers(
+                request_context["request_id"], request_context["batch_id"]
+            ),
         )
 
 
@@ -389,7 +364,9 @@ async def analyze_screenshot(
         # 4. Return structured JSON response
         return JSONResponse(
             content=module_3_response,
-            headers=_build_response_headers(request_context),
+            headers=correlation_response_headers(
+                request_context["request_id"], request_context["batch_id"]
+            ),
         )
 
 @router.get("/records", response_model=List[AnalysisRecordInDB])

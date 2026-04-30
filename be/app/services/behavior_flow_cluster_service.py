@@ -2,37 +2,22 @@ import asyncio
 import json
 import logging
 import re
-from functools import lru_cache
-from pathlib import Path
 from typing import Any
 
-import google.generativeai as genai
+from google.genai import types
 from PIL import Image
 
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.vision_extractor.json_processor import extract_and_minify_json
 from app.schemas.behavior_flow import BehaviorFlowItem, BehaviorFlowOrganizeResponse
+from app.services.gemini_genai_client import default_generate_config, get_gemini_client, pil_image_to_part
+from app.services.prompt_service import load_behavior_flow_cluster_prompt
 
 logger = logging.getLogger(__name__)
 
 BEHAVIOR_FLOW_MODEL = "gemini-2.5-flash"
 _IMG_ID_RE = re.compile(r"^img_(\d{3})$")
-
-
-def _resolve_prompt_path() -> Path:
-    backend_root = Path(__file__).resolve().parents[2]
-    return backend_root / settings.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH
-
-
-@lru_cache(maxsize=1)
-def _load_behavior_flow_prompt() -> str:
-    resolved = _resolve_prompt_path()
-    try:
-        return resolved.read_text(encoding="utf-8")
-    except Exception as exc:
-        logger.error("Failed to load behavior flow prompt from %s: %s", resolved, exc)
-        raise AIProcessingError(f"Failed to load behavior flow cluster prompt: {exc}") from exc
 
 
 def _ensure_rgb_rgba(pil: Image.Image) -> Image.Image:
@@ -142,7 +127,7 @@ def _run_gemini_cluster_sync(
     if len(image_ids) != len(image_paths) or not image_ids:
         raise AIProcessingError("image_ids and image_paths must be non-empty and same length")
 
-    system_prompt = _load_behavior_flow_prompt()
+    system_prompt = load_behavior_flow_cluster_prompt()
     order_lines = "\n".join(f"- {eid} — image {i} in the sequence below" for i, eid in enumerate(image_ids, start=1))
     user_text = (
         f"You are given {len(image_ids)} images in this exact order. IDs (for output only) are:\n{order_lines}\n\n"
@@ -150,17 +135,17 @@ def _run_gemini_cluster_sync(
         "Return only the required JSON array as specified in the system instructions."
     )
 
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        BEHAVIOR_FLOW_MODEL,
-        generation_config={"temperature": 0.0},
-    )
-    parts: list[Any] = [system_prompt, user_text]
+    client = get_gemini_client()
+    parts: list[Any] = [types.Part.from_text(text=user_text)]
     for p in image_paths:
-        parts.append(_load_image_for_model(p))
+        parts.append(pil_image_to_part(_load_image_for_model(p)))
 
     try:
-        response = model.generate_content(parts)
+        response = client.models.generate_content(
+            model=BEHAVIOR_FLOW_MODEL,
+            contents=parts,
+            config=default_generate_config(system_instruction=system_prompt),
+        )
     except Exception as exc:
         logger.error("Gemini behavior-flow clustering failed: %s", exc)
         raise AIProcessingError(f"Behavior flow clustering failed: {exc}") from exc

@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 build/
+*.pyc
 
 # Environment variables
 .env
@@ -16,6 +17,7 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+log.txt
 
 # Testing
 coverage/
@@ -30,3 +32,4 @@ Thumbs.db
 
 uploads
 experiment_results
+data

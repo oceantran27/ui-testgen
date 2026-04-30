@@ -1,11 +1,12 @@
 import logging
 
-import google.generativeai as genai
+from google.genai import types
 from PIL import Image
 
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.vision_extractor.providers.base_provider import BaseVisionProvider
+from app.services.gemini_genai_client import default_generate_config, get_gemini_client, pil_image_to_part
 
 logger = logging.getLogger(__name__)
 
@@ -15,13 +16,7 @@ class GeminiVisionProvider(BaseVisionProvider):
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not configured in settings")
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel(
-            model_name,
-            generation_config={
-                "temperature": 0.0,
-            },
-        )
+        self._client = get_gemini_client()
         self.model_name = model_name
         self.system_prompt = system_prompt
 
@@ -43,7 +38,14 @@ class GeminiVisionProvider(BaseVisionProvider):
                 "syntactically valid and ready for machine parsing."
             )
 
-            response = self.model.generate_content([self.system_prompt, user_instruction, img])
+            response = self._client.models.generate_content(
+                model=self.model_name,
+                contents=[
+                    types.Part.from_text(text=user_instruction),
+                    pil_image_to_part(img),
+                ],
+                config=default_generate_config(system_instruction=self.system_prompt),
+            )
             content = response.text
 
             logger.debug("--- RAW LLM OUTPUT START (%s) ---", self.model_name)
