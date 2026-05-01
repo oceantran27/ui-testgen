@@ -9,7 +9,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from .embeddings import encode_normalized, load_model
 from .ground_truth import load_ground_truth
@@ -42,7 +42,9 @@ class RunConfig:
     out_json: Path
     save_raw: bool
     out_raw: Path | None
-    # BDD generation model for bdd_happy_path_service.generate (e.g. gemini-2.5-pro, gemini-2.5-flash).
+    # LLM backend for BddHappyPathService.generate (explicit routing vs name-prefix heuristic).
+    provider: Literal["gemini", "openai"] = "gemini"
+    # BDD generation model id for the chosen backend.
     bdd_model: str = "gemini-2.5-flash"
     # Inclusive range on image id (stem). None = no bound.
     id_min: int | None = None
@@ -92,11 +94,20 @@ def _write_checkpoint(
             logger.info("Checkpoint raw: %s", cfg.out_raw)
 
 
-async def _bdd_titles_for_image(image_path: Path, *, bdd_model: str) -> tuple[list[str], Any]:
+async def _bdd_titles_for_image(
+    image_path: Path,
+    *,
+    bdd_model: str,
+    provider: Literal["gemini", "openai"],
+) -> tuple[list[str], Any]:
     from app.services.bdd_happy_path_service import bdd_happy_path_service
     from app.schemas.bdd_happy_path import BddHappyPathResult
 
-    result: BddHappyPathResult = await bdd_happy_path_service.generate(str(image_path), model=bdd_model)
+    result: BddHappyPathResult = await bdd_happy_path_service.generate(
+        str(image_path),
+        model=bdd_model,
+        backend=provider,
+    )
     return [s.title for s in result.scenarios], result
 
 
@@ -128,6 +139,7 @@ async def run_experiment_async(cfg: RunConfig) -> None:
             len(pairs),
         )
 
+    logger.info("BDD provider=%s bdd_model=%s", cfg.provider, cfg.bdd_model)
     logger.info("Loading encoder: %s", cfg.encoder_model)
     model = load_model(cfg.encoder_model, device=cfg.device)
 
@@ -145,7 +157,11 @@ async def run_experiment_async(cfg: RunConfig) -> None:
                 continue
             gt = gt_by_id[eid]
             try:
-                titles, bdd_result = await _bdd_titles_for_image(image_path, bdd_model=cfg.bdd_model)
+                titles, bdd_result = await _bdd_titles_for_image(
+                    image_path,
+                    bdd_model=cfg.bdd_model,
+                    provider=cfg.provider,
+                )
                 json_rows.append({"id": eid, "model_output": titles})
                 if cfg.save_raw and cfg.out_raw is not None:
                     raw_by_id[str(eid)] = bdd_result.model_dump(mode="json")

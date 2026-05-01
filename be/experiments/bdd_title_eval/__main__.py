@@ -11,10 +11,15 @@ Or with explicit PYTHONPATH::
     set PYTHONPATH=.
     python -m experiments.bdd_title_eval --threshold 0.75
 
-Requires ``GEMINI_API_KEY`` (and usual app env) for BDD generation (default model: gemini-2.5-pro).
+Per ``--provider``:
 
-Outputs (CSV, model_output JSON, optional raw) are checkpointed to disk after each
-successfully processed image; Ctrl+C saves the latest completed rows and exits with code 130.
+- ``gemini`` (default): requires ``GEMINI_API_KEY``. Default model ``gemini-2.5-flash`` unless
+  ``--bdd-model`` is set.
+- ``openai``: requires ``OPENAI_API_KEY``. Default model ``gpt-5`` unless ``--bdd-model`` is set.
+
+Default outputs go under ``data/result/<UTC timestamp>/``: CSV, model_output JSON, and optional
+raw JSON. They are checkpointed after each successfully processed image; Ctrl+C saves the latest
+completed rows and exits with code 130.
 """
 from __future__ import annotations
 
@@ -49,12 +54,14 @@ def main() -> None:
     from experiments.bdd_title_eval.run import default_timestamp
 
     ts = default_timestamp()
+    run_dir = default_data / "result" / ts
 
     p = argparse.ArgumentParser(
         description=(
             "Evaluate BDD scenario titles against ground_truth.json using embedding similarity. "
             "Iterates image files in data/images (names like 1.png), calls bdd_happy_path_service, "
-            "and writes CSV + model_output JSON. Checkpoints after each image; safe to interrupt with Ctrl+C. "
+            "and writes CSV + model_output JSON under data/result/<timestamp> by default. "
+            "Checkpoints after each image; safe to interrupt with Ctrl+C. "
             "Optional id range; errors on a single id are logged and skipped so the run continues."
         )
     )
@@ -87,15 +94,27 @@ def main() -> None:
     p.add_argument(
         "--threshold",
         type=float,
-        default=0.75,
-        help="Cosine similarity threshold for matching a GT title to a model title (default: 0.75)",
+        default=0.6,
+        help="Cosine similarity threshold for matching a GT title to a model title (default: 0.6)",
+    )
+    p.add_argument(
+        "--provider",
+        choices=["gemini", "openai"],
+        default="gemini",
+        help=(
+            "LLM backend for BDD generation (default: gemini). "
+            "Default model per backend: gemini-2.5-flash vs gpt-5; override with --bdd-model."
+        ),
     )
     p.add_argument(
         "--bdd-model",
         type=str,
-        default="gemini-2.5-pro",
+        default=None,
         metavar="ID",
-        help="Model id for bdd_happy_path_service.generate (default: gemini-2.5-pro)",
+        help=(
+            "Model id passed to BddHappyPathService.generate (default: gemini-2.5-flash if "
+            "--provider gemini, gpt-5 if --provider openai)"
+        ),
     )
     p.add_argument(
         "--encoder",
@@ -113,30 +132,40 @@ def main() -> None:
         "--out-csv",
         type=Path,
         default=None,
-        help=f"Output CSV path (default: {default_data}/bdd_title_eval_<timestamp>.csv)",
+        help=(
+            f"Output CSV path (default: {default_data}/result/<timestamp>/bdd_title_eval_<timestamp>.csv)"
+        ),
     )
     p.add_argument(
         "--out-json",
         type=Path,
         default=None,
-        help=f"Output model_output JSON (default: {default_data}/model_output_<timestamp>.json)",
+        help=(
+            f"Output model_output JSON (default: {default_data}/result/<timestamp>/model_output_<timestamp>.json)"
+        ),
     )
     p.add_argument(
         "--save-raw",
         action="store_true",
-        help="Also write model_output_raw_<timestamp>.json with full BddHappyPathResult per id",
+        help=(
+            "Also write model_output_raw_<timestamp>.json (same run folder) with full BddHappyPathResult per id"
+        ),
     )
     args = p.parse_args()
     if args.id_min is not None and args.id_max is not None and args.id_min > args.id_max:
         p.error("--id-min must be less than or equal to --id-max")
 
+    bdd_model = args.bdd_model
+    if bdd_model is None:
+        bdd_model = "gpt-5" if args.provider == "openai" else "gemini-2.5-flash"
+
     out_csv = args.out_csv
     out_json = args.out_json
     if out_csv is None:
-        out_csv = default_data / f"bdd_title_eval_{ts}.csv"
+        out_csv = run_dir / f"bdd_title_eval_{ts}.csv"
     if out_json is None:
-        out_json = default_data / f"model_output_{ts}.json"
-    out_raw = default_data / f"model_output_raw_{ts}.json" if args.save_raw else None
+        out_json = run_dir / f"model_output_{ts}.json"
+    out_raw = run_dir / f"model_output_raw_{ts}.json" if args.save_raw else None
 
     from experiments.bdd_title_eval.run import RunConfig, run_experiment
 
@@ -150,7 +179,8 @@ def main() -> None:
         out_json=out_json.resolve(),
         save_raw=args.save_raw,
         out_raw=out_raw.resolve() if out_raw else None,
-        bdd_model=args.bdd_model,
+        provider=args.provider,
+        bdd_model=bdd_model,
         id_min=args.id_min,
         id_max=args.id_max,
     )

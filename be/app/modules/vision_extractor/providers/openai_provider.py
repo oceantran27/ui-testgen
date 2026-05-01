@@ -6,7 +6,6 @@ from openai import OpenAI
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.modules.vision_extractor.providers.base_provider import BaseVisionProvider
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,8 +61,6 @@ class OpenAIVisionProvider(BaseVisionProvider):
                     },
                 ],
                 response_format={"type": "json_object"},
-                max_tokens=4000,
-                temperature=0,
             )
 
             content = response.choices[0].message.content

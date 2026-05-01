@@ -12,7 +12,7 @@ def _backend_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def _read_prompt_file(path_str: str, label: str) -> str:
     try:
         with open(path_str, "r", encoding="utf-8") as prompt_file:
@@ -28,8 +28,8 @@ def load_system_prompt() -> str:
 
 
 def load_bdd_happy_path_prompt() -> str:
-    resolved = _backend_root() / settings.BDD_HAPPY_PATH_PROMPT_PATH
-    return _read_prompt_file(str(resolved), "BDD happy path prompt")
+    root = _backend_root()
+    return _read_prompt_file(str(root / settings.BDD_HAPPY_PATH_PROMPT_PATH), "BDD happy path prompt")
 
 
 def load_bdd_scenario_ranking_prompt() -> str:

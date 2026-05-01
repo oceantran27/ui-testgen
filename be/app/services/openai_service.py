@@ -73,8 +73,6 @@ class OpenAIService:
                     },
                 ],
                 response_format={"type": "json_object"},
-                max_tokens=4000,
-                temperature=0,
             )
 
             content = response.choices[0].message.content
@@ -126,8 +124,6 @@ class OpenAIService:
                     },
                 ],
                 response_format={"type": "json_object"},
-                max_tokens=16384,
-                temperature=0,
             )
         except Exception as exc:
             logger.error("OpenAI BDD generation failed: %s", exc)

@@ -64,13 +64,27 @@ def _run_gemini_bdd_sync(image_path: str, model_name: str = BDD_HAPPY_PATH_MODEL
 
 
 class BddHappyPathService:
-    async def generate(self, image_path: str, model: str | None = None) -> BddHappyPathResult:
-        api_model, route = _resolve_generation_route(model)
-
+    async def generate(
+        self,
+        image_path: str,
+        model: str | None = None,
+        backend: Literal["gemini", "openai"] | None = None,
+    ) -> BddHappyPathResult:
         def _work() -> BddHappyPathResult:
-            if route == "openai":
-                return _run_openai_bdd_sync(image_path, api_model)
-            return _run_gemini_bdd_sync(image_path, api_model)
+            if backend is None:
+                api_model, route = _resolve_generation_route(model)
+                if route == "openai":
+                    return _run_openai_bdd_sync(image_path, api_model)
+                return _run_gemini_bdd_sync(image_path, api_model)
+            if backend == "gemini":
+                api_model = (model or BDD_HAPPY_PATH_MODEL).strip().lower()
+                if not api_model:
+                    api_model = BDD_HAPPY_PATH_MODEL
+                return _run_gemini_bdd_sync(image_path, api_model)
+            api_model = (model or "gpt-5").strip()
+            if not api_model:
+                api_model = "gpt-5"
+            return _run_openai_bdd_sync(image_path, api_model)
 
         try:
             return await asyncio.to_thread(_work)
