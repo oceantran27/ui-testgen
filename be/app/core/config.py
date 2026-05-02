@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # BDD happy path (Gherkin from UI screenshot)
     BDD_HAPPY_PATH_PROMPT_PATH: str = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
+    # BDD two-stage Module 2 (UI hierarchy vision JSON → text-only Gherkin JSON)
+    BDD_BRIDGE_STAGE1_PROMPT_PATH: str = "app/llm_prompts/ui_extraction_system_prompt.txt"
+    BDD_BRIDGE_STAGE2_PROMPT_PATH: str = "app/llm_prompts/bdd_from_ui_hierarchy_system_prompt.txt"
+
     # BDD scenario ordering by business_intent (text-only LLM)
     BDD_SCENARIO_RANKING_PROMPT_PATH: str = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
 
@@ -81,6 +85,12 @@ class Settings(BaseSettings):
 
         if not self.BDD_HAPPY_PATH_PROMPT_PATH:
             self.BDD_HAPPY_PATH_PROMPT_PATH = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
+
+        if not self.BDD_BRIDGE_STAGE1_PROMPT_PATH:
+            self.BDD_BRIDGE_STAGE1_PROMPT_PATH = "app/llm_prompts/ui_extraction_system_prompt.txt"
+
+        if not self.BDD_BRIDGE_STAGE2_PROMPT_PATH:
+            self.BDD_BRIDGE_STAGE2_PROMPT_PATH = "app/llm_prompts/bdd_from_ui_hierarchy_system_prompt.txt"
 
         if not self.BDD_SCENARIO_RANKING_PROMPT_PATH:
             self.BDD_SCENARIO_RANKING_PROMPT_PATH = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"

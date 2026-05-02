@@ -8,7 +8,12 @@ from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.schemas.bdd_happy_path import BddHappyPathResult
 from app.services.bdd_payload import parse_bdd_payload
-from app.services.prompt_service import load_bdd_happy_path_prompt, load_system_prompt
+from app.services.prompt_service import (
+    load_bdd_bridge_stage1_prompt,
+    load_bdd_bridge_stage2_prompt,
+    load_bdd_happy_path_prompt,
+    load_system_prompt,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,3 +138,77 @@ class OpenAIService:
             raise AIProcessingError("Received empty response from OpenAI")
         logger.debug("BDD raw output length (OpenAI): %s", len(content))
         return parse_bdd_payload(content, result_model=self.model)
+
+    def generate_bdd_bridge_stage1_raw(self, image_path: str) -> str:
+        if not settings.OPENAI_API_KEY:
+            raise AIProcessingError("OPENAI_API_KEY is not configured")
+        system_prompt = load_bdd_bridge_stage1_prompt()
+        base64_image = self._encode_image(image_path)
+        mime_type = _mime_type_for_path(image_path)
+        user_text = (
+            "Analyze this UI screenshot and output the UI hierarchy JSON (Agent 1) exactly as specified. "
+            "Return exactly one JSON object. Do not include markdown, code fences, or extra text."
+        )
+        try:
+            logger.info(
+                "Sending OpenAI BDD bridge stage1 request for image: %s model=%s",
+                image_path,
+                self.model,
+            )
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_text},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime_type};base64,{base64_image}",
+                                    "detail": "high",
+                                },
+                            },
+                        ],
+                    },
+                ],
+                response_format={"type": "json_object"},
+            )
+        except Exception as exc:
+            logger.error("OpenAI BDD bridge stage1 failed: %s", exc)
+            raise AIProcessingError(f"BDD bridge stage1 failed: {exc}") from exc
+        content = response.choices[0].message.content
+        if not content:
+            raise AIProcessingError("Received empty response from OpenAI (bridge stage1)")
+        logger.debug("BDD bridge stage1 raw output length (OpenAI): %s", len(content))
+        return content
+
+    def generate_bdd_bridge_stage2_bdd(self, extraction_json: str, *, result_model: str) -> BddHappyPathResult:
+        if not settings.OPENAI_API_KEY:
+            raise AIProcessingError("OPENAI_API_KEY is not configured")
+        system_prompt = load_bdd_bridge_stage2_prompt()
+        user_text = (
+            "UI hierarchy JSON from Agent 1 (sole source of truth for visible UI wording):\n"
+            f"{extraction_json}\n\n"
+            "Produce the BDD happy-path JSON per the system instructions. Return exactly one JSON object. "
+            "Do not include markdown, code fences, or extra text."
+        )
+        try:
+            logger.info("Sending OpenAI BDD bridge stage2 request model=%s", self.model)
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_text},
+                ],
+                response_format={"type": "json_object"},
+            )
+        except Exception as exc:
+            logger.error("OpenAI BDD bridge stage2 failed: %s", exc)
+            raise AIProcessingError(f"BDD bridge stage2 failed: {exc}") from exc
+        content = response.choices[0].message.content
+        if not content:
+            raise AIProcessingError("Received empty response from OpenAI (bridge stage2)")
+        logger.debug("BDD bridge stage2 raw output length (OpenAI): %s", len(content))
+        return parse_bdd_payload(content, result_model=result_model)
