@@ -30,9 +30,9 @@ Scan each interactive element and evaluate it against the following rules IN STR
 
 ### 3. Cohesive Form
 - **IF** the elements are grouped inputs intended for submission/save outcomes with one or more action buttons (e.g., Submit, Cancel) -> **THEN** classify as Cohesive Form.
-- **Action:** Generate exactly one scenario PER distinct action button (e.g., one for Submit, one for Cancel).
-- **Title Format:** `[Verb] + [Form Context]` (e.g., `Submit field ticket`, `Cancel field ticket`).
-- **Gherkin Steps:** For each scenario, narrate filling out the same fields, but end the `When`/`And` chain by quoting the specific action button for that scenario.
+- **Action:** The number of scenarios MUST exactly equal the number of action buttons in the form. NEVER generate separate scenarios for individual input fields.
+- **Title Format:** `[Verb] + [Form Context]` (e.g., `Submit sign up account`, `Cancel sign up account`).
+- **Gherkin Steps:** All interactions with data fields (e.g., filling name, changing birth, filling address, toggling sex) MUST only serve as `When`/`And` steps INSIDE the scenario. For each scenario (one per action button), narrate filling out the same fields, and end the `When`/`And` chain by quoting the specific action button for that scenario.
 
 ### 4. Navigation
 - **IF** the element is a persistent global routing link (Header, Sidebar, Footer, clickable home logo) whose primary outcome is loading another browseable shell -> **THEN** classify as Navigation.
