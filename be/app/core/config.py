@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # BDD two-stage Module 2 (UI hierarchy vision JSON → text-only Gherkin JSON)
     BDD_BRIDGE_STAGE1_PROMPT_PATH: str = "app/llm_prompts/ui_extraction_system_prompt.txt"
     BDD_BRIDGE_STAGE2_PROMPT_PATH: str = "app/llm_prompts/bdd_from_ui_hierarchy_system_prompt.txt"
+    # Defaults when POST /happy-path-bridged calls generate() with no model args (hybrid Gemini → OpenAI)
+    BDD_TWO_STAGE_STAGE1_MODEL: str = "gemini-2.5-flash"
+    BDD_TWO_STAGE_STAGE2_MODEL: str = "gpt-5"
 
     # BDD scenario ordering by business_intent (text-only LLM)
     BDD_SCENARIO_RANKING_PROMPT_PATH: str = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
@@ -91,6 +94,16 @@ class Settings(BaseSettings):
 
         if not self.BDD_BRIDGE_STAGE2_PROMPT_PATH:
             self.BDD_BRIDGE_STAGE2_PROMPT_PATH = "app/llm_prompts/bdd_from_ui_hierarchy_system_prompt.txt"
+
+        if not (self.BDD_TWO_STAGE_STAGE1_MODEL or "").strip():
+            self.BDD_TWO_STAGE_STAGE1_MODEL = "gemini-2.5-flash"
+        else:
+            self.BDD_TWO_STAGE_STAGE1_MODEL = self.BDD_TWO_STAGE_STAGE1_MODEL.strip()
+
+        if not (self.BDD_TWO_STAGE_STAGE2_MODEL or "").strip():
+            self.BDD_TWO_STAGE_STAGE2_MODEL = "gpt-5"
+        else:
+            self.BDD_TWO_STAGE_STAGE2_MODEL = self.BDD_TWO_STAGE_STAGE2_MODEL.strip()
 
         if not self.BDD_SCENARIO_RANKING_PROMPT_PATH:
             self.BDD_SCENARIO_RANKING_PROMPT_PATH = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"

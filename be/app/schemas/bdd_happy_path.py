@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class BddFeatureBlock(BaseModel):
@@ -29,6 +29,13 @@ class BddScenarioItem(BaseModel):
         ),
     )
     gherkin: str = Field(min_length=1)
+
+    @field_validator("gherkin", mode="before")
+    @classmethod
+    def join_gherkin_if_list(cls, v: str | list[str]) -> str:
+        if isinstance(v, list):
+            return "\n".join(v)
+        return v
 
 
 class BddHappyPathResult(BaseModel):
