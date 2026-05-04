@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from typing import Literal
 
@@ -22,8 +23,6 @@ from app.services.ui_hierarchy_payload import parse_ui_hierarchy_payload, ui_hie
 
 logger = logging.getLogger(__name__)
 
-BDD_TWO_STAGE_MODEL = "gemini-2.5-flash"
-
 
 @dataclass(frozen=True)
 class BddTwoStageRunResult:
@@ -31,33 +30,18 @@ class BddTwoStageRunResult:
 
     hierarchy: UiHierarchyExtractionResult
     bdd: BddHappyPathResult
+    stage1_llm_seconds: float = 0.0
+    stage2_llm_seconds: float = 0.0
 
 
-def _resolve_generation_route(model: str | None) -> tuple[str, Literal["gemini", "openai"]]:
-    effective = (model or BDD_TWO_STAGE_MODEL).strip().lower()
-    if effective.startswith("gpt-"):
-        return effective, "openai"
-    return effective, "gemini"
+def _looks_like_openai_model_id(model_id: str) -> bool:
+    return model_id.strip().lower().startswith("gpt-")
 
 
-def _run_openai_two_stage_sync(
-    image_path: str, model_name: str
-) -> tuple[UiHierarchyExtractionResult, BddHappyPathResult]:
-    svc = OpenAIService(model_name)
-    raw1 = svc.generate_bdd_bridge_stage1_raw(image_path)
-    hierarchy = parse_ui_hierarchy_payload(raw1)
-    payload = ui_hierarchy_to_minified_json(hierarchy)
-    bdd = svc.generate_bdd_bridge_stage2_bdd(payload, result_model=model_name)
-    return hierarchy, bdd
-
-
-def _run_gemini_two_stage_sync(
-    image_path: str, model_name: str = BDD_TWO_STAGE_MODEL
-) -> tuple[UiHierarchyExtractionResult, BddHappyPathResult]:
+def _extract_hierarchy_gemini_sync(image_path: str, gemini_model: str) -> UiHierarchyExtractionResult:
     if not settings.GEMINI_API_KEY:
         raise AIProcessingError("GEMINI_API_KEY is not configured")
     system1 = load_bdd_bridge_stage1_prompt()
-    system2 = load_bdd_bridge_stage2_prompt()
     client = get_gemini_client()
     try:
         img = Image.open(image_path)
@@ -71,7 +55,7 @@ def _run_gemini_two_stage_sync(
     )
     try:
         response1 = client.models.generate_content(
-            model=model_name,
+            model=gemini_model,
             contents=[types.Part.from_text(text=user1), pil_image_to_part(img)],
             config=default_generate_config(system_instruction=system1),
         )
@@ -81,17 +65,22 @@ def _run_gemini_two_stage_sync(
     raw1 = response1.text
     if not raw1:
         raise AIProcessingError("Received empty response from Gemini (stage 1)")
-    hierarchy = parse_ui_hierarchy_payload(raw1)
-    payload = ui_hierarchy_to_minified_json(hierarchy)
+    return parse_ui_hierarchy_payload(raw1)
 
+
+def _generate_bdd_via_gemini_text_sync(minified_payload: str, gemini_model: str) -> BddHappyPathResult:
+    if not settings.GEMINI_API_KEY:
+        raise AIProcessingError("GEMINI_API_KEY is not configured")
+    system2 = load_bdd_bridge_stage2_prompt()
+    client = get_gemini_client()
     user2 = (
         "UI hierarchy JSON from Agent 1 (sole source of truth for visible UI wording):\n"
-        f"{payload}\n\n"
+        f"{minified_payload}\n\n"
         "Produce the BDD happy-path JSON per the system instructions. Return ONLY the raw JSON."
     )
     try:
         response2 = client.models.generate_content(
-            model=model_name,
+            model=gemini_model,
             contents=[types.Part.from_text(text=user2)],
             config=default_generate_config(system_instruction=system2),
         )
@@ -101,29 +90,154 @@ def _run_gemini_two_stage_sync(
     raw2 = response2.text
     if not raw2:
         raise AIProcessingError("Received empty response from Gemini (stage 2)")
-    bdd = parse_bdd_payload(raw2, result_model=model_name)
-    return hierarchy, bdd
+    return parse_bdd_payload(raw2, result_model=gemini_model)
+
+
+def _generate_bdd_via_openai_stage2_sync(minified_payload: str, openai_model: str) -> BddHappyPathResult:
+    return OpenAIService(openai_model).generate_bdd_bridge_stage2_bdd(
+        minified_payload, result_model=openai_model
+    )
+
+
+def _run_gemini_both_stages_sync(
+    image_path: str, gemini_model: str
+) -> BddTwoStageRunResult:
+    t0 = time.perf_counter()
+    hierarchy = _extract_hierarchy_gemini_sync(image_path, gemini_model)
+    t1 = time.perf_counter()
+    payload = ui_hierarchy_to_minified_json(hierarchy)
+    t2 = time.perf_counter()
+    bdd = _generate_bdd_via_gemini_text_sync(payload, gemini_model)
+    t3 = time.perf_counter()
+    return BddTwoStageRunResult(
+        hierarchy=hierarchy,
+        bdd=bdd,
+        stage1_llm_seconds=t1 - t0,
+        stage2_llm_seconds=t3 - t2,
+    )
+
+
+def _run_hybrid_gemini_openai_sync(
+    image_path: str, gemini_stage1: str, openai_stage2: str
+) -> BddTwoStageRunResult:
+    if _looks_like_openai_model_id(gemini_stage1):
+        raise AIProcessingError(
+            "Hybrid pipeline expects a Gemini model for stage 1 (UI extraction). "
+            "Use backend='openai' for an all-OpenAI two-stage pipeline, or fix BDD_TWO_STAGE_STAGE1_MODEL / stage1_model."
+        )
+    if not settings.OPENAI_API_KEY:
+        raise AIProcessingError("OPENAI_API_KEY is not configured (required for GPT stage 2 in hybrid pipeline)")
+    t0 = time.perf_counter()
+    hierarchy = _extract_hierarchy_gemini_sync(image_path, gemini_stage1)
+    t1 = time.perf_counter()
+    payload = ui_hierarchy_to_minified_json(hierarchy)
+    t2 = time.perf_counter()
+    bdd = _generate_bdd_via_openai_stage2_sync(payload, openai_stage2)
+    t3 = time.perf_counter()
+    return BddTwoStageRunResult(
+        hierarchy=hierarchy,
+        bdd=bdd,
+        stage1_llm_seconds=t1 - t0,
+        stage2_llm_seconds=t3 - t2,
+    )
+
+
+def _run_openai_two_stage_sync(
+    image_path: str, model_name: str
+) -> BddTwoStageRunResult:
+    svc = OpenAIService(model_name)
+    t0 = time.perf_counter()
+    raw1 = svc.generate_bdd_bridge_stage1_raw(image_path)
+    hierarchy = parse_ui_hierarchy_payload(raw1)
+    t1 = time.perf_counter()
+    payload = ui_hierarchy_to_minified_json(hierarchy)
+    t2 = time.perf_counter()
+    bdd = svc.generate_bdd_bridge_stage2_bdd(payload, result_model=model_name)
+    t3 = time.perf_counter()
+    return BddTwoStageRunResult(
+        hierarchy=hierarchy,
+        bdd=bdd,
+        stage1_llm_seconds=t1 - t0,
+        stage2_llm_seconds=t3 - t2,
+    )
+
+
+def _legacy_single_model_route(model: str) -> tuple[str, Literal["gemini", "openai"]]:
+    """Same routing as historic ``model=gpt-*`` vs Gemini default."""
+    api_model = model.strip().lower()
+    if _looks_like_openai_model_id(api_model):
+        return api_model, "openai"
+    return api_model, "gemini"
 
 
 def _run_two_stage_sync(
     image_path: str,
     model: str | None,
     backend: Literal["gemini", "openai"] | None,
+    stage1_model: str | None,
+    stage2_model: str | None,
 ) -> BddTwoStageRunResult:
-    if backend is None:
-        api_model, route = _resolve_generation_route(model)
-        if route == "openai":
-            h, b = _run_openai_two_stage_sync(image_path, api_model)
-        else:
-            h, b = _run_gemini_two_stage_sync(image_path, api_model)
-        return BddTwoStageRunResult(hierarchy=h, bdd=b)
     if backend == "gemini":
-        api_model = (model or BDD_TWO_STAGE_MODEL).strip().lower() or BDD_TWO_STAGE_MODEL
-        h, b = _run_gemini_two_stage_sync(image_path, api_model)
-        return BddTwoStageRunResult(hierarchy=h, bdd=b)
-    api_model = (model or "gpt-5").strip() or "gpt-5"
-    h, b = _run_openai_two_stage_sync(image_path, api_model)
-    return BddTwoStageRunResult(hierarchy=h, bdd=b)
+        uni = (model or stage1_model or stage2_model or settings.BDD_TWO_STAGE_STAGE1_MODEL).strip()
+        if not uni:
+            uni = "gemini-2.5-flash"
+        logger.info("BDD two-stage pipeline=all_gemini stage1=%s stage2=%s", uni, uni)
+        return _run_gemini_both_stages_sync(image_path, uni)
+    if backend == "openai":
+        uni = (model or stage1_model or stage2_model or settings.BDD_TWO_STAGE_STAGE2_MODEL).strip()
+        if not uni:
+            uni = "gpt-5"
+        logger.info("BDD two-stage pipeline=all_openai model=%s", uni)
+        return _run_openai_two_stage_sync(image_path, uni)
+
+    stage_explicit = stage1_model is not None or stage2_model is not None
+    if stage_explicit:
+        r1 = (stage1_model or settings.BDD_TWO_STAGE_STAGE1_MODEL).strip()
+        r2 = (stage2_model or settings.BDD_TWO_STAGE_STAGE2_MODEL).strip()
+
+        if _looks_like_openai_model_id(r1) and _looks_like_openai_model_id(r2):
+            uni = r1 if stage1_model is not None else r2
+            logger.info("BDD two-stage pipeline=all_openai model=%s (stage overrides)", uni)
+            return _run_openai_two_stage_sync(image_path, uni)
+
+        if _looks_like_openai_model_id(r2):
+            logger.info("BDD two-stage pipeline=hybrid stage1=%s stage2=%s", r1, r2)
+            return _run_hybrid_gemini_openai_sync(image_path, r1, r2)
+
+        if _looks_like_openai_model_id(r1):
+            raise AIProcessingError(
+                "When stage 2 uses Gemini, stage 1 must be a Gemini-capable vision model ID, not GPT. "
+                "Omit stage1_model to use settings.BDD_TWO_STAGE_STAGE1_MODEL, or fix stage1_model."
+            )
+        logger.info("BDD two-stage pipeline=dual_gemini stage1=%s stage2=%s", r1, r2)
+        t0 = time.perf_counter()
+        h = _extract_hierarchy_gemini_sync(image_path, r1)
+        t1 = time.perf_counter()
+        payload = ui_hierarchy_to_minified_json(h)
+        t2 = time.perf_counter()
+        b = _generate_bdd_via_gemini_text_sync(payload, r2)
+        t3 = time.perf_counter()
+        return BddTwoStageRunResult(
+            hierarchy=h,
+            bdd=b,
+            stage1_llm_seconds=t1 - t0,
+            stage2_llm_seconds=t3 - t2,
+        )
+
+    if model:
+        ml = model.strip()
+        if ml:
+            api_model, route = _legacy_single_model_route(ml)
+            if route == "openai":
+                logger.info("BDD two-stage pipeline=all_openai model=%s", api_model)
+                return _run_openai_two_stage_sync(image_path, api_model)
+            logger.info("BDD two-stage pipeline=all_gemini model=%s", api_model)
+            return _run_gemini_both_stages_sync(image_path, api_model)
+
+    r1 = settings.BDD_TWO_STAGE_STAGE1_MODEL
+    r2 = settings.BDD_TWO_STAGE_STAGE2_MODEL
+    logger.info("BDD two-stage pipeline=hybrid_defaults stage1=%s stage2=%s", r1, r2)
+    return _run_hybrid_gemini_openai_sync(image_path, r1, r2)
 
 
 class BddTwoStageService:
@@ -132,9 +246,12 @@ class BddTwoStageService:
         image_path: str,
         model: str | None = None,
         backend: Literal["gemini", "openai"] | None = None,
+        *,
+        stage1_model: str | None = None,
+        stage2_model: str | None = None,
     ) -> BddHappyPathResult:
         def _work() -> BddHappyPathResult:
-            return _run_two_stage_sync(image_path, model, backend).bdd
+            return _run_two_stage_sync(image_path, model, backend, stage1_model, stage2_model).bdd
 
         try:
             return await asyncio.to_thread(_work)
@@ -149,9 +266,12 @@ class BddTwoStageService:
         image_path: str,
         model: str | None = None,
         backend: Literal["gemini", "openai"] | None = None,
+        *,
+        stage1_model: str | None = None,
+        stage2_model: str | None = None,
     ) -> BddTwoStageRunResult:
         def _work() -> BddTwoStageRunResult:
-            return _run_two_stage_sync(image_path, model, backend)
+            return _run_two_stage_sync(image_path, model, backend, stage1_model, stage2_model)
 
         try:
             return await asyncio.to_thread(_work)
