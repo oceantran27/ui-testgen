@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
-Run Gemini UI hierarchy extraction (state-graph phase 1) on one image or all images in a folder.
+Run Gemini UI extraction (flat controls + semantic groups, state-graph phase 1) on one image or all images in a folder.
 
 Run from backend root so imports and .env resolve like the API:
 
     cd be
     python scripts/ui_extraction_preview.py
 
-Requires GEMINI_API_KEY (see be/.env.example). Optional env: TWO_STAGE_UI_HIERARCHY_PROMPT_PATH,
-STATE_GRAPH_UI_EXTRACTION_MODEL.
+Requires GEMINI_API_KEY (see be/.env.example). Optional env: UI_EXTRACTION_PROMPT_PATH
+(or legacy TWO_STAGE_UI_HIERARCHY_PROMPT_PATH), STATE_GRAPH_UI_EXTRACTION_MODEL.
 
 Configure INPUT_PATH below (Windows path or pathlib):
 - File: runs once; writes ``<stem>_ui_extraction_preview.json`` next to the image.
 - Folder: scans images (suffixes below); writes ``<folder>/<OUTPUT_JSON_NAME>`` with all results.
 
 Set INCLUDE_MINIFIED=true to add ``minified`` JSON string per screen (same shape as downstream
-user-intent input from ``ui_hierarchy_to_minified_json``).
+user-intent input from ``ui_extraction_to_minified_json``).
+
+Each result object uses the top-level key ``ui_extraction`` for the parsed ``UIExtractionResult``.
 """
 
 from __future__ import annotations
@@ -42,8 +44,8 @@ if str(_ROOT) not in sys.path:
 
 from app.core.config import settings  # noqa: E402
 from app.core.exceptions import AIProcessingError  # noqa: E402
-from app.services.ui_hierarchy_extraction_service import extract_ui_hierarchy_gemini_sync  # noqa: E402
-from app.services.ui_hierarchy_payload import ui_hierarchy_to_minified_json  # noqa: E402
+from app.services.ui_extraction_payload import ui_extraction_to_minified_json  # noqa: E402
+from app.services.ui_extraction_service import extract_ui_extraction_gemini_sync  # noqa: E402
 
 
 def _collect_image_paths(folder: Path) -> list[str]:
@@ -68,30 +70,38 @@ def _resolve_model() -> str:
     return settings.STATE_GRAPH_UI_EXTRACTION_MODEL
 
 
+def _truncate(s: str, max_len: int = 500) -> str:
+    return f"{s[:max_len]}{'…' if len(s) > max_len else ''}"
+
+
 def _one_payload(
     *,
     image_path: str,
     model: str,
-    hierarchy: Any,
+    ui_extraction: Any,
     llm_seconds: float,
 ) -> dict[str, Any]:
     out: dict[str, Any] = {
         "image_path": image_path,
         "model": model,
         "llm_seconds": round(llm_seconds, 6),
-        "hierarchy": hierarchy.model_dump(mode="json"),
+        "ui_extraction": ui_extraction.model_dump(mode="json"),
     }
     if INCLUDE_MINIFIED:
-        out["minified"] = ui_hierarchy_to_minified_json(hierarchy)
+        out["minified"] = ui_extraction_to_minified_json(ui_extraction)
     return out
 
 
-def _print_summary(image_path: str, hierarchy: Any, llm_seconds: float) -> None:
+def _print_summary(image_path: str, ui_extraction: Any, llm_seconds: float) -> None:
     print(f"  file: {Path(image_path).name}")
     print(f"  llm_seconds: {llm_seconds:.3f}")
-    print(f"  page_summary: {hierarchy.overview.page_summary[:500]}{'…' if len(hierarchy.overview.page_summary) > 500 else ''}")
-    print(f"  business_intent: {hierarchy.overview.business_intent[:300]}{'…' if len(hierarchy.overview.business_intent) > 300 else ''}")
-    print(f"  interactive_element_count: {hierarchy.overview.interactive_element_count}")
+    page = ui_extraction.overview.page
+    print(f"  page: {_truncate(page)}")
+    hint = ui_extraction.overview.intent_hint or ""
+    if hint:
+        print(f"  intent_hint: {_truncate(hint)}")
+    print(f"  control_count: {ui_extraction.overview.control_count}")
+    print(f"  groups: {len(ui_extraction.groups)}")
     print()
 
 
@@ -103,7 +113,7 @@ def main() -> int:
 
     model = _resolve_model()
     print(f"Model: {model}")
-    print(f"Prompt path (setting): {settings.TWO_STAGE_UI_HIERARCHY_PROMPT_PATH}")
+    print(f"Prompt path (setting): {settings.UI_EXTRACTION_PROMPT_PATH}")
     if not settings.GEMINI_API_KEY:
         print("ERROR: GEMINI_API_KEY is not set (configure be/.env)", file=sys.stderr)
         return 1
@@ -111,12 +121,14 @@ def main() -> int:
 
     if path.is_file():
         try:
-            hierarchy, llm_seconds = extract_ui_hierarchy_gemini_sync(str(path), model)
+            ui_extraction, llm_seconds = extract_ui_extraction_gemini_sync(str(path), model)
         except AIProcessingError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
-        _print_summary(str(path), hierarchy, llm_seconds)
-        payload = _one_payload(image_path=str(path), model=model, hierarchy=hierarchy, llm_seconds=llm_seconds)
+        _print_summary(str(path), ui_extraction, llm_seconds)
+        payload = _one_payload(
+            image_path=str(path), model=model, ui_extraction=ui_extraction, llm_seconds=llm_seconds
+        )
         out_path = path.parent / f"{path.stem}_ui_extraction_preview.json"
         out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Wrote {out_path}")
@@ -137,10 +149,10 @@ def main() -> int:
     total_llm = 0.0
     for img in image_paths:
         try:
-            hierarchy, llm_seconds = extract_ui_hierarchy_gemini_sync(img, model)
+            ui_extraction, llm_seconds = extract_ui_extraction_gemini_sync(img, model)
             total_llm += llm_seconds
-            results.append(_one_payload(image_path=img, model=model, hierarchy=hierarchy, llm_seconds=llm_seconds))
-            _print_summary(img, hierarchy, llm_seconds)
+            results.append(_one_payload(image_path=img, model=model, ui_extraction=ui_extraction, llm_seconds=llm_seconds))
+            _print_summary(img, ui_extraction, llm_seconds)
         except AIProcessingError as exc:
             errors.append({"image_path": img, "error": str(exc)})
             print(f"  ERROR {Path(img).name}: {exc}", file=sys.stderr)
@@ -150,7 +162,7 @@ def main() -> int:
         "file_count": len(image_paths),
         "recursive": RECURSIVE,
         "model": model,
-        "prompt_path_setting": settings.TWO_STAGE_UI_HIERARCHY_PROMPT_PATH,
+        "prompt_path_setting": settings.UI_EXTRACTION_PROMPT_PATH,
         "include_minified": INCLUDE_MINIFIED,
         "total_llm_seconds": round(total_llm, 6),
         "results": results,
