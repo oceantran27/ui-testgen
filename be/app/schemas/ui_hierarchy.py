@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 SemanticLane = Literal[
     "getting_input",
@@ -17,20 +17,24 @@ NodeKind = Literal["region", "component", "control", "semantic_surface", "text"]
 
 
 class UIOverview(BaseModel):
-    page_summary: str = Field(
-        ..., description="Mô tả tổng quan UI"
-    )
+    page_summary: str = Field(..., description="High-level English summary of the visible UI.")
     business_intent: str = Field(
-        ..., description="Mục tiêu business chính của màn hình (1-2 câu). Trả về chuỗi rỗng nếu không có interactive elements."
+        ...,
+        description=(
+            "Primary user or business goals for this screen (1–2 sentences). "
+            "Return an empty string when there are no interactive elements."
+        ),
     )
     interactive_element_count: int = Field(
-        ..., description="Tổng số element có thể tương tác"
+        ...,
+        description="Total count of interactive controls extracted (`kind: control`).",
     )
 
 
 class ControlState(BaseModel):
     selected: Optional[bool] = Field(
-        default=None, description="Trạng thái selected của tab hoặc option"
+        default=None,
+        description="Whether a tab, radio option, or similar control appears selected.",
     )
 
 
@@ -41,37 +45,47 @@ class NavigationSignals(BaseModel):
 
 
 class UINode(BaseModel):
-    id: str = Field(..., description="Unique ID cho mỗi node (ví dụ: node_1, btn_submit)")
+    id: str = Field(..., description='Stable unique node id (e.g. "header_region", "btn_submit").')
     kind: NodeKind = Field(
         ...,
         description=(
             "region / semantic_surface / component / control per ui-hierarchy-v2; "
-            "text allowed for non-interactive copy the model may emit"
+            "`text` is allowed for non-interactive copy the model may emit."
         ),
     )
     role: str = Field(
-        ..., description="Vai trò chi tiết (ví dụ: button, link, textbox, checkbox, modal, list, dialog)"
+        ...,
+        description='Concrete role (e.g. "button", "link", "textbox", "checkbox", "modal", "list", "dialog").',
     )
     semantic_lane: Optional[SemanticLane] = Field(
         default=None,
-        description="Bắt buộc với kind semantic_surface trong prompt v2; optional ở đây để tolerante LLM",
+        description=(
+            "Required when `kind` is `semantic_surface` in prompt v2; optional here for tolerant parsing."
+        ),
     )
     surface_summary: Optional[str] = Field(
         default=None,
-        description="Một dòng mô tả surface khi kind là semantic_surface",
+        description="One-line English summary when `kind` is `semantic_surface`.",
     )
     functional_class: Optional[str] = Field(
-        default=None, description="Ví dụ: menu_launcher, form_submit, pagination_control"
+        default=None,
+        description='Specialized class when applicable (e.g. "menu_launcher", "form_submit", "pagination_control").',
     )
     visible_text: Optional[str] = Field(
-        default=None, description="Text hiển thị trên UI (trích xuất verbatim)"
+        default=None,
+        description="Verbatim visible UI text; do not translate or normalize spelling.",
     )
     verbatim_label_for_steps: Optional[str] = Field(
-        default=None, description="Text được trích xuất verbatim cho Gherkin steps"
+        default=None,
+        description="Verbatim label used in downstream natural-language test steps.",
     )
-    bdd_effective_scope: bool = Field(
-        default=True, 
-        description="Đánh dấu xem phần này có nằm trong trọng tâm BDD không (quan trọng khi có Modal, phần nền mờ đằng sau sẽ là false)"
+    scenario_effective_scope: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("scenario_effective_scope", "bdd_effective_scope"),
+        description=(
+            "Whether this subtree is in scope for generating primary test scenarios. "
+            "Background regions behind a modal with dimmed/disabled backdrop should be false."
+        ),
     )
     state: Optional[ControlState] = None
     navigation_signals: Optional[NavigationSignals] = None
@@ -87,7 +101,7 @@ class CohesiveForm(BaseModel):
 
 class FunctionalGroup(BaseModel):
     group_id: str
-    items: List[str] = Field(default_factory=list, description="List of control IDs in this group")
+    items: List[str] = Field(default_factory=list, description="Control IDs belonging to this group.")
     first_visible_item_literal: Optional[str] = None
 
 
@@ -102,14 +116,14 @@ class NavigationDestination(BaseModel):
     destination_label: str
     destination_canonical_stub: Optional[str] = Field(
         default=None,
-        description="Optional normalized stub from some pipelines (e.g. P-TEXT)",
+        description="Optional normalized destination stub from auxiliary pipelines.",
     )
 
 
 class SemanticIndexEntry(BaseModel):
     """One row per semantic_surface; lane-specific fields optional for tolerant parsing."""
 
-    cluster_id: str = Field(..., description="ID của node semantic_surface tương ứng")
+    cluster_id: str = Field(..., description="Must match the corresponding `semantic_surface` node id.")
     semantic_lane: SemanticLane
     summary: str
     control_ids: List[str] = Field(default_factory=list)

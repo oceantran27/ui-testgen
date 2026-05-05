@@ -22,17 +22,17 @@ from typing import Any, Literal
 
 
 
-from experiments.bdd_title_eval.embeddings import encode_normalized, load_model
+from experiments.test_scenario_title_eval.embeddings import encode_normalized, load_model
 
-from experiments.bdd_title_eval.ground_truth import load_ground_truth
+from experiments.test_scenario_title_eval.ground_truth import load_ground_truth
 
-from experiments.bdd_title_eval.images import list_images_by_id
+from experiments.test_scenario_title_eval.images import list_images_by_id
 
-from experiments.bdd_title_eval.matching import greedy_cosine_match
+from experiments.test_scenario_title_eval.matching import greedy_cosine_match
 
-from experiments.bdd_title_eval.metrics import per_image_prf1
+from experiments.test_scenario_title_eval.metrics import per_image_prf1
 
-from experiments.bdd_title_eval.run import CSV_BASE_FIELDNAMES, default_timestamp
+from experiments.test_scenario_title_eval.run import CSV_BASE_FIELDNAMES, default_timestamp
 
 
 CSV_FIELDNAMES = [*CSV_BASE_FIELDNAMES, "stage1_llm_seconds", "stage2_llm_seconds"]
@@ -71,7 +71,7 @@ class RunConfig:
 
     # Single OpenAI/Gemini id for pipeline gemini | openai (both stages)
 
-    bdd_model: str | None = None
+    generation_model: str | None = None
 
     id_min: int | None = None
 
@@ -167,15 +167,15 @@ def _write_checkpoint(
 
 
 
-async def _bdd_two_stage_titles_and_hierarchy(image_path: Path, *, cfg: RunConfig):
+async def _two_stage_scenario_titles_and_hierarchy(image_path: Path, *, cfg: RunConfig):
 
-    from app.services.bdd_two_stage_service import bdd_two_stage_service
+    from app.services.two_stage_test_scenario_service import two_stage_test_scenario_service
 
 
 
     if cfg.pipeline == "hybrid":
 
-        bundle = await bdd_two_stage_service.generate_with_hierarchy(
+        bundle = await two_stage_test_scenario_service.generate_with_hierarchy(
 
             str(image_path),
 
@@ -189,11 +189,11 @@ async def _bdd_two_stage_titles_and_hierarchy(image_path: Path, *, cfg: RunConfi
 
     elif cfg.pipeline == "gemini":
 
-        bundle = await bdd_two_stage_service.generate_with_hierarchy(
+        bundle = await two_stage_test_scenario_service.generate_with_hierarchy(
 
             str(image_path),
 
-            model=cfg.bdd_model,
+            model=cfg.generation_model,
 
             backend="gemini",
 
@@ -201,17 +201,17 @@ async def _bdd_two_stage_titles_and_hierarchy(image_path: Path, *, cfg: RunConfi
 
     else:
 
-        bundle = await bdd_two_stage_service.generate_with_hierarchy(
+        bundle = await two_stage_test_scenario_service.generate_with_hierarchy(
 
             str(image_path),
 
-            model=cfg.bdd_model,
+            model=cfg.generation_model,
 
             backend="openai",
 
         )
 
-    titles = [s.title for s in bundle.bdd.scenarios]
+    titles = [s.title for s in bundle.suite.scenarios]
 
     return titles, bundle, bundle.hierarchy.model_dump(mode="json")
 
@@ -289,7 +289,11 @@ async def run_experiment_async(cfg: RunConfig) -> None:
 
     else:
 
-        logger.info("Module2 two-stage pipeline=%s bdd_model=%s", cfg.pipeline, cfg.bdd_model)
+        logger.info(
+            "Module2 two-stage pipeline=%s generation_model=%s",
+            cfg.pipeline,
+            cfg.generation_model,
+        )
 
 
 
@@ -331,7 +335,7 @@ async def run_experiment_async(cfg: RunConfig) -> None:
 
             try:
 
-                titles, bundle, hier_dump = await _bdd_two_stage_titles_and_hierarchy(
+                titles, bundle, hier_dump = await _two_stage_scenario_titles_and_hierarchy(
 
                     image_path,
 

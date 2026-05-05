@@ -5,7 +5,7 @@ export interface AnalysisRecord {
   created_at: string;
 }
 
-export interface BddFeatureBlock {
+export interface ScreenFeatureSummary {
   /** Short generic page/screen name; no product/brand instance. Letter case is not prescribed. */
   name: string;
   description?: string;
@@ -13,16 +13,16 @@ export interface BddFeatureBlock {
   business_intent: string;
 }
 
-export interface BddScenarioItem {
+export interface TestScenarioItem {
   id: string;
   /** Imperative (2–6 words); generic object only; specifics live in test_scenario. Case not prescribed. */
   title: string;
   test_scenario: string;
 }
 
-export interface BddHappyPathResult {
+export interface TestScenarioSuite {
   model: string;
-  feature: BddFeatureBlock;
-  scenarios: BddScenarioItem[];
+  feature: ScreenFeatureSummary;
+  scenarios: TestScenarioItem[];
   combined_test_scenario: string;
 }

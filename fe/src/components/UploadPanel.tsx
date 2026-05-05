@@ -5,10 +5,10 @@ interface UploadPanelProps {
   file: File | null;
   selectedImageUrl: string | null;
   filePreview: string | null;
-  isBddLoading: boolean;
+  isScenarioLoading: boolean;
   selectedPreviewLabel: string;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onBddClick: () => void;
+  onGenerateScenariosClick: () => void;
   onOpenDefaultGallery: () => void;
   onOpenPreviewModal: () => void;
 }
@@ -17,23 +17,23 @@ export function UploadPanel({
   file,
   selectedImageUrl,
   filePreview,
-  isBddLoading,
+  isScenarioLoading,
   selectedPreviewLabel,
   onFileChange,
-  onBddClick,
+  onGenerateScenariosClick,
   onOpenDefaultGallery,
   onOpenPreviewModal,
 }: UploadPanelProps) {
-  const busy = isBddLoading;
+  const busy = isScenarioLoading;
   return (
     <div className="card">
       <h2 className="mb-4 flex items-center text-2xl font-bold text-gray-700">
         <FiUploadCloud className="mr-3 text-blue-500" />
-        Screenshot → BDD
+        Screenshot → test scenarios
       </h2>
       <p className="mb-3 text-sm text-gray-500">
-        <strong className="text-gray-600">Generate BDD</strong> returns happy-path
-        Gherkin from the screenshot using the configured vision model.
+        <strong className="text-gray-600">Generate test scenarios</strong> produces structured
+        scenarios from the screenshot using the configured vision model.
       </p>
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -50,14 +50,14 @@ export function UploadPanel({
           </label>
           <button
             type="button"
-            onClick={onBddClick}
+            onClick={onGenerateScenariosClick}
             disabled={busy || (!file && !selectedImageUrl)}
             className="btn border border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            {isBddLoading ? (
+            {isScenarioLoading ? (
               <FiLoader className="-ml-1 mr-2 animate-spin" />
             ) : null}
-            {isBddLoading ? "Generating BDD..." : "Generate BDD"}
+            {isScenarioLoading ? "Generating scenarios..." : "Generate scenarios"}
           </button>
         </div>
 

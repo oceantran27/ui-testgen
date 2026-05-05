@@ -1,4 +1,7 @@
-import { BddResultDisplay, isBddResultJsonString } from "./BddResultDisplay";
+import {
+  TestScenarioResultDisplay,
+  isTestScenarioSuiteJsonString,
+} from "./TestScenarioResultDisplay";
 
 interface AnalysisResultDisplayProps {
   result: string;
@@ -108,9 +111,9 @@ export function AnalysisResultDisplay({
     return null;
   }
 
-  if (isBddResultJsonString(result)) {
+  if (isTestScenarioSuiteJsonString(result)) {
     return (
-      <BddResultDisplay
+      <TestScenarioResultDisplay
         result={result}
         showTitle={showTitle}
         className={className}

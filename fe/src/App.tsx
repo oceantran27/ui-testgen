@@ -3,7 +3,10 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { apiClient } from "./api/client";
-import { imageUrlToFile, postBddHappyPath } from "./api/bdd";
+import {
+  imageUrlToFile,
+  postTestScenarioSuiteFromImage,
+} from "./api/testScenarios";
 import { toCdnUrl } from "./utils/cdn";
 import { GalleryModal } from "./components/GalleryModal";
 import { AdminCRUD } from "./components/AdminCRUD.tsx";
@@ -44,9 +47,11 @@ function LegacyHome() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDefaultGalleryOpen, setIsDefaultGalleryOpen] = useState(false);
-  const [bddResult, setBddResult] = useState<string | null>(null);
+  const [scenarioSuiteJson, setScenarioSuiteJson] = useState<string | null>(
+    null,
+  );
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
-  const [isBddLoading, setIsBddLoading] = useState(false);
+  const [isScenarioLoading, setIsScenarioLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
@@ -123,7 +128,7 @@ function LegacyHome() {
         setFile(newFile);
         setFilePreview(localPreview);
         setSelectedImageUrl(null);
-        setBddResult(null);
+        setScenarioSuiteJson(null);
         toast.success("Image pasted!");
         break;
       }
@@ -184,28 +189,28 @@ function LegacyHome() {
       setFile(newFile);
       setFilePreview(localPreview);
       setSelectedImageUrl(null);
-      setBddResult(null);
+      setScenarioSuiteJson(null);
       return;
     }
 
     setFile(null);
     setFilePreview(null);
     setSelectedImageUrl(null);
-    setBddResult(null);
+    setScenarioSuiteJson(null);
   };
 
-  const handleBddClick = async () => {
+  const handleGenerateScenariosClick = async () => {
     if (!file && !selectedImageUrl) {
       toast.error("Please select a screenshot (file or default image).");
       return;
     }
 
-    const toastId = toast.loading("Generating BDD scenarios...");
+    const toastId = toast.loading("Generating test scenarios...");
     const requestId = createCorrelationId("req");
     const batchId = createCorrelationId("batch");
 
-    setIsBddLoading(true);
-    setBddResult(null);
+    setIsScenarioLoading(true);
+    setScenarioSuiteJson(null);
 
     try {
       const fileToSend = file
@@ -214,17 +219,17 @@ function LegacyHome() {
             selectedImageUrl as string,
             "screenshot.jpg",
           );
-      const data = await postBddHappyPath(fileToSend, {
+      const data = await postTestScenarioSuiteFromImage(fileToSend, {
         "X-Request-Id": requestId,
         "X-Batch-Id": batchId,
       });
-      setBddResult(JSON.stringify(data, null, 2));
-      toast.success("BDD scenarios ready.", { id: toastId });
+      setScenarioSuiteJson(JSON.stringify(data, null, 2));
+      toast.success("Test scenarios ready.", { id: toastId });
       void fetchRecords();
     } catch (err) {
       notifyAndRedirectError(err, toastId);
     } finally {
-      setIsBddLoading(false);
+      setIsScenarioLoading(false);
     }
   };
 
@@ -302,16 +307,18 @@ function LegacyHome() {
                 file={file}
                 selectedImageUrl={selectedImageUrl}
                 filePreview={filePreview}
-                isBddLoading={isBddLoading}
+                isScenarioLoading={isScenarioLoading}
                 selectedPreviewLabel={selectedPreviewLabel}
                 onFileChange={handleFileChange}
-                onBddClick={() => void handleBddClick()}
+                onGenerateScenariosClick={() =>
+                  void handleGenerateScenariosClick()
+                }
                 onOpenDefaultGallery={() => setIsDefaultGalleryOpen(true)}
                 onOpenPreviewModal={() => setIsModalOpen(true)}
               />
 
-              {bddResult && (
-                <AnalysisResultDisplay result={bddResult} />
+              {scenarioSuiteJson && (
+                <AnalysisResultDisplay result={scenarioSuiteJson} />
               )}
             </div>
 
@@ -348,7 +355,7 @@ function LegacyHome() {
           setSelectedImageUrl(toCdnUrl(url));
           setFile(null);
           setFilePreview(toCdnUrl(url));
-          setBddResult(null);
+          setScenarioSuiteJson(null);
         }}
       />
     </>

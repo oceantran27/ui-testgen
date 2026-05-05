@@ -45,10 +45,10 @@ class RunConfig:
     out_json: Path
     save_raw: bool
     out_raw: Path | None
-    # LLM backend for BddHappyPathService.generate (explicit routing vs name-prefix heuristic).
+    # LLM backend for single_stage_test_scenario_service.generate (explicit routing vs name-prefix heuristic).
     provider: Literal["gemini", "openai"] = "gemini"
-    # BDD generation model id for the chosen backend.
-    bdd_model: str = "gemini-2.5-flash"
+    # Scenario-generation model id for the chosen backend.
+    generation_model: str = "gemini-2.5-flash"
     # Inclusive range on image id (stem). None = no bound.
     id_min: int | None = None
     id_max: int | None = None
@@ -97,19 +97,19 @@ def _write_checkpoint(
             logger.info("Checkpoint raw: %s", cfg.out_raw)
 
 
-async def _bdd_titles_for_image(
+async def _scenario_titles_for_image(
     image_path: Path,
     *,
-    bdd_model: str,
+    generation_model: str,
     provider: Literal["gemini", "openai"],
 ) -> tuple[list[str], Any, float]:
-    from app.services.bdd_happy_path_service import bdd_happy_path_service
-    from app.schemas.bdd_happy_path import BddHappyPathResult
+    from app.schemas.test_scenario_generation import TestScenarioSuite
+    from app.services.single_stage_test_scenario_service import single_stage_test_scenario_service
 
     t0 = time.perf_counter()
-    result: BddHappyPathResult = await bdd_happy_path_service.generate(
+    result: TestScenarioSuite = await single_stage_test_scenario_service.generate(
         str(image_path),
-        model=bdd_model,
+        model=generation_model,
         backend=provider,
     )
     elapsed = time.perf_counter() - t0
@@ -144,7 +144,7 @@ async def run_experiment_async(cfg: RunConfig) -> None:
             len(pairs),
         )
 
-    logger.info("BDD provider=%s bdd_model=%s", cfg.provider, cfg.bdd_model)
+    logger.info("Scenario-gen provider=%s generation_model=%s", cfg.provider, cfg.generation_model)
     logger.info("Loading encoder: %s", cfg.encoder_model)
     model = load_model(cfg.encoder_model, device=cfg.device)
 
@@ -162,14 +162,14 @@ async def run_experiment_async(cfg: RunConfig) -> None:
                 continue
             gt = gt_by_id[eid]
             try:
-                titles, bdd_result, llm_seconds = await _bdd_titles_for_image(
+                titles, suite_result, llm_seconds = await _scenario_titles_for_image(
                     image_path,
-                    bdd_model=cfg.bdd_model,
+                    generation_model=cfg.generation_model,
                     provider=cfg.provider,
                 )
                 json_rows.append({"id": eid, "model_output": titles})
                 if cfg.save_raw and cfg.out_raw is not None:
-                    raw_by_id[str(eid)] = bdd_result.model_dump(mode="json")
+                    raw_by_id[str(eid)] = suite_result.model_dump(mode="json")
 
                 g_emb = encode_normalized(model, gt)
                 m_emb = encode_normalized(model, titles)

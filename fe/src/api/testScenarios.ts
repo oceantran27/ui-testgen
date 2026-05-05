@@ -1,19 +1,19 @@
 import { apiClient } from "./client";
-import type { BddHappyPathResult } from "../components/types";
+import type { TestScenarioSuite } from "../components/types";
 
-export type BddRequestHeaders = {
+export type TestScenarioRequestHeaders = {
   "X-Request-Id"?: string;
   "X-Batch-Id"?: string;
 };
 
-export async function postBddHappyPath(
+export async function postTestScenarioSuiteFromImage(
   file: File,
-  headers?: BddRequestHeaders,
-): Promise<BddHappyPathResult> {
+  headers?: TestScenarioRequestHeaders,
+): Promise<TestScenarioSuite> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await apiClient.post<BddHappyPathResult>(
-    "bdd/happy-path",
+  const response = await apiClient.post<TestScenarioSuite>(
+    "test-scenarios/from-image",
     formData,
     {
       headers: {

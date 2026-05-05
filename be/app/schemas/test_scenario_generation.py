@@ -3,7 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field, field_validator
 
 
-class BddFeatureBlock(BaseModel):
+class ScreenFeatureSummary(BaseModel):
     name: str = Field(
         min_length=1,
         description=(
@@ -14,12 +14,12 @@ class BddFeatureBlock(BaseModel):
     business_intent: str = Field(
         default="",
         description=(
-            "Business value and primary user goals for this screen; used to rank scenarios. Empty when there are no scenarios."
+            "Business value and primary user goals for this screen. Empty when there are no scenarios."
         ),
     )
 
 
-class BddScenarioItem(BaseModel):
+class TestScenarioItem(BaseModel):
     id: str = Field(min_length=1)
     title: str = Field(
         min_length=1,
@@ -38,8 +38,8 @@ class BddScenarioItem(BaseModel):
         return v
 
 
-class BddHappyPathResult(BaseModel):
+class TestScenarioSuite(BaseModel):
     model: str = "gemini-2.5-flash"
-    feature: BddFeatureBlock
-    scenarios: list[BddScenarioItem] = Field(default_factory=list)
+    feature: ScreenFeatureSummary
+    scenarios: list[TestScenarioItem] = Field(default_factory=list)
     combined_test_scenario: str = ""
