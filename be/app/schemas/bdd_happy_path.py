@@ -25,14 +25,14 @@ class BddScenarioItem(BaseModel):
         min_length=1,
         description=(
             "Imperative label (2–6 words) at class level: verb + generic object; "
-            "no specific product, brand, or search string (those belong in gherkin). Letter case is not prescribed."
+            "no specific product, brand, or search string (those belong in test_scenario). Letter case is not prescribed."
         ),
     )
-    gherkin: str = Field(min_length=1)
+    test_scenario: str = Field(min_length=1)
 
-    @field_validator("gherkin", mode="before")
+    @field_validator("test_scenario", mode="before")
     @classmethod
-    def join_gherkin_if_list(cls, v: str | list[str]) -> str:
+    def join_test_scenario_if_list(cls, v: str | list[str]) -> str:
         if isinstance(v, list):
             return "\n".join(v)
         return v
@@ -42,4 +42,4 @@ class BddHappyPathResult(BaseModel):
     model: str = "gemini-2.5-flash"
     feature: BddFeatureBlock
     scenarios: list[BddScenarioItem] = Field(default_factory=list)
-    combined_gherkin: str = ""
+    combined_test_scenario: str = ""

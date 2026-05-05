@@ -32,7 +32,7 @@ def _resolve_ranking_route(model: str | None) -> tuple[str, Literal["gemini", "o
 def _build_ranking_user_payload(business_intent: str, scenarios: list[BddScenarioItem]) -> str:
     payload = {
         "business_intent": business_intent,
-        "scenarios": [{"id": s.id, "title": s.title, "gherkin": s.gherkin} for s in scenarios],
+        "scenarios": [{"id": s.id, "title": s.title, "test_scenario": s.test_scenario} for s in scenarios],
     }
     return (
         "Rank these scenarios per the system instructions. Return ONLY the JSON object with "

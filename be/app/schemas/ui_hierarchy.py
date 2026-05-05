@@ -4,6 +4,17 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
+SemanticLane = Literal[
+    "getting_input",
+    "data_manipulation",
+    "navigation",
+    "content_structuring",
+    "social_interaction",
+    "system_utilities",
+]
+
+NodeKind = Literal["region", "component", "control", "semantic_surface", "text"]
+
 
 class UIOverview(BaseModel):
     page_summary: str = Field(
@@ -31,11 +42,23 @@ class NavigationSignals(BaseModel):
 
 class UINode(BaseModel):
     id: str = Field(..., description="Unique ID cho mỗi node (ví dụ: node_1, btn_submit)")
-    kind: Literal["region", "component", "control"] = Field(
-        ..., description="Loại node"
+    kind: NodeKind = Field(
+        ...,
+        description=(
+            "region / semantic_surface / component / control per ui-hierarchy-v2; "
+            "text allowed for non-interactive copy the model may emit"
+        ),
     )
     role: str = Field(
         ..., description="Vai trò chi tiết (ví dụ: button, link, textbox, checkbox, modal, list, dialog)"
+    )
+    semantic_lane: Optional[SemanticLane] = Field(
+        default=None,
+        description="Bắt buộc với kind semantic_surface trong prompt v2; optional ở đây để tolerante LLM",
+    )
+    surface_summary: Optional[str] = Field(
+        default=None,
+        description="Một dòng mô tả surface khi kind là semantic_surface",
     )
     functional_class: Optional[str] = Field(
         default=None, description="Ví dụ: menu_launcher, form_submit, pagination_control"
@@ -77,9 +100,33 @@ class SearchCluster(BaseModel):
 class NavigationDestination(BaseModel):
     control_id: str
     destination_label: str
+    destination_canonical_stub: Optional[str] = Field(
+        default=None,
+        description="Optional normalized stub from some pipelines (e.g. P-TEXT)",
+    )
+
+
+class SemanticIndexEntry(BaseModel):
+    """One row per semantic_surface; lane-specific fields optional for tolerant parsing."""
+
+    cluster_id: str = Field(..., description="ID của node semantic_surface tương ứng")
+    semantic_lane: SemanticLane
+    summary: str
+    control_ids: List[str] = Field(default_factory=list)
+    heading_context: Optional[str] = None
+    footer_action_control_ids: List[str] = Field(default_factory=list)
+    search_input_id: Optional[str] = None
+    search_button_id: Optional[str] = None
+    filter_control_ids: List[str] = Field(default_factory=list)
+    sort_control_ids: List[str] = Field(default_factory=list)
+    pagination_control_ids: List[str] = Field(default_factory=list)
+    navigation_destinations: List[NavigationDestination] = Field(default_factory=list)
+    content_pattern: Optional[str] = None
+    first_visible_item_literal: Optional[str] = None
 
 
 class UIDerived(BaseModel):
+    semantic_index: List[SemanticIndexEntry] = Field(default_factory=list)
     cohesive_forms: List[CohesiveForm] = Field(default_factory=list)
     functional_groups: List[FunctionalGroup] = Field(default_factory=list)
     navigation_destinations: List[NavigationDestination] = Field(default_factory=list)
@@ -87,7 +134,7 @@ class UIDerived(BaseModel):
 
 
 class UIHierarchyResult(BaseModel):
-    schema_version: str = "ui-hierarchy-v1"
+    schema_version: str = "ui-hierarchy-v2"
     overview: UIOverview
     root: UINode
     derived: UIDerived

@@ -14,7 +14,7 @@ from PIL import Image
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.schemas.bdd_happy_path import BddHappyPathResult
-from app.schemas.ui_hierarchy import UiHierarchyExtractionResult
+from app.schemas.ui_hierarchy import UIHierarchyResult
 from app.services.bdd_payload import parse_bdd_payload
 from app.services.gemini_genai_client import default_generate_config, get_gemini_client, pil_image_to_part
 from app.services.openai_service import OpenAIService
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 class BddTwoStageRunResult:
     """Parsed Agent 1 hierarchy plus final BDD result (same objects used between stages)."""
 
-    hierarchy: UiHierarchyExtractionResult
+    hierarchy: UIHierarchyResult
     bdd: BddHappyPathResult
     stage1_llm_seconds: float = 0.0
     stage2_llm_seconds: float = 0.0
@@ -38,7 +38,7 @@ def _looks_like_openai_model_id(model_id: str) -> bool:
     return model_id.strip().lower().startswith("gpt-")
 
 
-def _extract_hierarchy_gemini_sync(image_path: str, gemini_model: str) -> UiHierarchyExtractionResult:
+def _extract_hierarchy_gemini_sync(image_path: str, gemini_model: str) -> UIHierarchyResult:
     if not settings.GEMINI_API_KEY:
         raise AIProcessingError("GEMINI_API_KEY is not configured")
     system1 = load_bdd_bridge_stage1_prompt()

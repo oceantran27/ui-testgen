@@ -13,7 +13,7 @@ from app.schemas.bdd_happy_path import (
 )
 
 
-def build_combined_gherkin(feature: BddFeatureBlock, scenarios: list[BddScenarioItem]) -> str:
+def build_combined_test_scenario(feature: BddFeatureBlock, scenarios: list[BddScenarioItem]) -> str:
     lines: list[str] = [
         f"Feature: {feature.name}",
     ]
@@ -21,7 +21,7 @@ def build_combined_gherkin(feature: BddFeatureBlock, scenarios: list[BddScenario
         lines.append(feature.description.strip())
     lines.append("")
     for sc in scenarios:
-        lines.append(sc.gherkin.strip())
+        lines.append(sc.test_scenario.strip())
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -59,5 +59,5 @@ def parse_bdd_payload(raw: str, *, result_model: str) -> BddHappyPathResult:
         model=result_model,
         feature=feature,
         scenarios=scenarios,
-        combined_gherkin=build_combined_gherkin(feature, scenarios),
+        combined_test_scenario=build_combined_test_scenario(feature, scenarios),
     )

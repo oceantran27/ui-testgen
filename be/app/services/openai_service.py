@@ -1,5 +1,6 @@
 import base64
 import logging
+from functools import cached_property
 from pathlib import Path
 
 from openai import OpenAI
@@ -33,10 +34,18 @@ def _mime_type_for_path(image_path: str) -> str:
 
 
 class OpenAIService:
+    """OpenAI client. Vision-extractor prompt (legacy ``analyze_image``) loads lazily-only when needed.
+
+    BDD / bridge methods load their own prompts (e.g. ``load_bdd_bridge_stage2_prompt``).
+    """
+
     def __init__(self, model_name: str = "gpt-4.1"):
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = model_name
-        self.system_prompt = load_system_prompt()
+
+    @cached_property
+    def _vision_extractor_system_prompt(self) -> str:
+        return load_system_prompt()
 
     def _encode_image(self, image_path: str) -> str:
         try:
@@ -55,7 +64,7 @@ class OpenAIService:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": self._vision_extractor_system_prompt},
                     {
                         "role": "user",
                         "content": [
