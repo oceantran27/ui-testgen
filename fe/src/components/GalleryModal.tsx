@@ -9,7 +9,6 @@ interface GalleryModalProps {
   onClose: () => void;
   selectedImage: string | null;
   onSelectImage: (url: string) => void;
-  analyze: (url: string, fileKey?: string) => Promise<void>;
 }
 
 const extractImageUrl = (item: DefaultInput): string => {
@@ -27,7 +26,6 @@ export function GalleryModal({
   onClose,
   selectedImage,
   onSelectImage,
-  analyze,
 }: GalleryModalProps) {
   const [items, setItems] = useState<DefaultInput[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,9 +73,8 @@ export function GalleryModal({
     [items],
   );
 
-  const handleSelect = async (url: string, fileKey?: string) => {
+  const handleSelect = (url: string) => {
     onSelectImage(url);
-    await analyze(url, fileKey);
     onClose();
   };
 
@@ -116,9 +113,7 @@ export function GalleryModal({
               <button
                 key={item.id}
                 type="button"
-                onClick={() =>
-                  void handleSelect(imageUrl, item.file_key ?? item.b2_key)
-                }
+                onClick={() => handleSelect(imageUrl)}
                 className={`overflow-hidden rounded-xl border text-left transition ${
                   selectedImage === imageUrl
                     ? "border-amber-400 ring-2 ring-amber-200"

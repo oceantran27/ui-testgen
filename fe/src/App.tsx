@@ -3,11 +3,7 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { apiClient } from "./api/client";
-import {
-  imageUrlToFile,
-  postBddHappyPath,
-  postBddHappyPathRanked,
-} from "./api/bdd";
+import { imageUrlToFile, postBddHappyPath } from "./api/bdd";
 import { toCdnUrl } from "./utils/cdn";
 import { GalleryModal } from "./components/GalleryModal";
 import { AdminCRUD } from "./components/AdminCRUD.tsx";
@@ -48,12 +44,9 @@ function LegacyHome() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDefaultGalleryOpen, setIsDefaultGalleryOpen] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [bddResult, setBddResult] = useState<string | null>(null);
   const [records, setRecords] = useState<AnalysisRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isBddLoading, setIsBddLoading] = useState(false);
-  const [isBddRankedLoading, setIsBddRankedLoading] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyImageSrc, setHistoryImageSrc] = useState<string | null>(null);
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
@@ -130,7 +123,6 @@ function LegacyHome() {
         setFile(newFile);
         setFilePreview(localPreview);
         setSelectedImageUrl(null);
-        setAnalysisResult(null);
         setBddResult(null);
         toast.success("Image pasted!");
         break;
@@ -192,7 +184,6 @@ function LegacyHome() {
       setFile(newFile);
       setFilePreview(localPreview);
       setSelectedImageUrl(null);
-      setAnalysisResult(null);
       setBddResult(null);
       return;
     }
@@ -200,45 +191,7 @@ function LegacyHome() {
     setFile(null);
     setFilePreview(null);
     setSelectedImageUrl(null);
-    setAnalysisResult(null);
     setBddResult(null);
-  };
-
-  const analyzeByImageUrl = async (imageUrl: string, fileKey?: string) => {
-    const toastId = toast.loading("Analyzing screenshot...");
-    const requestId = createCorrelationId("req");
-    const batchId = createCorrelationId("batch");
-
-    setIsLoading(true);
-    setAnalysisResult(null);
-
-    try {
-      const response = await apiClient.post(
-        "api/analyze",
-        {
-          image_url: imageUrl,
-          file_key: fileKey,
-        },
-        {
-          headers: {
-            "X-Request-Id": requestId,
-            "X-Batch-Id": batchId,
-          },
-        },
-      );
-      const payload = response.data;
-      const result =
-        typeof payload === "string"
-          ? payload
-          : JSON.stringify(payload, null, 2);
-      setAnalysisResult(result);
-      toast.success("Analysis complete!", { id: toastId });
-      void fetchRecords();
-    } catch (err) {
-      notifyAndRedirectError(err, toastId);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleBddClick = async () => {
@@ -272,82 +225,6 @@ function LegacyHome() {
       notifyAndRedirectError(err, toastId);
     } finally {
       setIsBddLoading(false);
-    }
-  };
-
-  const handleBddRankedClick = async () => {
-    if (!file && !selectedImageUrl) {
-      toast.error("Please select a screenshot (file or default image).");
-      return;
-    }
-
-    const toastId = toast.loading("Generating ranked BDD...");
-    const requestId = createCorrelationId("req");
-    const batchId = createCorrelationId("batch");
-
-    setIsBddRankedLoading(true);
-    setBddResult(null);
-
-    try {
-      const fileToSend = file
-        ? file
-        : await imageUrlToFile(
-            selectedImageUrl as string,
-            "screenshot.jpg",
-          );
-      const data = await postBddHappyPathRanked(fileToSend, {
-        "X-Request-Id": requestId,
-        "X-Batch-Id": batchId,
-      });
-      setBddResult(JSON.stringify(data, null, 2));
-      toast.success("Ranked BDD scenarios ready.", { id: toastId });
-      void fetchRecords();
-    } catch (err) {
-      notifyAndRedirectError(err, toastId);
-    } finally {
-      setIsBddRankedLoading(false);
-    }
-  };
-
-  const handleAnalyzeClick = async () => {
-    if (selectedImageUrl) {
-      await analyzeByImageUrl(selectedImageUrl);
-      return;
-    }
-
-    if (!file) {
-      toast.error("Please select a file to analyze.");
-      return;
-    }
-
-    setIsLoading(true);
-    setAnalysisResult(null);
-    const toastId = toast.loading("Analyzing screenshot...");
-    const requestId = createCorrelationId("req");
-    const batchId = createCorrelationId("batch");
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await apiClient.post<string>("analyze", formData, {
-        headers: {
-          "X-Request-Id": requestId,
-          "X-Batch-Id": batchId,
-        },
-      });
-      const payload = response.data;
-      const result =
-        typeof payload === "string"
-          ? payload
-          : JSON.stringify(payload, null, 2);
-      setAnalysisResult(result);
-      toast.success("Analysis complete!", { id: toastId });
-      void fetchRecords();
-    } catch (err) {
-      notifyAndRedirectError(err, toastId);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -425,21 +302,13 @@ function LegacyHome() {
                 file={file}
                 selectedImageUrl={selectedImageUrl}
                 filePreview={filePreview}
-                isLoading={isLoading}
                 isBddLoading={isBddLoading}
-                isBddRankedLoading={isBddRankedLoading}
                 selectedPreviewLabel={selectedPreviewLabel}
                 onFileChange={handleFileChange}
-                onAnalyzeClick={() => void handleAnalyzeClick()}
                 onBddClick={() => void handleBddClick()}
-                onBddRankedClick={() => void handleBddRankedClick()}
                 onOpenDefaultGallery={() => setIsDefaultGalleryOpen(true)}
                 onOpenPreviewModal={() => setIsModalOpen(true)}
               />
-
-              {analysisResult && (
-                <AnalysisResultDisplay result={analysisResult} />
-              )}
 
               {bddResult && (
                 <AnalysisResultDisplay result={bddResult} />
@@ -479,10 +348,8 @@ function LegacyHome() {
           setSelectedImageUrl(toCdnUrl(url));
           setFile(null);
           setFilePreview(toCdnUrl(url));
-          setAnalysisResult(null);
           setBddResult(null);
         }}
-        analyze={analyzeByImageUrl}
       />
     </>
   );

@@ -8,12 +8,9 @@ import threading
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import httpx
 from fastapi import HTTPException, UploadFile
 
 from app.core.config import settings
-from app.core.exceptions import AIProcessingError
-from app.services.vision_analysis_service import VisionOnlyAnalysisService, vision_only_analysis_service
 from app.services.b2_service import B2Service
 from app.services.supabase_service import SupabaseService
 
@@ -65,41 +62,6 @@ def save_upload_file(file: UploadFile) -> str:
         return file_path
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Could not save image: {str(exc)}")
-
-
-def download_remote_image(image_url: str) -> str:
-    safe_ext = safe_file_extension(image_url, fallback="jpg")
-    file_name = f"{uuid.uuid4()}.{safe_ext}"
-    file_path = os.path.join(UPLOAD_DIR, file_name)
-
-    try:
-        with httpx.Client(timeout=20.0, follow_redirects=True) as client:
-            response = client.get(image_url)
-            response.raise_for_status()
-
-        with open(file_path, "wb") as output_file:
-            output_file.write(response.content)
-
-        return file_path
-    except Exception as exc:
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except OSError:
-                pass
-        raise HTTPException(status_code=400, detail=f"Could not download image: {exc}")
-
-
-async def resolve_model_result(file_path: str, model: str | None) -> str:
-    try:
-        result = await vision_only_analysis_service.analyze_image(
-            image_path=file_path,
-            model_name=model,
-        )
-    except Exception as exc:
-        raise AIProcessingError(f"AI Processing failed: {exc}")
-
-    return VisionOnlyAnalysisService.serialize_for_storage(result)
 
 
 def record_to_legacy_response(record: dict) -> dict:
@@ -165,28 +127,6 @@ def resolve_default_input_image_url(file_key: str) -> str:
     except Exception as exc:
         logger.warning("Could not generate signed GET URL for default input %s: %s", file_key, exc)
         return raw_url
-
-
-def resolve_image_url_for_analysis(image_url: str, file_key: str | None = None) -> str:
-    if not image_url:
-        return image_url
-
-    if not b2_service.is_ready():
-        return image_url
-
-    key = file_key or b2_service.extract_key_from_url(image_url)
-    if not is_managed_b2_key(key):
-        return image_url
-
-    try:
-        return b2_service.generate_presigned_get_url(str(key))
-    except Exception as exc:
-        logger.warning(
-            "Could not refresh signed URL for analysis image %s: %s",
-            image_url,
-            exc,
-        )
-        return image_url
 
 
 def encode_default_input_id(file_key: str) -> str:

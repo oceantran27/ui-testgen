@@ -1,6 +1,5 @@
 import base64
 import logging
-from functools import cached_property
 from pathlib import Path
 
 from openai import OpenAI
@@ -13,7 +12,6 @@ from app.services.prompt_service import (
     load_bdd_bridge_stage1_prompt,
     load_bdd_bridge_stage2_prompt,
     load_bdd_happy_path_prompt,
-    load_system_prompt,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,18 +32,11 @@ def _mime_type_for_path(image_path: str) -> str:
 
 
 class OpenAIService:
-    """OpenAI client. Vision-extractor prompt (legacy ``analyze_image``) loads lazily-only when needed.
-
-    BDD / bridge methods load their own prompts (e.g. ``load_bdd_bridge_stage2_prompt``).
-    """
+    """OpenAI client for BDD happy-path and two-stage bridge (stage 1 vision JSON / stage 2 text-only)."""
 
     def __init__(self, model_name: str = "gpt-4.1"):
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = model_name
-
-    @cached_property
-    def _vision_extractor_system_prompt(self) -> str:
-        return load_system_prompt()
 
     def _encode_image(self, image_path: str) -> str:
         try:
@@ -54,57 +45,6 @@ class OpenAIService:
         except Exception as e:
             logger.error("Failed to encode image: %s", e)
             raise AIProcessingError(f"Failed to read image file: {str(e)}") from e
-
-    def analyze_image(self, image_path: str) -> str:
-        base64_image = self._encode_image(image_path)
-        mime_type = _mime_type_for_path(image_path)
-
-        try:
-            logger.info("Sending request to OpenAI for image: %s", image_path)
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": self._vision_extractor_system_prompt},
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": (
-                                    "Analyze this web UI screenshot using the system instructions and return exactly one valid JSON object "
-                                    "that follows the required schema with page_overview, scenarios, and business_rules_and_constraints. "
-                                    "Do not return markdown, code fences, or extra text."
-                                ),
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{mime_type};base64,{base64_image}",
-                                    "detail": "high",
-                                },
-                            },
-                        ],
-                    },
-                ],
-                response_format={"type": "json_object"},
-            )
-
-            content = response.choices[0].message.content
-
-            logger.info("--- RAW LLM OUTPUT START ---")
-            logger.info(content)
-            logger.info("--- RAW LLM OUTPUT END ---")
-
-            if not content:
-                raise AIProcessingError("Received empty response from OpenAI")
-
-            return content
-
-        except AIProcessingError:
-            raise
-        except Exception as e:
-            logger.error("OpenAI API connection failed or processing error: %s", e)
-            raise AIProcessingError(f"AI Processing failed: {str(e)}") from e
 
     def generate_bdd_happy_path(self, image_path: str) -> BddHappyPathResult:
         if not settings.OPENAI_API_KEY:

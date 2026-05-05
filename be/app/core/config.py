@@ -17,9 +17,6 @@ class Settings(BaseSettings):
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
 
-    # Vision Extractor (behavior-level JSON)
-    VISION_EXTRACTOR_PROMPT_PATH: str = "app/llm_prompts/vision_extractor_system_prompt.txt"
-
     # BDD happy path (Gherkin from UI screenshot)
     BDD_HAPPY_PATH_PROMPT_PATH: str = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
@@ -29,9 +26,6 @@ class Settings(BaseSettings):
     # Defaults when POST /happy-path-bridged calls generate() with no model args (hybrid Gemini → OpenAI)
     BDD_TWO_STAGE_STAGE1_MODEL: str = "gemini-2.5-flash"
     BDD_TWO_STAGE_STAGE2_MODEL: str = "gpt-5"
-
-    # BDD scenario ordering by business_intent (text-only LLM)
-    BDD_SCENARIO_RANKING_PROMPT_PATH: str = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
 
     # Multi-image behavior flow clustering and ordering
     BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH: str = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"
@@ -83,9 +77,6 @@ class Settings(BaseSettings):
         if self.DATA_RETENTION_DAYS <= 0:
             self.DATA_RETENTION_DAYS = 15
 
-        if not self.VISION_EXTRACTOR_PROMPT_PATH:
-            self.VISION_EXTRACTOR_PROMPT_PATH = "app/llm_prompts/vision_extractor_system_prompt.txt"
-
         if not self.BDD_HAPPY_PATH_PROMPT_PATH:
             self.BDD_HAPPY_PATH_PROMPT_PATH = "app/llm_prompts/bdd_happy_path_from_ui_system_prompt.txt"
 
@@ -104,9 +95,6 @@ class Settings(BaseSettings):
             self.BDD_TWO_STAGE_STAGE2_MODEL = "gpt-5"
         else:
             self.BDD_TWO_STAGE_STAGE2_MODEL = self.BDD_TWO_STAGE_STAGE2_MODEL.strip()
-
-        if not self.BDD_SCENARIO_RANKING_PROMPT_PATH:
-            self.BDD_SCENARIO_RANKING_PROMPT_PATH = "app/llm_prompts/bdd_scenario_rank_from_business_intent_system_prompt.txt"
 
         if not self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH:
             self.BEHAVIOR_FLOW_CLUSTER_PROMPT_PATH = "app/llm_prompts/behavior_flow_cluster_order_system_prompt.txt"

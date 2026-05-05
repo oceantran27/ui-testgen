@@ -3,23 +3,6 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class AnalyzeByImageRequest(BaseModel):
-    image_url: str
-    file_key: Optional[str] = None
-    model: Optional[str] = "gemini-2.5-flash"
-
-
-class Module3RankedScenarioResponse(BaseModel):
-    scenario_id: str
-    user_goal: str
-    conflict_resolution_summary: str
-    BA_score: int
-    QA_score: int
-    UX_score: int
-    final_score: float
-    rank_position: int
-
-
 class UploadSessionPayload(BaseModel):
     session_id: str
     file_key: str
