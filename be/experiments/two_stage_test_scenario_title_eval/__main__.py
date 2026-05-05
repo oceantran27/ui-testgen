@@ -1,5 +1,5 @@
 """
-CLI for two-stage test scenario title evaluation (stage 1 UI hierarchy + stage 2 scenarios).
+CLI for two-stage test scenario title evaluation (stage 1 UI extraction + stage 2 scenarios).
 
 Run from the ``be/`` directory::
 
@@ -7,7 +7,7 @@ Run from the ``be/`` directory::
     python -m experiments.two_stage_test_scenario_title_eval --help
 
 Outputs under ``data/result/<UTC timestamp>/`` by default: CSV, model-output JSON (titles), and
-stage-1 UI hierarchy JSON. Checkpointed after each successful image; Ctrl+C saves the latest
+stage-1 UI extraction JSON. Checkpointed after each successful image; Ctrl+C saves the latest
 completed rows and exits with code 130.
 
 Default ``--pipeline hybrid`` matches ``POST /api/v1/test-scenarios/from-image-bridged``: Gemini for
@@ -163,7 +163,7 @@ def main() -> None:
         type=Path,
         default=None,
         help=(
-            f"Stage 1 UI hierarchy JSON path (default: {default_data}/result/<timestamp>/stage1_ui_hierarchy_<timestamp>.json)"
+            f"Stage 1 UI extraction JSON path (default: {default_data}/result/<timestamp>/stage1_ui_extraction_<timestamp>.json)"
         ),
     )
     args = p.parse_args()
@@ -201,7 +201,7 @@ def main() -> None:
     if out_json is None:
         out_json = run_dir / f"two_stage_scenario_model_output_{ts}.json"
     if out_agent1 is None:
-        out_agent1 = run_dir / f"stage1_ui_hierarchy_{ts}.json"
+        out_agent1 = run_dir / f"stage1_ui_extraction_{ts}.json"
 
     from experiments.two_stage_test_scenario_title_eval.run import RunConfig, run_experiment
 

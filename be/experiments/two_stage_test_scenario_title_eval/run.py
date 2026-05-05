@@ -213,7 +213,7 @@ async def _two_stage_scenario_titles_and_hierarchy(image_path: Path, *, cfg: Run
 
     titles = [s.title for s in bundle.suite.scenarios]
 
-    return titles, bundle, bundle.hierarchy.model_dump(mode="json")
+    return titles, bundle, bundle.ui_extraction.model_dump(mode="json")
 
 
 

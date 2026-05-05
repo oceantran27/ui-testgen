@@ -11,7 +11,7 @@ from app.services.two_stage_test_scenario_service import two_stage_test_scenario
 
 async def main():
     parser = argparse.ArgumentParser(
-        description="Smoke-test the two-stage test scenario pipeline (UI hierarchy + scenario suite)"
+        description="Smoke-test the two-stage test scenario pipeline (UI extraction + scenario suite)"
     )
     parser.add_argument("image_path", type=str, help="Path to the test UI screenshot")
     parser.add_argument("--stage1", type=str, default="gemini-2.5-flash", help="Model for stage 1 (vision)")

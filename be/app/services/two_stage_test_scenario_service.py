@@ -1,4 +1,4 @@
-"""Two-stage pipeline: vision UI hierarchy (stage 1), then text-only test scenario suite (stage 2)."""
+"""Two-stage pipeline: vision UI extraction (stage 1), then text-only test scenario suite (stage 2)."""
 
 from __future__ import annotations
 
@@ -8,27 +8,24 @@ import time
 from dataclasses import dataclass
 from typing import Literal
 
-from google.genai import types
-from PIL import Image
-
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.schemas.test_scenario_generation import TestScenarioSuite
-from app.schemas.ui_hierarchy import UIHierarchyResult
-from app.services.gemini_genai_client import default_generate_config, get_gemini_client, pil_image_to_part
+from app.schemas.ui_extraction import UIExtractionResult
 from app.services.openai_service import OpenAIService
-from app.services.prompt_service import load_two_stage_test_scenario_prompt, load_two_stage_ui_hierarchy_prompt
+from app.services.prompt_service import load_two_stage_test_scenario_prompt
 from app.services.test_scenario_payload import parse_test_scenario_suite_payload
-from app.services.ui_hierarchy_payload import parse_ui_hierarchy_payload, ui_hierarchy_to_minified_json
+from app.services.ui_extraction_payload import parse_ui_extraction_payload, ui_extraction_to_minified_json
+from app.services.ui_extraction_service import extract_ui_extraction_gemini_sync
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class TwoStageTestScenarioRunResult:
-    """Parsed stage-1 hierarchy plus final test scenario suite (same objects between stages)."""
+    """Parsed stage-1 UI extraction plus final test scenario suite (same objects between stages)."""
 
-    hierarchy: UIHierarchyResult
+    ui_extraction: UIExtractionResult
     suite: TestScenarioSuite
     stage1_llm_seconds: float = 0.0
     stage2_llm_seconds: float = 0.0
@@ -38,43 +35,17 @@ def _looks_like_openai_model_id(model_id: str) -> bool:
     return model_id.strip().lower().startswith("gpt-")
 
 
-def _extract_hierarchy_gemini_sync(image_path: str, gemini_model: str) -> UIHierarchyResult:
-    if not settings.GEMINI_API_KEY:
-        raise AIProcessingError("GEMINI_API_KEY is not configured")
-    system1 = load_two_stage_ui_hierarchy_prompt()
-    client = get_gemini_client()
-    try:
-        img = Image.open(image_path)
-    except Exception as exc:
-        logger.error("Failed to open image: %s", exc)
-        raise AIProcessingError(f"Failed to read image file: {exc}") from exc
-
-    user1 = (
-        "Analyze this UI screenshot and output the UI hierarchy JSON exactly as specified in the system instructions. "
-        "Return ONLY the raw JSON."
-    )
-    try:
-        response1 = client.models.generate_content(
-            model=gemini_model,
-            contents=[types.Part.from_text(text=user1), pil_image_to_part(img)],
-            config=default_generate_config(system_instruction=system1),
-        )
-    except Exception as exc:
-        logger.error("Gemini UI hierarchy (stage 1) failed: %s", exc)
-        raise AIProcessingError(f"UI hierarchy extraction failed: {exc}") from exc
-    raw1 = response1.text
-    if not raw1:
-        raise AIProcessingError("Received empty response from Gemini (stage 1)")
-    return parse_ui_hierarchy_payload(raw1)
-
-
 def _generate_suite_via_gemini_text_sync(minified_payload: str, gemini_model: str) -> TestScenarioSuite:
     if not settings.GEMINI_API_KEY:
         raise AIProcessingError("GEMINI_API_KEY is not configured")
+    from google.genai import types
+
+    from app.services.gemini_genai_client import default_generate_config, get_gemini_client
+
     system2 = load_two_stage_test_scenario_prompt()
     client = get_gemini_client()
     user2 = (
-        "UI hierarchy JSON from stage 1 (sole source of truth for visible UI wording):\n"
+        "UI extraction JSON from stage 1 (sole source of truth for visible UI wording):\n"
         f"{minified_payload}\n\n"
         "Produce the test scenario suite JSON per the system instructions. Return ONLY the raw JSON."
     )
@@ -103,16 +74,16 @@ def _run_gemini_both_stages_sync(
     image_path: str, gemini_model: str
 ) -> TwoStageTestScenarioRunResult:
     t0 = time.perf_counter()
-    hierarchy = _extract_hierarchy_gemini_sync(image_path, gemini_model)
+    ui_extraction, stage1_sec = extract_ui_extraction_gemini_sync(image_path, gemini_model)
     t1 = time.perf_counter()
-    payload = ui_hierarchy_to_minified_json(hierarchy)
+    payload = ui_extraction_to_minified_json(ui_extraction)
     t2 = time.perf_counter()
     suite = _generate_suite_via_gemini_text_sync(payload, gemini_model)
     t3 = time.perf_counter()
     return TwoStageTestScenarioRunResult(
-        hierarchy=hierarchy,
+        ui_extraction=ui_extraction,
         suite=suite,
-        stage1_llm_seconds=t1 - t0,
+        stage1_llm_seconds=stage1_sec,
         stage2_llm_seconds=t3 - t2,
     )
 
@@ -130,16 +101,16 @@ def _run_hybrid_gemini_openai_sync(
             "OPENAI_API_KEY is not configured (required for GPT stage 2 in hybrid pipeline)"
         )
     t0 = time.perf_counter()
-    hierarchy = _extract_hierarchy_gemini_sync(image_path, gemini_stage1)
+    ui_extraction, stage1_sec = extract_ui_extraction_gemini_sync(image_path, gemini_stage1)
     t1 = time.perf_counter()
-    payload = ui_hierarchy_to_minified_json(hierarchy)
+    payload = ui_extraction_to_minified_json(ui_extraction)
     t2 = time.perf_counter()
     suite = _generate_suite_via_openai_stage2_sync(payload, openai_stage2)
     t3 = time.perf_counter()
     return TwoStageTestScenarioRunResult(
-        hierarchy=hierarchy,
+        ui_extraction=ui_extraction,
         suite=suite,
-        stage1_llm_seconds=t1 - t0,
+        stage1_llm_seconds=stage1_sec,
         stage2_llm_seconds=t3 - t2,
     )
 
@@ -149,15 +120,15 @@ def _run_openai_two_stage_sync(
 ) -> TwoStageTestScenarioRunResult:
     svc = OpenAIService(model_name)
     t0 = time.perf_counter()
-    raw1 = svc.generate_two_stage_ui_hierarchy_raw(image_path)
-    hierarchy = parse_ui_hierarchy_payload(raw1)
+    raw1 = svc.generate_ui_extraction_raw(image_path)
+    ui_extraction = parse_ui_extraction_payload(raw1)
     t1 = time.perf_counter()
-    payload = ui_hierarchy_to_minified_json(hierarchy)
+    payload = ui_extraction_to_minified_json(ui_extraction)
     t2 = time.perf_counter()
     suite = svc.generate_two_stage_test_scenarios_from_hierarchy(payload, result_model=model_name)
     t3 = time.perf_counter()
     return TwoStageTestScenarioRunResult(
-        hierarchy=hierarchy,
+        ui_extraction=ui_extraction,
         suite=suite,
         stage1_llm_seconds=t1 - t0,
         stage2_llm_seconds=t3 - t2,
@@ -212,16 +183,16 @@ def _run_two_stage_sync(
             )
         logger.info("two-stage pipeline=dual_gemini stage1=%s stage2=%s", r1, r2)
         t0 = time.perf_counter()
-        h = _extract_hierarchy_gemini_sync(image_path, r1)
+        ui_extraction, stage1_sec = extract_ui_extraction_gemini_sync(image_path, r1)
         t1 = time.perf_counter()
-        payload = ui_hierarchy_to_minified_json(h)
+        payload = ui_extraction_to_minified_json(ui_extraction)
         t2 = time.perf_counter()
         b = _generate_suite_via_gemini_text_sync(payload, r2)
         t3 = time.perf_counter()
         return TwoStageTestScenarioRunResult(
-            hierarchy=h,
+            ui_extraction=ui_extraction,
             suite=b,
-            stage1_llm_seconds=t1 - t0,
+            stage1_llm_seconds=stage1_sec,
             stage2_llm_seconds=t3 - t2,
         )
 
