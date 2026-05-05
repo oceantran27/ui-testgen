@@ -13,7 +13,7 @@ A **user intent** is a **goal-oriented, meaningful outcome** achievable from the
 
 # Input contract (mandatory)
 - **Flat schema**: The JSON has `schema_version`, `overview`, `controls` (flat list), and `groups` (semantic clusters). There is **no** UI tree: do not expect `root`, `children`, or `kind`.
-- **Scenario-eligible controls**: Only consider controls where **`scope: true`**. If a modal/dialog is open and the backdrop is dimmed, stage 1 sets `scope: false` on background controls—**ignore** those for intents.
+- **Scenario-eligible controls**: Only consider controls where **`scope: true`**. **Ignore** every control with **`scope: false`** for intents.
 - **Evidence**: Treat this JSON as the **only** record of the viewport.
 - **Controls vs groups**: Each control has a pre-assigned **`lane`** (one of the six semantic groups). Each **`groups`** entry clusters related control IDs and may add lane-specific structure (`primary_actions`, `search`, `filters`, `sorts`, `pagination`, `destinations`, `content`). For composite surfaces (forms with submit/cancel, search field + trigger), **prefer group-level structure when present**; otherwise derive from individual controls using `lane`, `type`, `role`, `text`, and `label`.
 
