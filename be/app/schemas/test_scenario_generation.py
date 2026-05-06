@@ -43,3 +43,24 @@ class TestScenarioSuite(BaseModel):
     feature: ScreenFeatureSummary
     scenarios: list[TestScenarioItem] = Field(default_factory=list)
     combined_test_scenario: str = ""
+
+class GherkinTestScenario(BaseModel):
+    scenario: str
+    gherkin: str
+
+class CriticEvaluationResult(BaseModel):
+    is_passed: bool
+    feedback: str = ""
+    error_type: str = "none"
+
+class IsolatedScenariosOutput(BaseModel):
+    image_id: str
+    scenarios: list[GherkinTestScenario]
+
+class FlowScenariosOutput(BaseModel):
+    flow_id: str
+    scenarios: list[GherkinTestScenario]
+
+class FinalTestOutput(BaseModel):
+    isolated_scenarios: list[IsolatedScenariosOutput] = Field(default_factory=list)
+    flow_scenarios: list[FlowScenariosOutput] = Field(default_factory=list)

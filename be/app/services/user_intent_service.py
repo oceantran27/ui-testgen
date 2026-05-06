@@ -9,7 +9,7 @@ from openai import OpenAI
 from app.core.config import settings
 from app.core.exceptions import AIProcessingError
 from app.schemas.state_graph import UserIntentPerImage
-from app.services.prompt_service import load_user_intents_generation_prompt
+from app.services.prompt_service import load_isolated_scenarios_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def generate_user_intents_openai_sync(
     if not settings.OPENAI_API_KEY:
         raise AIProcessingError("OPENAI_API_KEY is not configured")
 
-    system_prompt = load_user_intents_generation_prompt()
+    system_prompt = load_isolated_scenarios_prompt()
     user_text = (
         f"The canonical image_id for this screen is: {image_id}\n"
         "In this API flow an image_id is always provided above. Your root JSON object MUST use "
@@ -42,8 +42,8 @@ def generate_user_intents_openai_sync(
         "omitted from control objects for brevity; do not assume dimmed background controls are "
         "present.\n\n"
         "Return exactly one raw JSON object per the system instructions: only top-level keys "
-        "image_id and user_intents; each user_intents element only intent (string) and control_ids "
-        "(non-empty string array). No extra keys."
+        "image_id and user_intents; each user_intents element must contain intent, control_ids, "
+        "and gherkin strings. No extra keys."
     )
 
     client = OpenAI(api_key=settings.OPENAI_API_KEY)

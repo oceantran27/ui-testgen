@@ -69,13 +69,6 @@ def load_ui_extraction_prompt() -> str:
     return _read_prompt_file(str(root / settings.UI_EXTRACTION_PROMPT_PATH), "UI extraction prompt")
 
 
-def load_two_stage_ui_hierarchy_prompt() -> str:
-
-    """Deprecated alias for ``load_ui_extraction_prompt``."""
-
-    return load_ui_extraction_prompt()
-
-
 
 
 
@@ -114,8 +107,18 @@ def load_user_intents_generation_prompt() -> str:
 
 
 def load_state_graph_from_intents_prompt() -> str:
-
     resolved = _backend_root() / settings.STATE_GRAPH_FROM_INTENTS_PROMPT_PATH
-
     return _read_prompt_file(str(resolved), "state graph from intents prompt")
+
+def load_isolated_scenarios_prompt() -> str:
+    resolved = _backend_root() / settings.STATE_GRAPH_ISOLATED_SCENARIOS_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "state graph isolated scenarios prompt")
+
+def load_flow_scenarios_prompt() -> str:
+    resolved = _backend_root() / settings.STATE_GRAPH_FLOW_SCENARIOS_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "state graph flow scenarios prompt")
+
+def load_critic_scenarios_prompt() -> str:
+    resolved = _backend_root() / settings.STATE_GRAPH_CRITIC_PROMPT_PATH
+    return _read_prompt_file(str(resolved), "state graph critic prompt")
 

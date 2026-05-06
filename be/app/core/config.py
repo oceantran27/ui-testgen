@@ -90,8 +90,15 @@ class Settings(BaseSettings):
     STATE_GRAPH_UI_EXTRACTION_MODEL: str = "gemini-2.5-flash"
 
     STATE_GRAPH_USER_INTENT_MODEL: str = "gpt-5-mini"
+    STATE_GRAPH_FLOW_MODEL: str = "gpt-5-mini"
 
-    STATE_GRAPH_FLOW_MODEL: str = "gemini-2.5-flash"
+    # Actor–Critic E2E flow scenarios (OpenAI); independent from flow-inference model above
+
+    STATE_GRAPH_E2E_SCENARIO_MODEL: str = "gpt-5-mini"
+
+    STATE_GRAPH_ISOLATED_SCENARIOS_PROMPT_PATH: str = "app/llm_prompts/isolated_scenarios_generation_system_prompt.txt"
+    STATE_GRAPH_FLOW_SCENARIOS_PROMPT_PATH: str = "app/llm_prompts/flow_scenarios_generation_system_prompt.txt"
+    STATE_GRAPH_CRITIC_PROMPT_PATH: str = "app/llm_prompts/critic_scenarios_evaluation_system_prompt.txt"
 
     # CLIP deduplication (ViT-B/32): cosine similarity above threshold => near-duplicate
 
@@ -278,12 +285,23 @@ class Settings(BaseSettings):
             self.STATE_GRAPH_USER_INTENT_MODEL = self.STATE_GRAPH_USER_INTENT_MODEL.strip()
 
         if not (self.STATE_GRAPH_FLOW_MODEL or "").strip():
-
-            self.STATE_GRAPH_FLOW_MODEL = "gemini-2.5-flash"
-
+            self.STATE_GRAPH_FLOW_MODEL = "gpt-5-mini"
         else:
-
             self.STATE_GRAPH_FLOW_MODEL = self.STATE_GRAPH_FLOW_MODEL.strip()
+
+        if not (getattr(self, "STATE_GRAPH_E2E_SCENARIO_MODEL", None) or "").strip():
+            self.STATE_GRAPH_E2E_SCENARIO_MODEL = "gpt-5-mini"
+        else:
+            self.STATE_GRAPH_E2E_SCENARIO_MODEL = self.STATE_GRAPH_E2E_SCENARIO_MODEL.strip()
+
+        if not getattr(self, "STATE_GRAPH_ISOLATED_SCENARIOS_PROMPT_PATH", None):
+            self.STATE_GRAPH_ISOLATED_SCENARIOS_PROMPT_PATH = "app/llm_prompts/isolated_scenarios_generation_system_prompt.txt"
+
+        if not getattr(self, "STATE_GRAPH_FLOW_SCENARIOS_PROMPT_PATH", None):
+            self.STATE_GRAPH_FLOW_SCENARIOS_PROMPT_PATH = "app/llm_prompts/flow_scenarios_generation_system_prompt.txt"
+
+        if not getattr(self, "STATE_GRAPH_CRITIC_PROMPT_PATH", None):
+            self.STATE_GRAPH_CRITIC_PROMPT_PATH = "app/llm_prompts/critic_scenarios_evaluation_system_prompt.txt"
 
 
 
