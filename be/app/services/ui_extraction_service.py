@@ -34,8 +34,9 @@ def extract_ui_extraction_gemini_sync(image_path: str, gemini_model: str) -> tup
         raise AIProcessingError(f"Failed to read image file: {exc}") from exc
 
     user1 = (
-        "Analyze this UI screenshot and output the flat controls + semantic groups JSON exactly as specified "
-        "in the system instructions. Return ONLY the raw JSON."
+        "Analyze this UI screenshot and output ui-flat-v5 JSON: keys schema_version, overview "
+        "(viewport_description), controls (flat list with id, role, label, value, associated_context, "
+        "is_primary_layer, states), and groups. Return ONLY the raw JSON."
     )
     t0 = time.perf_counter()
     try:

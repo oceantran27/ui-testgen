@@ -1,4 +1,4 @@
-"""OpenAI text → user intents JSON for one screen (UI hierarchy evidence)."""
+"""OpenAI text → user intents JSON for one screen (ui-flat-v5 extraction)."""
 
 from __future__ import annotations
 
@@ -19,16 +19,31 @@ def generate_user_intents_openai_sync(
     hierarchy_minified_json: str,
     openai_model: str,
 ) -> UserIntentPerImage:
+    """
+    Call OpenAI with the user-intents system prompt and a minified ui-flat-v5 extraction
+    (flat ``controls`` + ``groups``), typically after primary-layer filtering for the pipeline.
+    """
     if not settings.OPENAI_API_KEY:
         raise AIProcessingError("OPENAI_API_KEY is not configured")
 
     system_prompt = load_user_intents_generation_prompt()
     user_text = (
-        f"The canonical image_id for this screen is: {image_id}\n\n"
-        "UI hierarchy JSON (sole source of truth for visible UI wording):\n"
+        f"The canonical image_id for this screen is: {image_id}\n"
+        "In this API flow an image_id is always provided above. Your root JSON object MUST use "
+        "exactly that value for the image_id field (character-for-character). Do not use "
+        '"not_provided" for image_id here.\n\n'
+        "UI extraction JSON (schema ui-flat-v5; sole source of truth for visible UI wording, "
+        "including overview.viewport_description, controls' value/label/states, and groups "
+        "attachments such as primary_actions, search, filters, sorts, pagination, destinations, "
+        "content):\n"
         f"{hierarchy_minified_json}\n\n"
-        "Return exactly one JSON object with keys image_id and user_intents per system instructions. "
-        "The image_id in your output MUST match the provided image_id exactly."
+        "Payload note: controls in this JSON were already filtered to the primary interactive "
+        "layer (equivalent to is_primary_layer true upstream). The is_primary_layer field is "
+        "omitted from control objects for brevity; do not assume dimmed background controls are "
+        "present.\n\n"
+        "Return exactly one raw JSON object per the system instructions: only top-level keys "
+        "image_id and user_intents; each user_intents element only intent (string) and control_ids "
+        "(non-empty string array). No extra keys."
     )
 
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
