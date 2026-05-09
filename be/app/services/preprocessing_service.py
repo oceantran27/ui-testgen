@@ -1,25 +1,24 @@
 """
-Preprocessing Service — Image quality validation, normalization, thumbnail generation.
+Preprocessing Service — Image decode, viewport checks, normalization, thumbnail generation.
 
-Orchestrates: raw image load → decode check → viewport → quality → type → noise
+Orchestrates: raw image load → decode check → viewport aspect bands → screenshot type
               → normalize → thumbnail → status update → quality report.
 """
 import json
 import uuid
 import time
+from dataclasses import dataclass
 from io import BytesIO
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 
-import cv2
-import numpy as np
 from PIL import Image as PILImage
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.logging import logger, log_event
+from app.core.logging import log_event
 from app.db.models.run import Run
 from app.db.models.image import Image
 from app.db.models.artifact import Artifact
@@ -33,16 +32,28 @@ from app.services.storage_service import storage_service
 THUMBNAIL_WIDTH = 360
 THUMBNAIL_HEIGHT = 225
 
-# Laplacian variance thresholds for blur detection
-BLUR_SHARP_THRESHOLD = 100.0
-BLUR_WARNING_THRESHOLD = 50.0
 
-# Brightness thresholds (0-255 mean pixel value)
-BRIGHTNESS_TOO_DARK = 40.0
-BRIGHTNESS_TOO_BRIGHT = 220.0
+@dataclass(frozen=True)
+class ViewportBandConfig:
+    """Orientation-invariant viewport constraints: long=max(w,h), short=min(w,h)."""
 
-# Contrast threshold (std dev of grayscale)
-CONTRAST_LOW_THRESHOLD = 30.0
+    short_edge_min: int
+    short_edge_max: int
+    long_edge_min: int
+    long_edge_max: int
+    aspect_ratio_min: float
+    aspect_ratio_max: float
+
+
+def viewport_bands_from_settings() -> ViewportBandConfig:
+    return ViewportBandConfig(
+        short_edge_min=settings.VIEWPORT_SHORT_EDGE_MIN,
+        short_edge_max=settings.VIEWPORT_SHORT_EDGE_MAX,
+        long_edge_min=settings.VIEWPORT_LONG_EDGE_MIN,
+        long_edge_max=settings.VIEWPORT_LONG_EDGE_MAX,
+        aspect_ratio_min=settings.VIEWPORT_ASPECT_RATIO_MIN,
+        aspect_ratio_max=settings.VIEWPORT_ASPECT_RATIO_MAX,
+    )
 
 
 def _generate_artifact_id() -> str:
@@ -83,10 +94,9 @@ def _load_raw_image(image: Image) -> Tuple[Optional[bytes], Optional[str]]:
 
 def _check_decode_integrity(
     image_bytes: bytes, metadata_format: Optional[str]
-) -> Tuple[Optional[PILImage.Image], Optional[np.ndarray], Dict[str, Any]]:
+) -> Tuple[Optional[PILImage.Image], Dict[str, Any]]:
     """
-    Attempt to decode image. Returns (pil_image, cv2_image, report_dict).
-    If decode fails, pil_image and cv2_image are None.
+    Attempt to decode image. Returns (pil_image, report_dict).
     """
     report: Dict[str, Any] = {"passed": False}
 
@@ -98,7 +108,7 @@ def _check_decode_integrity(
         pil_img.load()  # force full decode
     except Exception as e:
         report["error"] = f"IMAGE_DECODE_FAILED: {e}"
-        return None, None, report
+        return None, report
 
     # Check format match
     detected_format = (pil_img.format or "").upper()
@@ -108,138 +118,82 @@ def _check_decode_integrity(
     if metadata_format and detected_ext != metadata_format:
         report["warning"] = f"IMAGE_METADATA_MISMATCH: expected {metadata_format}, got {detected_ext}"
 
-    # Convert to cv2 (BGR numpy array)
-    try:
-        rgb = pil_img.convert("RGB")
-        cv2_img = cv2.cvtColor(np.array(rgb), cv2.COLOR_RGB2BGR)
-    except Exception as e:
-        report["error"] = f"IMAGE_DECODE_FAILED: cv2 conversion error: {e}"
-        return None, None, report
-
     report["passed"] = True
     report["actual_width"] = pil_img.width
     report["actual_height"] = pil_img.height
-    return pil_img, cv2_img, report
+    return pil_img, report
 
 
 # ──────────────────────────────────────────────
-# Module 2.3 — Viewport Validation
+# Module 2.3 — Viewport Validation (edge bands + aspect ratio)
 # ──────────────────────────────────────────────
 
-def _check_viewport(
-    width: int, height: int, expected_w: int, expected_h: int
+def _check_viewport_aspect_bands(
+    width: int, height: int, bands: ViewportBandConfig
 ) -> Dict[str, Any]:
-    """Strict viewport size check."""
-    passed = (width == expected_w and height == expected_h)
+    """
+    long = max(w,h), short = min(w,h). Pass when all band rules hold.
+    """
+    long_side = max(width, height)
+    short_side = min(width, height)
+    ratio = (long_side / short_side) if short_side > 0 else 0.0
+    failure_reasons: List[str] = []
+
+    if not (bands.long_edge_min <= long_side <= bands.long_edge_max):
+        failure_reasons.append(
+            f"long_side {long_side} not in [{bands.long_edge_min}, {bands.long_edge_max}]"
+        )
+    if not (bands.short_edge_min <= short_side <= bands.short_edge_max):
+        failure_reasons.append(
+            f"short_side {short_side} not in [{bands.short_edge_min}, {bands.short_edge_max}]"
+        )
+    if not (bands.aspect_ratio_min <= ratio <= bands.aspect_ratio_max):
+        failure_reasons.append(
+            f"aspect_ratio {ratio:.4f} not in [{bands.aspect_ratio_min}, {bands.aspect_ratio_max}]"
+        )
+
+    passed = len(failure_reasons) == 0
     return {
-        "expected_width": expected_w,
-        "expected_height": expected_h,
         "actual_width": width,
         "actual_height": height,
+        "long_side": long_side,
+        "short_side": short_side,
+        "ratio": round(ratio, 4),
+        "thresholds": {
+            "short_edge_min": bands.short_edge_min,
+            "short_edge_max": bands.short_edge_max,
+            "long_edge_min": bands.long_edge_min,
+            "long_edge_max": bands.long_edge_max,
+            "aspect_ratio_min": bands.aspect_ratio_min,
+            "aspect_ratio_max": bands.aspect_ratio_max,
+        },
+        "failure_reasons": failure_reasons,
         "passed": passed,
     }
 
 
 # ──────────────────────────────────────────────
-# Module 2.4 — Image Quality Validation
-# ──────────────────────────────────────────────
-
-def _check_quality(cv2_img: np.ndarray) -> Dict[str, Any]:
-    """Compute blur, brightness, and contrast scores."""
-    gray = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2GRAY)
-
-    # Blur: Laplacian variance
-    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-
-    if laplacian_var >= BLUR_SHARP_THRESHOLD:
-        blur_status = "sharp"
-    elif laplacian_var >= BLUR_WARNING_THRESHOLD:
-        blur_status = "slightly_blurry"
-    else:
-        blur_status = "too_blurry"
-
-    # Brightness: mean pixel intensity
-    mean_brightness = float(np.mean(gray))
-    if mean_brightness < BRIGHTNESS_TOO_DARK:
-        brightness_status = "too_dark"
-    elif mean_brightness > BRIGHTNESS_TOO_BRIGHT:
-        brightness_status = "too_bright"
-    else:
-        brightness_status = "normal"
-
-    # Contrast: std deviation of pixel intensity
-    contrast = float(np.std(gray))
-    contrast_status = "low_contrast" if contrast < CONTRAST_LOW_THRESHOLD else "normal"
-
-    return {
-        "blur_score": round(laplacian_var, 2),
-        "blur_status": blur_status,
-        "brightness_score": round(mean_brightness, 2),
-        "brightness_status": brightness_status,
-        "contrast_score": round(contrast, 2),
-        "contrast_status": contrast_status,
-        "readability_status": "readable",  # placeholder, upgraded in future with OCR
-    }
-
-
-# ──────────────────────────────────────────────
-# Module 2.5 — Screenshot Type Validation
+# Module 2.4 — Screenshot Type Validation
 # ──────────────────────────────────────────────
 
 def _check_screenshot_type(
-    width: int, height: int, expected_w: int, expected_h: int
+    width: int, height: int, _bands: ViewportBandConfig
 ) -> Dict[str, Any]:
-    """Heuristic screenshot type check based on dimensions."""
-    if width == expected_w and height == expected_h:
-        stype = "viewport_screenshot"
-        passed = True
-    elif height > expected_h * 2:
-        stype = "full_page"
-        passed = False
-    elif width < expected_w * 0.5 or height < expected_h * 0.5:
-        stype = "cropped_component"
-        passed = False
-    elif width > expected_w * 2:
-        stype = "stitched"
-        passed = False
-    else:
-        stype = "unknown"
-        passed = False
-
-    return {"type": stype, "passed": passed}
-
-
-# ──────────────────────────────────────────────
-# Module 2.6 — External Noise Detection (heuristic)
-# ──────────────────────────────────────────────
-
-def _check_external_noise(cv2_img: np.ndarray) -> Dict[str, Any]:
-    """
-    Lightweight heuristic noise detection.
-    Checks for potential browser chrome (uniform strip at top).
-    """
-    noise_types: List[str] = []
-    h, w = cv2_img.shape[:2]
-
-    # Browser chrome heuristic: check if top ~80px is a uniform color bar
-    if h > 100:
-        top_strip = cv2_img[:80, :, :]
-        top_std = float(np.std(top_strip))
-        if top_std < 15:  # very uniform → possibly browser chrome
-            noise_types.append("possible_browser_chrome")
-
-    noise_detected = len(noise_types) > 0
-    severity = "low" if noise_detected else "none"
-
+    """Runs after viewport bands passed — classify as viewport capture (constraints enforced upstream)."""
+    long_side = max(width, height)
+    short_side = min(width, height)
+    ratio = long_side / short_side if short_side > 0 else 0.0
     return {
-        "noise_detected": noise_detected,
-        "noise_types": noise_types,
-        "severity": severity,
+        "type": "viewport_screenshot",
+        "passed": True,
+        "long_side": long_side,
+        "short_side": short_side,
+        "ratio": round(ratio, 4),
     }
 
 
 # ──────────────────────────────────────────────
-# Module 2.7 — Image Normalization
+# Module 2.5 — Image Normalization
 # ──────────────────────────────────────────────
 
 def _normalize_image(pil_img: PILImage.Image, run_id: str, image_id: str) -> Tuple[Optional[str], Optional[str]]:
@@ -259,7 +213,7 @@ def _normalize_image(pil_img: PILImage.Image, run_id: str, image_id: str) -> Tup
 
 
 # ──────────────────────────────────────────────
-# Module 2.8 — Thumbnail Generation
+# Module 2.6 — Thumbnail Generation
 # ──────────────────────────────────────────────
 
 def _generate_thumbnail(pil_img: PILImage.Image, run_id: str, image_id: str) -> Tuple[Optional[str], Optional[str]]:
@@ -279,7 +233,7 @@ def _generate_thumbnail(pil_img: PILImage.Image, run_id: str, image_id: str) -> 
 
 
 # ──────────────────────────────────────────────
-# Module 2.10 — Quality Report Builder
+# Module 2.7 — Quality Report Builder
 # ──────────────────────────────────────────────
 
 def _build_quality_report(
@@ -307,12 +261,10 @@ def _build_quality_report(
     # Summary counts
     summary = {
         "wrong_viewport_count": sum(1 for r in results if r.get("quality_status") == "invalid_wrong_viewport"),
-        "too_blurry_count": sum(1 for r in results if r.get("quality_status") == "invalid_too_blurry"),
         "corrupted_count": sum(1 for r in results if r.get("quality_status") == "invalid_corrupted"),
         "full_page_count": sum(1 for r in results if r.get("quality_status") == "invalid_full_page"),
         "cropped_count": sum(1 for r in results if r.get("quality_status") == "invalid_cropped"),
         "stitched_count": sum(1 for r in results if r.get("quality_status") == "invalid_stitched_image"),
-        "external_noise_count": sum(1 for r in results if r.get("quality_status") == "invalid_external_annotation"),
     }
 
     return {
@@ -327,6 +279,11 @@ def _build_quality_report(
         "summary": summary,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def build_quality_report(run_id: str, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Public wrapper for assembling image_quality_report.json from per-image result dicts."""
+    return _build_quality_report(run_id, results)
 
 
 # ══════════════════════════════════════════════
@@ -348,10 +305,7 @@ async def run_preprocessing(db: AsyncSession, run_id: str) -> Dict[str, Any]:
     if not run:
         raise ValueError(f"Run {run_id} not found")
 
-    config = run.config_json or {}
-    expected_w = config.get("viewport_width", settings.REQUIRED_VIEWPORT_WIDTH)
-    expected_h = config.get("viewport_height", settings.REQUIRED_VIEWPORT_HEIGHT)
-    strict = config.get("strict_quality_validation", True)
+    bands = viewport_bands_from_settings()
 
     # ── Load image records ───────────────────
     img_result = await db.execute(
@@ -366,7 +320,7 @@ async def run_preprocessing(db: AsyncSession, run_id: str) -> Dict[str, Any]:
     invalid_count = 0
 
     for img in images:
-        result = _process_single_image(img, run_id, expected_w, expected_h, strict)
+        result = _process_single_image(img, run_id, bands)
         per_image_results.append(result)
 
         # ── Update DB record (Module 2.9) ────
@@ -390,7 +344,7 @@ async def run_preprocessing(db: AsyncSession, run_id: str) -> Dict[str, Any]:
     run.invalid_images = invalid_count
 
     # ── Build & save quality report ──────────
-    report = _build_quality_report(run_id, per_image_results)
+    report = build_quality_report(run_id, per_image_results)
     report_bytes = json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8")
     report_key = f"artifacts/{run_id}/image_preprocessing/image_quality_report.json"
     report_uri = storage_service.upload_file(report_bytes, report_key, content_type="application/json")
@@ -432,17 +386,22 @@ async def run_preprocessing(db: AsyncSession, run_id: str) -> Dict[str, Any]:
 # Per-image processing pipeline
 # ──────────────────────────────────────────────
 
-def _process_single_image(
-    img: Image,
+def run_preprocessing_pipeline_on_bytes(
+    raw_bytes: bytes,
+    *,
+    image_id: str,
+    original_filename: str,
+    metadata_format: Optional[str],
     run_id: str,
-    expected_w: int,
-    expected_h: int,
-    strict: bool,
+    bands: ViewportBandConfig,
 ) -> Dict[str, Any]:
-    """Run all validation steps on a single image and return result dict."""
+    """
+    Decode, validate viewport, screenshot type label, normalize, and thumbnail from raw bytes.
+    Same shape as _process_single_image result dict (no DB / storage download).
+    """
     result: Dict[str, Any] = {
-        "image_id": img.id,
-        "original_filename": img.original_filename,
+        "image_id": image_id,
+        "original_filename": original_filename,
         "is_valid": True,
         "quality_status": "valid",
         "invalid_reason": None,
@@ -452,18 +411,9 @@ def _process_single_image(
         "preprocessing_json": {},
     }
 
-    # ── Step 1: Load raw image ───────────────
-    log_event("image_loaded", run_id=run_id, image_id=img.id, node_name="image_preprocessing")
-    raw_bytes, load_error = _load_raw_image(img)
-    if load_error:
-        result["is_valid"] = False
-        result["quality_status"] = "invalid_corrupted"
-        result["invalid_reason"] = load_error
-        return result
-
-    # ── Step 2: Decode & integrity ───────────
-    pil_img, cv2_img, decode_report = _check_decode_integrity(raw_bytes, img.format)
-    if pil_img is None or cv2_img is None:
+    # ── Decode & integrity ───────────
+    pil_img, decode_report = _check_decode_integrity(raw_bytes, metadata_format)
+    if pil_img is None:
         result["is_valid"] = False
         result["quality_status"] = "invalid_corrupted"
         result["invalid_reason"] = decode_report.get("error", "IMAGE_DECODE_FAILED")
@@ -476,44 +426,19 @@ def _process_single_image(
     actual_w = pil_img.width
     actual_h = pil_img.height
 
-    # ── Step 3: Viewport validation ──────────
-    viewport_result = _check_viewport(actual_w, actual_h, expected_w, expected_h)
+    # ── Viewport validation ──────────
+    viewport_result = _check_viewport_aspect_bands(actual_w, actual_h, bands)
     result["preprocessing_json"]["viewport_check"] = viewport_result
 
     if not viewport_result["passed"]:
         result["is_valid"] = False
         result["quality_status"] = "invalid_wrong_viewport"
-        result["invalid_reason"] = (
-            f"wrong viewport: expected {expected_w}x{expected_h}, got {actual_w}x{actual_h}"
-        )
-        result["preprocessing_json"]["quality_check"] = {}
-        result["preprocessing_json"]["screenshot_type_check"] = {}
-        result["preprocessing_json"]["noise_check"] = {}
+        errs = viewport_result.get("failure_reasons") or []
+        result["invalid_reason"] = "; ".join(errs) if errs else "viewport constraints not satisfied"
         return result
 
-    # ── Step 4: Quality validation ───────────
-    quality_result = _check_quality(cv2_img)
-    result["preprocessing_json"]["quality_check"] = quality_result
-
-    if quality_result["blur_status"] == "too_blurry":
-        result["is_valid"] = False
-        result["quality_status"] = "invalid_too_blurry"
-        result["invalid_reason"] = f"image is too blurry (score: {quality_result['blur_score']})"
-        return result
-    elif quality_result["blur_status"] == "slightly_blurry":
-        result["warnings"].append(f"slightly blurry (score: {quality_result['blur_score']})")
-
-    if quality_result["brightness_status"] in ("too_dark", "too_bright"):
-        if strict:
-            result["warnings"].append(f"brightness: {quality_result['brightness_status']}")
-        else:
-            result["warnings"].append(f"brightness: {quality_result['brightness_status']}")
-
-    if quality_result["contrast_status"] == "low_contrast":
-        result["warnings"].append(f"low contrast (score: {quality_result['contrast_score']})")
-
-    # ── Step 5: Screenshot type ──────────────
-    type_result = _check_screenshot_type(actual_w, actual_h, expected_w, expected_h)
+    # ── Screenshot type ──────────────
+    type_result = _check_screenshot_type(actual_w, actual_h, bands)
     result["preprocessing_json"]["screenshot_type_check"] = type_result
 
     if not type_result["passed"]:
@@ -527,16 +452,8 @@ def _process_single_image(
         result["invalid_reason"] = f"screenshot type: {type_result['type']}"
         return result
 
-    # ── Step 6: Noise detection ──────────────
-    noise_result = _check_external_noise(cv2_img)
-    result["preprocessing_json"]["noise_check"] = noise_result
-
-    if noise_result["noise_detected"]:
-        for nt in noise_result["noise_types"]:
-            result["warnings"].append(f"noise detected: {nt}")
-
-    # ── Step 7: Normalize ────────────────────
-    norm_uri, norm_err = _normalize_image(pil_img, run_id, img.id)
+    # ── Normalize ────────────────────
+    norm_uri, norm_err = _normalize_image(pil_img, run_id, image_id)
     if norm_err:
         result["is_valid"] = False
         result["quality_status"] = "invalid_corrupted"
@@ -544,8 +461,8 @@ def _process_single_image(
         return result
     result["normalized_uri"] = norm_uri
 
-    # ── Step 8: Thumbnail ────────────────────
-    thumb_uri, thumb_err = _generate_thumbnail(pil_img, run_id, img.id)
+    # ── Thumbnail ────────────────────
+    thumb_uri, thumb_err = _generate_thumbnail(pil_img, run_id, image_id)
     if thumb_err:
         result["warnings"].append(thumb_err)
     else:
@@ -558,3 +475,34 @@ def _process_single_image(
     result["preprocessing_json"]["warnings"] = result["warnings"]
 
     return result
+
+
+def _process_single_image(
+    img: Image,
+    run_id: str,
+    bands: ViewportBandConfig,
+) -> Dict[str, Any]:
+    """Run all validation steps on a single image and return result dict."""
+    log_event("image_loaded", run_id=run_id, image_id=img.id, node_name="image_preprocessing")
+    raw_bytes, load_error = _load_raw_image(img)
+    if load_error:
+        return {
+            "image_id": img.id,
+            "original_filename": img.original_filename,
+            "is_valid": False,
+            "quality_status": "invalid_corrupted",
+            "invalid_reason": load_error,
+            "normalized_uri": None,
+            "thumbnail_uri": None,
+            "warnings": [],
+            "preprocessing_json": {},
+        }
+
+    return run_preprocessing_pipeline_on_bytes(
+        raw_bytes,
+        image_id=img.id,
+        original_filename=img.original_filename,
+        metadata_format=img.format,
+        run_id=run_id,
+        bands=bands,
+    )

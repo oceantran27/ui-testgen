@@ -183,16 +183,11 @@ async def run_duplicate_detection(db: AsyncSession, run_id: str) -> Dict[str, An
         
         # Select canonical
         group_images = [img for img in images if img.id in member_ids]
-        # Sort criteria: 
-        # 1. quality_status == 'valid' (no warnings)
-        # 2. blur_score desc (higher is sharper)
-        # 3. upload_order asc
+        # Canonical: prefer quality_status == 'valid' over 'warning_*'; then earliest upload_order.
         def selection_key(img):
-            # quality_status starts with 'invalid' or 'warning' or is 'valid'
-            is_valid = 1 if img.quality_status == 'valid' else 0
-            blur_score = img.preprocessing_json.get('quality_check', {}).get('blur_score', 0) if img.preprocessing_json else 0
-            return (is_valid, blur_score, -img.upload_order)
-        
+            prefer_valid = 1 if img.quality_status == "valid" else 0
+            return (prefer_valid, -img.upload_order)
+
         group_images.sort(key=selection_key, reverse=True)
         canonical = group_images[0]
         
