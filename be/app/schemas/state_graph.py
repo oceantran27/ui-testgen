@@ -2,11 +2,63 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.test_scenario_generation import FinalTestOutput
+
+
+PipelinePhaseId = Literal["dedupe", "parallel_screens", "state_graph", "e2e_scenarios"]
+PipelinePhaseUiStatus = Literal["pending", "running", "completed", "failed"]
+RunStatus = Literal["queued", "running", "completed", "failed"]
+
+PIPELINE_PHASE_ORDER: tuple[PipelinePhaseId, ...] = (
+    "dedupe",
+    "parallel_screens",
+    "state_graph",
+    "e2e_scenarios",
+)
+
+PIPELINE_PHASE_LABELS: dict[PipelinePhaseId, str] = {
+    "dedupe": "Image deduplication",
+    "parallel_screens": "UI extraction & user intents",
+    "state_graph": "State graph & flows",
+    "e2e_scenarios": "E2E scenarios (Actor–Critic)",
+}
+
+
+class PipelinePhaseTiming(BaseModel):
+    """Server-measured duration for one pipeline boundary."""
+
+    phase_id: PipelinePhaseId
+    label: str
+    duration_ms: int = Field(ge=0)
+
+
+class PipelineRunTiming(BaseModel):
+    """Full run timing from the server."""
+
+    phases: list[PipelinePhaseTiming] = Field(min_length=0)
+    wall_clock_ms: int = Field(ge=0, description="Wall time from pipeline start until completion")
+
+
+class PipelinePhaseProgress(BaseModel):
+    """Live or final phase row for polling UI."""
+
+    id: PipelinePhaseId
+    label: str = Field(min_length=1)
+    status: PipelinePhaseUiStatus = "pending"
+    started_at_iso: str | None = None
+    ended_at_iso: str | None = None
+    duration_ms: int | None = Field(default=None, ge=0)
+
+
+class StateGraphStartResponse(BaseModel):
+    """Immediate response after uploads are accepted; pipeline runs in the background."""
+
+    input_id: str = Field(min_length=1)
+    status: Literal["running"] = "running"
 
 
 class StateGraphInputScreen(BaseModel):
@@ -54,12 +106,41 @@ class StateGraphOrganizeResponse(BaseModel):
             "(Actor–Critic, stage 4)."
         ),
     )
+    pipeline_timing: PipelineRunTiming | None = Field(
+        default=None,
+        description="Measured phase and wall-clock timings when pipeline finished successfully.",
+    )
+    screen_images: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Maps canonical image_id (sha256 hex) to uploaded filename basename under "
+            "`uploads/state-graph-input/{input_id}/` for static URLs."
+        ),
+    )
+
+
+class StateGraphRunStatusResponse(BaseModel):
+    """Poll payload for `/state-graph/status/{input_id}`."""
+
+    input_id: str = Field(min_length=1)
+    status: RunStatus
+    current_phase: PipelinePhaseId | None = None
+    phases: list[PipelinePhaseProgress] = Field(default_factory=list)
+    error: str | None = None
+    result: StateGraphOrganizeResponse | None = None
+    timing: PipelineRunTiming | None = None
 
 
 class UserIntentEvidenceItem(BaseModel):
     """One user intent plus control ids from ui-flat-v5 extraction (`controls[].id`)."""
 
-    intent: str = Field(min_length=1, description="English intent phrase for this screen.")
+    intent: str = Field(
+        min_length=1,
+        description=(
+            "Generalized English imperative (e.g. 'Search for records'); no 'by'/'using', "
+            "no verbatim UI labels or quotes in this field (see isolated scenarios prompt)."
+        ),
+    )
     gherkin: str = Field(default="", description="BDD/Gherkin scenario corresponding to this intent.")
     control_ids: list[str] = Field(
         min_length=1,
