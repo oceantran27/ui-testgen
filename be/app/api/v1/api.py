@@ -1,7 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import behavior_flow, platform, test_scenarios
+
+from app.api.v1.endpoints import behavior_flow
 
 api_router = APIRouter()
-api_router.include_router(platform.router, tags=["platform"])
-api_router.include_router(test_scenarios.router, prefix="/test-scenarios", tags=["test-scenarios"])
 api_router.include_router(behavior_flow.router, prefix="/behavior-flows", tags=["behavior-flows"])
