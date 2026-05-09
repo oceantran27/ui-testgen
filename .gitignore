@@ -1,2 +1,9 @@
 thesis
 log.txt
+
+# Backend local artifacts (do not commit)
+be/checkpoints.sqlite
+be/log.txt
+be/img_exact.png
+be/img_near.png
+be/img_original.png
