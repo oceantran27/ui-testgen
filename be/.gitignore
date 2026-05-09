@@ -33,3 +33,6 @@ Thumbs.db
 uploads
 experiment_results
 data
+
+# Local outputs from standalone experiment scripts
+*standalone_output*.json
