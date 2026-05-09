@@ -7,6 +7,11 @@ Job: process_run
   3. Marks run status → completed or failed based on result
 """
 import asyncio
+import sys
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -16,11 +21,11 @@ from app.core.logging import logger, log_event
 from app.db.session import AsyncSessionLocal
 from app.db.models.run import Run
 from app.db.models.job import Job
-from app.graph.runner.graph_runner import run_pipeline
+from app.services.graph_service import GraphExecutionService
 
 
 async def process_run(ctx, run_id: str):
-    """Main worker job handler — runs the full LangGraph pipeline for a given run."""
+    """Main worker job handler — executes the LangGraph pipeline via GraphExecutionService."""
     job_id = ctx.get("job_id", "unknown")
     log_event("job_started", run_id=run_id, job_id=job_id, node_name="worker")
 
@@ -40,49 +45,15 @@ async def process_run(ctx, run_id: str):
             )
             return
 
-        # ── 2. Mark processing ────────────────
-        run.status = "processing"
-        run.started_at = datetime.now(timezone.utc)
-        await db.commit()
-
-    # ── 3. Execute pipeline ───────────────────
-    # The pipeline opens its own session internally (via graph_runner).
+    # ── 2. Execute pipeline ───────────────────
     try:
-        final_state = await run_pipeline(run_id=run_id, job_id=str(job_id))
-
-        # ── 4. Update run status based on result ─
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(select(Run).where(Run.id == run_id))
-            run = result.scalar_one_or_none()
-
-            if run:
-                # If pipeline already set run.status = failed (e.g. NO_VALID_IMAGES),
-                # respect that; otherwise mark completed.
-                if run.status not in ("failed",):
-                    if final_state.get("should_stop"):
-                        run.status = "failed"
-                        run.error_message = final_state.get("stop_reason", "PIPELINE_STOPPED")
-                    else:
-                        run.status = "completed"
-
-                run.completed_at = datetime.now(timezone.utc)
-                await db.commit()
-
+        await GraphExecutionService.execute(run_id=run_id, job_id=str(job_id))
         log_event("job_completed", run_id=run_id, job_id=job_id, node_name="worker")
 
     except Exception as e:
         logger.exception(f"Pipeline failed for run {run_id}: {e}", extra={"run_id": run_id})
         log_event("job_failed", run_id=run_id, job_id=job_id,
                   node_name="worker", error_code=str(e))
-
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(select(Run).where(Run.id == run_id))
-            run = result.scalar_one_or_none()
-            if run:
-                run.status = "failed"
-                run.error_message = str(e)[:500]
-                run.completed_at = datetime.now(timezone.utc)
-                await db.commit()
 
 
 # ──────────────────────────────────────────────

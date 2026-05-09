@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List, Any, Dict
 from datetime import datetime
 
@@ -9,12 +9,12 @@ from datetime import datetime
 
 class RunConfig(BaseModel):
     """Per-run configuration. All fields have sensible defaults."""
-    viewport_width: int = Field(default=1440, description="Expected viewport width")
-    viewport_height: int = Field(default=900, description="Expected viewport height")
+
+    model_config = ConfigDict(extra="ignore")
+
     allow_unordered_images: bool = Field(default=True, description="Allow images without ordering")
     allow_duplicate_images: bool = Field(default=True, description="Allow duplicate images in input")
     input_level_mode: str = Field(default="auto_detect", description="Level detection mode")
-    strict_quality_validation: bool = Field(default=True, description="Enable strict quality checks")
     max_revision_round: int = Field(default=2, description="Max Actor-Critic revision rounds")
 
 
