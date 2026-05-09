@@ -23,6 +23,10 @@ class Image(Base):
     invalid_reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     preprocessing_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
+    duplicate_group_members = relationship("DuplicateGroupMember", back_populates="image", cascade="all, delete-orphan")
+    ui_states = relationship("UIState", back_populates="image", cascade="all, delete-orphan")
+    ui_elements = relationship("UIElement", back_populates="image", cascade="all, delete-orphan")
+
     # Phase 3: Duplicate Detection
     duplicate_status: Mapped[str] = mapped_column(String, default="not_checked")
     duplicate_group_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("duplicate_groups.id"), nullable=True)
