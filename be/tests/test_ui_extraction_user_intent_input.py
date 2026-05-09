@@ -157,6 +157,37 @@ def test_parse_ui_extraction_accepts_ui_flat_v5():
     assert result.controls[0].states.disabled is False
 
 
+def test_parse_ui_extraction_defaults_is_primary_layer_when_omitted():
+    raw = """{
+      "schema_version": "ui-flat-v5",
+      "overview": {"viewport_description": "Login"},
+      "controls": [
+        {
+          "id": "link_terms_of_service",
+          "role": "link",
+          "label": "Terms",
+          "value": "",
+          "associated_context": "",
+          "states": {}
+        },
+        {
+          "id": "btn_ok",
+          "role": "button",
+          "label": "OK",
+          "value": "OK",
+          "associated_context": "",
+          "is_primary_layer": false,
+          "states": {}
+        }
+      ],
+      "groups": []
+    }"""
+    result = parse_ui_extraction_payload(raw)
+    assert len(result.controls) == 2
+    assert result.controls[0].is_primary_layer is True
+    assert result.controls[1].is_primary_layer is False
+
+
 def test_parse_drops_search_when_input_or_trigger_null():
     raw = """{
       "schema_version": "ui-flat-v5",
