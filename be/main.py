@@ -1,71 +1,45 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.api.v1.api import api_router
-import os
-import logging
-from datetime import datetime, timedelta
+from app.core.errors import BaseAPIException, global_exception_handler, generic_exception_handler
+from app.api.routes import health, runs
+from app.core.logging import logger
+from app.services.queue_service import queue_service
 
-# --- Logging Setup ---
-LOG_FILE = "log.txt"
-LOG_EXPIRATION_DAYS = 3
-
-def setup_logging():
-    """Configures logging with expiration policy."""
-    if os.path.exists(LOG_FILE):
-        creation_time = os.path.getctime(LOG_FILE)
-        creation_date = datetime.fromtimestamp(creation_time)
-        if datetime.now() - creation_date > timedelta(days=LOG_EXPIRATION_DAYS):
-            try:
-                os.remove(LOG_FILE)
-                print(f"Old log file {LOG_FILE} removed (expired).")
-            except Exception as e:
-                print(f"Error removing old log file: {e}")
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(LOG_FILE, mode='a', encoding='utf-8'),
-            logging.StreamHandler()
-        ]
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        version="1.0.0",
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
     )
-    logging.info("Logging initialized.")
 
-setup_logging()
-# ---------------------
-
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version=settings.PROJECT_VERSION,
-    description=settings.PROJECT_DESCRIPTION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
-
-# Ensure the uploads directory exists
-os.makedirs("uploads", exist_ok=True)
-
-# Mount the 'uploads' directory to serve static files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-
-@app.get("/healthz")
-def healthz():
-    return {"status": "ok"}
-
-# Set all CORS enabled origins
-if True: # Always enable CORS for development
+    # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"], # Allow all origins
+        allow_origins=["*"], # For dev only, configure properly in prod
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+    # Exception Handlers
+    app.add_exception_handler(BaseAPIException, global_exception_handler)
+    app.add_exception_handler(Exception, generic_exception_handler)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=settings.BACKEND_PORT)
+    # Routers
+    app.include_router(health.router, prefix="", tags=["System"])
+    app.include_router(runs.router, prefix=settings.API_V1_STR, tags=["Runs"])
+
+    @app.on_event("startup")
+    async def startup_event():
+        logger.info("Application starting up...")
+        await queue_service.connect()
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        logger.info("Application shutting down...")
+        await queue_service.disconnect()
+
+    return app
+
+app = create_app()
