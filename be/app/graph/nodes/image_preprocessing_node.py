@@ -36,37 +36,44 @@ async def image_preprocessing_node(
     try:
         result = await run_preprocessing(db=db, run_id=run_id)
 
-        # Merge results into state
+        # Return partial state update for reducers
         updates: Dict[str, Any] = {
-            "node_name": NODE_NAME,
+            "current_node": NODE_NAME,
+            "completed_nodes": [NODE_NAME],
             "valid_images": result["valid_images"],
             "invalid_images": result["invalid_images"],
             "image_quality_report": result["report"],
             "preprocessing_warnings": _collect_warnings(result["valid_images"]),
-            "errors": state.get("errors", []) + result.get("errors", []),
+            "metrics": {f"{NODE_NAME}_valid_count": result["valid_count"]}
         }
+        
+        if result.get("errors"):
+            updates["errors"] = result["errors"]
 
         # Conditional: halt pipeline if no valid images
         if result["valid_count"] == 0:
             updates["should_stop"] = True
             updates["stop_reason"] = "NO_VALID_IMAGES"
+            updates["graph_status"] = "failed"
             log_event("pipeline_halted", run_id=run_id, node_name=NODE_NAME,
                       error_code="NO_VALID_IMAGES")
         else:
             updates["should_stop"] = False
             updates["stop_reason"] = None
 
-        return {**state, **updates}
+        return updates
 
     except Exception as e:
         logger.exception(f"[{NODE_NAME}] Unexpected error for run {run_id}: {e}")
         return {
-            **state,
-            "node_name": NODE_NAME,
-            "errors": state.get("errors", []) + [str(e)],
+            "current_node": NODE_NAME,
+            "failed_nodes": [NODE_NAME],
+            "errors": [str(e)],
             "should_stop": True,
             "stop_reason": f"NODE_ERROR: {e}",
+            "graph_status": "failed"
         }
+
 
 
 def _collect_warnings(valid_images: list) -> list:
