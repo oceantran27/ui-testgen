@@ -129,30 +129,30 @@ export function AdminCRUD() {
   };
 
   return (
-    <section className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 text-gray-800">
+    <section className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto space-y-6 p-4 sm:p-6 lg:p-8">
         <header className="mb-2">
-          <h1 className="text-gradient from-blue-600 to-indigo-500 text-4xl font-extrabold sm:text-5xl">
+          <h1 className="text-gradient text-4xl font-extrabold sm:text-5xl">
             Admin Dashboard
           </h1>
-          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+          <p className="mt-2 text-sm text-zinc-400 sm:text-base">
             Manage default gallery inputs used across the app.
           </p>
         </header>
 
         <div className="card">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold text-gray-700">
+            <h2 className="text-2xl font-bold text-zinc-100">
               Admin CRUD: default_inputs
             </h2>
             <Link
               to="/"
-              className="btn border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-gray-400 hover:bg-gray-100/80 focus:ring-gray-300/60"
+              className="btn border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800/80 focus:ring-zinc-500/40"
             >
               Back to Home
             </Link>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-zinc-400">
             Create, replace, or remove default gallery images.
           </p>
 
@@ -166,23 +166,23 @@ export function AdminCRUD() {
                   setUploaded(null);
                   resetUploadState();
                 }}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-xs transition-colors focus:border-blue-400 focus:outline-none"
+                className="rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 shadow-xs transition-colors focus:border-cyan-500 focus:outline-none"
               />
             </div>
 
             {isUploading && (
-              <p className="rounded-lg border border-blue-200 bg-blue-50/90 px-3 py-2 text-sm text-blue-700">
+              <p className="rounded-lg border border-cyan-900/50 bg-cyan-950/40 px-3 py-2 text-sm text-cyan-200">
                 Upload progress: {progress}%
               </p>
             )}
             {uploadError && (
-              <p className="rounded-lg border border-red-200 bg-red-50/90 px-3 py-2 text-sm text-red-700">
+              <p className="rounded-lg border border-red-900/45 bg-red-950/35 px-3 py-2 text-sm text-red-200">
                 {uploadError}
               </p>
             )}
             {uploaded?.imageUrl && (
-              <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/70 p-3">
-                <p className="mb-2 text-sm font-medium text-emerald-700">
+              <div className="rounded-xl border border-emerald-900/50 bg-emerald-950/30 p-3">
+                <p className="mb-2 text-sm font-medium text-emerald-200">
                   Uploaded image ready
                 </p>
                 <img
@@ -205,7 +205,7 @@ export function AdminCRUD() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="btn border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-gray-400 hover:bg-gray-100/80 focus:ring-gray-300/60"
+                className="btn border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800/80 focus:ring-zinc-500/40"
               >
                 Reset
               </button>
@@ -214,24 +214,24 @@ export function AdminCRUD() {
         </div>
 
         <div className="card">
-          <h3 className="text-xl font-bold text-gray-700">Current Inputs</h3>
+          <h3 className="text-xl font-bold text-zinc-100">Current Inputs</h3>
 
           {loading && (
-            <p className="mt-4 rounded-lg border border-blue-200 bg-blue-50/90 p-3 text-blue-700">
+            <p className="mt-4 rounded-lg border border-cyan-900/45 bg-cyan-950/30 p-3 text-cyan-200">
               Loading default inputs...
             </p>
           )}
           {error && (
-            <p className="mt-4 rounded-lg border border-red-200 bg-red-50/90 p-3 text-red-700">
+            <p className="mt-4 rounded-lg border border-red-900/45 bg-red-950/35 p-3 text-red-200">
               {error}
             </p>
           )}
 
           {!loading && (
-            <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200/80 bg-white/70">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-700/80 bg-zinc-950/55">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 text-left text-gray-600">
+                  <tr className="border-b border-zinc-700 text-left text-zinc-400">
                     <th className="px-3 py-2 font-semibold">No</th>
                     <th className="px-3 py-2 font-semibold">Image</th>
                     <th className="px-3 py-2 font-semibold">Actions</th>
@@ -243,22 +243,22 @@ export function AdminCRUD() {
                     return (
                       <tr
                         key={item.id}
-                        className="border-b border-gray-100/80 last:border-b-0"
+                        className="border-b border-zinc-800 last:border-b-0"
                       >
-                        <td className="px-3 py-2 text-gray-500">{index + 1}</td>
+                        <td className="px-3 py-2 text-zinc-400">{index + 1}</td>
                         <td className="px-3 py-2">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt="Default input"
-                              className="h-14 w-20 cursor-pointer rounded object-cover transition-all hover:ring-2 hover:ring-blue-400"
+                              className="h-14 w-20 cursor-pointer rounded object-cover transition-all hover:ring-2 hover:ring-cyan-500/70"
                               onClick={() => {
                                 setPreviewSrc(imageUrl);
                                 setPreviewOpen(true);
                               }}
                             />
                           ) : (
-                            <span className="text-gray-400">No image</span>
+                            <span className="text-zinc-500">No image</span>
                           )}
                         </td>
                         <td className="px-3 py-2">
@@ -279,7 +279,7 @@ export function AdminCRUD() {
                   {items.length === 0 && (
                     <tr>
                       <td
-                        className="px-3 py-4 text-center text-gray-500"
+                        className="px-3 py-4 text-center text-zinc-500"
                         colSpan={3}
                       >
                         No default inputs found.

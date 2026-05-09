@@ -13,12 +13,12 @@ function AlbumSkeleton() {
     <div className="space-y-8">
       {[0, 1].map((k) => (
         <div key={k} className="card animate-pulse">
-          <div className="mb-4 h-6 w-1/3 rounded bg-gray-200" />
+          <div className="mb-4 h-6 w-1/3 rounded bg-zinc-800" />
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {Array.from({ length: 6 }, (_, j) => (
               <div
                 key={j}
-                className="aspect-square rounded-lg bg-gray-200"
+                className="aspect-square rounded-lg bg-zinc-800"
                 aria-hidden
               />
             ))}
@@ -53,8 +53,8 @@ export function BehaviorFlowAlbum({ groups, isLoading }: BehaviorFlowAlbumProps)
           className="card scroll-mt-20"
         >
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-            <h2 className="text-xl font-bold text-gray-800">{g.behavior_flow}</h2>
-            <span className="text-sm text-gray-500">
+            <h2 className="text-xl font-bold text-zinc-100">{g.behavior_flow}</h2>
+            <span className="text-sm text-zinc-400">
               {g.images.length} image{g.images.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -66,7 +66,7 @@ export function BehaviorFlowAlbum({ groups, isLoading }: BehaviorFlowAlbumProps)
                 onClick={() => {
                   setLightbox({ images: g.images, start: j, title: g.behavior_flow });
                 }}
-                className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200/80 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="group relative aspect-square overflow-hidden rounded-lg border border-zinc-700/80 bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-cyan-500/60"
               >
                 <img
                   src={src}

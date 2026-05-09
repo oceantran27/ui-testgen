@@ -149,19 +149,19 @@ export function BehaviorFlowPage() {
   const showEmpty = !isSubmitting && !hasResults && !errorMessage;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 text-gray-800">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
         <header className="mb-8 text-center">
-          <h1 className="text-gradient from-blue-600 to-indigo-500 text-4xl font-extrabold sm:text-5xl">
+          <h1 className="text-gradient text-4xl font-extrabold sm:text-5xl">
             Behavior flow album
           </h1>
-          <p className="mt-2 text-lg text-gray-500">
-            Upload many UI screenshots; we group and order them by user flow.
+          <p className="mt-2 text-lg text-zinc-400">
+            Upload many UI screenshots; we group and order them by user flow (legacy clustering).
           </p>
           <div className="mt-4">
             <Link
               to="/"
-              className="font-semibold text-blue-600 hover:text-blue-800"
+              className="font-semibold text-cyan-400 hover:text-cyan-300"
             >
               Back to home
             </Link>
@@ -170,14 +170,14 @@ export function BehaviorFlowPage() {
 
         <div className="space-y-8">
           <div className="card">
-            <h2 className="mb-3 flex items-center text-2xl font-bold text-gray-700">
-              <FiUploadCloud className="mr-3 text-blue-500" />
+            <h2 className="mb-3 flex items-center text-2xl font-bold text-zinc-100">
+              <FiUploadCloud className="mr-3 text-cyan-400" />
               Multi-image upload
             </h2>
-            <p className="mb-4 text-sm text-gray-500">
+            <p className="mb-4 text-sm text-zinc-400">
               Choose or drag in multiple screenshots. Order here does not matter —
               the server will cluster and order by behavior flow. Submit uses the
-              same order to label <code className="text-gray-600">img_001</code>, …
+              same order to label <code className="font-mono text-zinc-300">img_001</code>, …
             </p>
 
             <div
@@ -208,13 +208,13 @@ export function BehaviorFlowPage() {
             </div>
 
             {files.length > 0 ? (
-              <ul className="mt-4 flex max-h-56 flex-col gap-2 overflow-y-auto custom-scrollbar rounded-lg border border-gray-200/80 p-2">
+              <ul className="mt-4 flex max-h-56 flex-col gap-2 overflow-y-auto custom-scrollbar rounded-lg border border-zinc-700/60 p-2">
                 {files.map((f, i) => (
                   <li
                     key={`${f.name}-${i}`}
-                    className="flex items-center gap-3 rounded-lg bg-gray-50/90 px-2 py-1.5"
+                    className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/70 px-2 py-1.5"
                   >
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded border border-gray-200">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded border border-zinc-700">
                       {previewUrls[i] ? (
                         <img
                           src={previewUrls[i]}
@@ -224,11 +224,11 @@ export function BehaviorFlowPage() {
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-800">
+                      <p className="truncate text-sm font-medium text-zinc-200">
                         {f.name}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        <span className="font-mono">img_{String(i + 1).padStart(3, "0")}</span>
+                      <p className="text-xs text-zinc-500">
+                        <span className="font-mono text-zinc-400">img_{String(i + 1).padStart(3, "0")}</span>
                         {" · "}
                         {(f.size / 1024).toFixed(0)} KB
                       </p>
@@ -238,7 +238,7 @@ export function BehaviorFlowPage() {
                       onClick={() => {
                         removeFile(i);
                       }}
-                      className="shrink-0 rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                      className="shrink-0 rounded p-1.5 text-zinc-500 hover:bg-red-950/60 hover:text-red-300"
                       aria-label={`Remove ${f.name}`}
                     >
                       <FiTrash2 />
@@ -263,8 +263,8 @@ export function BehaviorFlowPage() {
                 {isSubmitting ? "Organizing…" : "Organize by behavior flow"}
               </button>
               {lastInputId ? (
-                <span className="text-sm text-gray-500">
-                  Input ID: <code className="font-mono text-gray-700">{lastInputId}</code>
+                <span className="text-sm text-zinc-400">
+                  Input ID: <code className="font-mono text-zinc-200">{lastInputId}</code>
                 </span>
               ) : null}
             </div>
@@ -272,7 +272,7 @@ export function BehaviorFlowPage() {
 
           {errorMessage ? (
             <div
-              className="rounded-xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-800"
+              className="rounded-xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200"
               role="alert"
             >
               {errorMessage}
@@ -280,22 +280,22 @@ export function BehaviorFlowPage() {
           ) : null}
 
           {showEmpty && files.length > 0 ? (
-            <div className="card flex flex-col items-center justify-center gap-2 py-12 text-center text-gray-500">
-              <FiImage className="h-12 w-12 text-gray-300" aria-hidden />
+            <div className="card flex flex-col items-center justify-center gap-2 py-12 text-center text-zinc-500">
+              <FiImage className="h-12 w-12 text-zinc-600" aria-hidden />
               <p>Press <strong>Organize by behavior flow</strong> to see results.</p>
             </div>
           ) : null}
 
           {showEmpty && files.length === 0 ? (
-            <div className="card flex flex-col items-center justify-center gap-2 py-12 text-center text-gray-500">
-              <FiImage className="h-12 w-12 text-gray-300" aria-hidden />
+            <div className="card flex flex-col items-center justify-center gap-2 py-12 text-center text-zinc-500">
+              <FiImage className="h-12 w-12 text-zinc-600" aria-hidden />
               <p>No images yet. Add screenshots to get started.</p>
             </div>
           ) : null}
 
           {isSubmitting ? (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-gray-600">
+              <h3 className="mb-2 text-sm font-semibold text-zinc-400">
                 Analyzing…
               </h3>
               <BehaviorFlowAlbum groups={[]} isLoading />

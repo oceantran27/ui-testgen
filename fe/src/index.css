@@ -2,19 +2,27 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-gray-200/80 bg-white/80 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:shadow-xl;
+    @apply rounded-2xl border border-zinc-700/70 bg-zinc-900/80 p-6 shadow-xl shadow-black/20 backdrop-blur-sm transition-all duration-300 hover:border-zinc-600/80 hover:shadow-2xl;
+  }
+
+  .card-dark {
+    @apply rounded-2xl border border-zinc-700/70 bg-zinc-900/90 p-6 shadow-xl shadow-black/25 backdrop-blur-md;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg font-bold shadow-md transition-all duration-300 focus:outline-none focus:ring-4 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center rounded-lg font-bold shadow-md transition-all duration-300 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-primary {
-    @apply bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-3 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg focus:ring-blue-400/50 disabled:from-gray-400 disabled:to-gray-500 disabled:shadow-none;
+    @apply bg-linear-to-r from-cyan-600 to-violet-600 px-6 py-3 text-white hover:from-cyan-500 hover:to-violet-500 hover:shadow-lg focus:ring-cyan-500/35;
   }
 
   .file-input-label {
-    @apply flex-1 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-100/80 px-4 py-3 text-center font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-200/80;
+    @apply flex-1 cursor-pointer rounded-lg border-2 border-dashed border-zinc-600 bg-zinc-950/70 px-4 py-3 text-center font-semibold text-zinc-300 transition-all duration-300 hover:border-zinc-500 hover:bg-zinc-800/60;
+  }
+
+  .file-input-label-dark {
+    @apply flex-1 cursor-pointer rounded-lg border-2 border-dashed border-zinc-600 bg-zinc-950/80 px-4 py-3 text-center text-sm font-semibold text-zinc-300 transition-all duration-300 hover:border-zinc-500 hover:bg-zinc-800/70;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -22,20 +30,20 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply rounded-full bg-gray-100;
+    @apply rounded-full bg-zinc-800/80;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-blue-400 transition-colors;
+    @apply rounded-full bg-cyan-700/80 transition-colors;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-blue-500;
+    @apply bg-cyan-600;
   }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-linear-to-r bg-clip-text text-transparent;
+    @apply bg-linear-to-r from-cyan-400 via-sky-300 to-violet-400 bg-clip-text text-transparent;
   }
 }
