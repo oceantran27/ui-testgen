@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     STORAGE_BUCKET_NAME: str = "ui-testgen-local"
     STORAGE_SECURE: bool = False
     
-    # Database config
-    DATABASE_URL: str = "postgresql+asyncpg://testgen_user:testgen_password@localhost:5432/testgen_db"
+    # Database config (Docker compose maps host 5433 → Postgres 5432 in container)
+    DATABASE_URL: str = "postgresql+asyncpg://testgen_user:testgen_password@localhost:5433/testgen_db"
     
     # Queue / Redis config
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     ENABLE_FUTURE_AI_NODES: bool = False
     
     # Phase 5 — Model Provider
-    DEFAULT_MODEL_PROVIDER: str = "gemini"
+    DEFAULT_MODEL_PROVIDER: str = "openai"
     
     # Per-provider model names (override per node via config or env)
     GEMINI_TEXT_MODEL: str = "gemini-2.5-flash"
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     MODEL_RETRY_BACKOFF_SECONDS: float = 2.0
     
     ENABLE_MODEL_FALLBACK: bool = False
-    FALLBACK_MODEL_PROVIDER: str = "openai"
+    FALLBACK_MODEL_PROVIDER: str = "gemini"
     
     USE_VLM_FOR_UI_STATE_EXTRACTION: bool = True
     USE_LLM_FOR_FLOW_DISCOVERY: bool = True
@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
     
     # Provider for Phase 6 (overrideable)
-    UI_STATE_EXTRACTION_PROVIDER: str = "gemini"
+    UI_STATE_EXTRACTION_PROVIDER: str = "openai"
     UI_STATE_EXTRACTION_TIMEOUT_SECONDS: int = 120
     UI_STATE_EXTRACTION_MAX_RETRIES: int = 2
     # Phase 6 JSON can be very large (many ui_elements); default 4096 often truncates mid-string.
@@ -130,7 +130,7 @@ class Settings(BaseSettings):
     MIN_INTENT_CONFIDENCE_FOR_GROUNDED: float = 0.65
     USE_LLM_FOR_BEHAVIOUR_INTENT_INFERENCE: bool = True # Enabled as per user request
     BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
-    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-4o-mini"
+    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5-mini"
     SAVE_BEHAVIOUR_INTENT_REPORT: bool = True
     
     # Phase 11 — Behaviour Scenario Generation
@@ -155,7 +155,29 @@ class Settings(BaseSettings):
     ENABLE_OUTPUT_ASSEMBLY_NODE: bool = True
     SAVE_FINAL_OUTPUT_JSON: bool = True
     SAVE_GHERKIN_EXPORT: bool = True
-    SAVE_MARKDOWN_SUMMARY_REPORT: bool = True
+    # Research Model-First Mode (Technical Specification v1)
+    RESEARCH_MODEL_FIRST_MODE: bool = True
+    SKIP_IMAGE_QUALITY_VALIDATION: bool = True
+    ASSUME_VALID_VIEWPORT_SCREENSHOT: bool = True
+
+    ENABLE_EXACT_DUPLICATE: bool = True
+    ENABLE_SEMANTIC_DUPLICATE_LLM: bool = True
+    ENABLE_LLM_FLOW_DISCOVERY: bool = True
+    
+    # Overrides for Flow Discovery
+    LLM_FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
+    LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5-mini"
+    SEMANTIC_DUPLICATE_MODEL_PROVIDER: str = "openai"
+    SEMANTIC_DUPLICATE_MODEL_NAME: str = "gpt-5-mini"
+    # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
+    LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
+
+    MAX_STATE_PAIR_COMPARISONS: int = 200
+    MAX_STATES_PER_FLOW_DISCOVERY_CALL: int = 25
+
+    SAVE_SEMANTIC_DUPLICATE_REPORT: bool = True
+    SAVE_LLM_FLOW_DISCOVERY_REPORT: bool = True
+    SAVE_RESEARCH_FINAL_OUTPUT: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env", 

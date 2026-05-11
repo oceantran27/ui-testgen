@@ -48,3 +48,5 @@ class Run(Base):
     flow_transitions: Mapped[list["FlowTransition"]] = relationship("FlowTransition", back_populates="run", cascade="all, delete-orphan")
     behaviour_intents: Mapped[list["BehaviourIntent"]] = relationship("BehaviourIntent", back_populates="run", cascade="all, delete-orphan")
     behaviour_scenarios: Mapped[list["BehaviourScenario"]] = relationship("BehaviourScenario", back_populates="run", cascade="all, delete-orphan")
+    duplicate_groups = relationship("DuplicateGroup", back_populates="run", cascade="all, delete-orphan")
+    artifacts = relationship("Artifact", back_populates="run", cascade="all, delete-orphan")

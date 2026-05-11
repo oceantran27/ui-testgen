@@ -51,29 +51,24 @@ class PipelineState(TypedDict, total=False):
     image_quality_report: Dict[str, Any]              # full report dict
     preprocessing_warnings: Annotated[List[str], operator.add]
 
-    # ── Phase 3: Duplicate Detection ──
-    duplicate_groups: List[Dict[str, Any]]            # list of dup groups
-    canonical_images: List[str]                       # list of canonical image IDs
-    duplicate_detection_report: Dict[str, Any]
+    # ── Phase 3: Duplicate Detection (Exact & Semantic) ──
+    exact_duplicate_groups: List[Dict[str, Any]]
+    exact_canonical_images: List[str]
+    exact_duplicate_report: Dict[str, Any]
+    
+    semantic_duplicate_groups: List[Dict[str, Any]]
+    canonical_state_catalog: List[Dict[str, Any]]
+    semantic_duplicate_report: Dict[str, Any]
     
     # ── Phase 6: UI State Understanding ──
     state_catalog: List[Dict[str, Any]]               # list of extracted UI states
     ui_state_extraction_report: Dict[str, Any]
 
-    # ── Phase 7: Input Level Detection ──
-    detected_input_level: str
-    input_level_confidence: float
-    input_level_result: Dict[str, Any]
-    coarse_flow_group_hints: List[Dict[str, Any]]
-    input_level_detection_report: Dict[str, Any]
-
-    # ── Phase 8: Flow Discovery ──
-    ui_flow_graph: Dict[str, Any]
+    # ── Phase 8: Flow Discovery (LLM-guided) ──
+    flow_clusters: List[Dict[str, Any]]
+    unassigned_state_ids: List[str]
     flow_discovery_report: Dict[str, Any]
-
-    # ── Phase 9: Missing Step Analysis ──
-    missing_step_report: Dict[str, Any]
-    flow_completeness_results: List[Dict[str, Any]]
+    detected_flows: List[str]                         # list of flow IDs
 
     # ── Phase 10: Behaviour Intent Inference ──
     behaviour_intents: List[Dict[str, Any]]
@@ -90,24 +85,9 @@ class PipelineState(TypedDict, total=False):
     rejected_scenarios: List[Dict[str, Any]]
     scenario_validation_report: Dict[str, Any]
 
-    # ── Phase 13: Scenario Curation ──
-    curated_scenarios: List[Dict[str, Any]]
-    duplicate_scenario_groups: List[Dict[str, Any]]
-    scenario_curation_report: Dict[str, Any]
-
     # ── Phase 14: Output Assembly ──
     final_output: Dict[str, Any]
     final_artifacts: List[Dict[str, Any]]
-
-    # ── Phase 5+: AI Pipeline Placeholders ───
-    flow_candidates: List[Dict[str, Any]]
-
-    detected_flows: List[Dict[str, Any]]
-    missing_step_report: Dict[str, Any]
-    behaviour_intents: List[Dict[str, Any]]
-    draft_scenarios: List[Dict[str, Any]]
-    validated_scenarios: List[Dict[str, Any]]
-    final_output: Dict[str, Any]
 
     # ── Phase 4: Pipeline control & Metrics ──
     warnings: Annotated[List[str], operator.add]      # accumulated warnings

@@ -26,6 +26,118 @@ from app.model_providers.base import (
 )
 from app.model_providers.retry_handler import execute_with_retry
 
+try:
+    from app.core import pipeline_run_log as _prl
+except ImportError:  # pragma: no cover
+    _prl = None  # type: ignore
+
+
+def _serialize_model_request_for_log(req: ModelRequest) -> Dict[str, Any]:
+    imgs = []
+    for ii in req.image_inputs or []:
+        imgs.append({
+            "image_id": ii.image_id,
+            "storage_uri": ii.storage_uri,
+            "mime_type": ii.mime_type,
+            "image_base64_len": len(ii.image_bytes) if ii.image_bytes else 0,
+        })
+    return {
+        "request_id": req.request_id,
+        "task_name": req.task_name,
+        "run_id": req.run_id,
+        "node_name": req.node_name,
+        "request_type": req.request_type.value if hasattr(req.request_type, "value") else str(req.request_type),
+        "system_instruction": req.system_instruction,
+        "user_instruction": req.user_instruction,
+        "context_json": req.context_json,
+        "image_inputs": imgs,
+        "output_schema": req.output_schema.__name__ if req.output_schema else None,
+        "provider": req.provider,
+        "model_name": req.model_name,
+        "temperature": req.temperature,
+        "max_output_tokens": req.max_output_tokens,
+        "timeout_seconds": req.timeout_seconds,
+    }
+
+
+def _serialize_model_response_for_log(resp: ModelResponse) -> Dict[str, Any]:
+    err = None
+    if resp.error:
+        ec = resp.error.error_code
+        if hasattr(ec, "value"):
+            ec = ec.value
+        err = {
+            "error_code": ec,
+            "message": resp.error.message,
+            "provider": resp.error.provider,
+            "model_name": resp.error.model_name,
+            "task_name": resp.error.task_name,
+        }
+    usage = None
+    if resp.usage:
+        usage = {
+            "input_tokens": resp.usage.input_tokens,
+            "output_tokens": resp.usage.output_tokens,
+            "total_tokens": resp.usage.total_tokens,
+        }
+    po = resp.parsed_output
+    if po is not None and hasattr(po, "model_dump"):
+        po = po.model_dump()
+    return {
+        "request_id": resp.request_id,
+        "status": resp.status.value if hasattr(resp.status, "value") else str(resp.status),
+        "provider": resp.provider,
+        "model_name": resp.model_name,
+        "task_name": resp.task_name,
+        "raw_text": resp.raw_text,
+        "parsed_output": po,
+        "latency_ms": resp.latency_ms,
+        "retry_count": resp.retry_count,
+        "image_count": resp.image_count,
+        "usage": usage,
+        "error": err,
+    }
+
+
+async def _execute_with_retry_pipeline_log(
+    provider: BaseModelProvider,
+    request: ModelRequest,
+    fallback: Optional[BaseModelProvider],
+) -> ModelResponse:
+    """Same as execute_with_retry; when pipeline_run_log is active, writes raw request+response to file only."""
+    active = _prl is not None and _prl.is_active()
+    try:
+        response = await execute_with_retry(provider, request, fallback)
+    except Exception as e:
+        if active:
+            payload = {
+                "request": _serialize_model_request_for_log(request),
+                "error": str(e),
+            }
+            path = _prl.write_raw_json(f"model_{request.task_name}_error", payload)
+            _prl.file_detail(
+                f"model:{request.task_name}",
+                [f"request_id={request.request_id}", "call_failed", str(e)[:200]],
+                raw_path=path,
+            )
+        raise
+    if active:
+        payload = {
+            "request": _serialize_model_request_for_log(request),
+            "response": _serialize_model_response_for_log(response),
+        }
+        path = _prl.write_raw_json(f"model_{request.task_name}", payload)
+        _prl.file_detail(
+            f"model:{request.task_name}",
+            [
+                f"request_id={request.request_id}",
+                f"node={request.node_name}",
+                f"status={response.status.value}",
+            ],
+            raw_path=path,
+        )
+    return response
+
 
 # ──────────────────────────────────────────────
 # Provider Registry
@@ -152,6 +264,10 @@ class ModelProviderAdapter:
             provider = self._registry.get(provider_override)
             fallback = self._registry.get_fallback(provider.name)
 
+        max_output_tokens = 4096
+        if task_name == "llm_flow_discovery":
+            max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+
         request = ModelRequest(
             task_name=task_name,
             run_id=run_id,
@@ -164,10 +280,11 @@ class ModelProviderAdapter:
             provider=provider.name,
             model_name=model_name_override,
             temperature=temperature,
+            max_output_tokens=max_output_tokens,
             timeout_seconds=settings.TEXT_MODEL_TIMEOUT_SECONDS,
         )
 
-        return await execute_with_retry(provider, request, fallback)
+        return await _execute_with_retry_pipeline_log(provider, request, fallback)
 
     async def call_vision_structured(
         self,
@@ -228,7 +345,7 @@ class ModelProviderAdapter:
             timeout_seconds=settings.VISION_MODEL_TIMEOUT_SECONDS,
         )
 
-        return await execute_with_retry(provider, request, fallback)
+        return await _execute_with_retry_pipeline_log(provider, request, fallback)
 
     async def call_pairwise_vision(
         self,
@@ -278,7 +395,7 @@ class ModelProviderAdapter:
             timeout_seconds=settings.VISION_MODEL_TIMEOUT_SECONDS,
         )
 
-        return await execute_with_retry(provider, request, fallback)
+        return await _execute_with_retry_pipeline_log(provider, request, fallback)
 
 
 # ──────────────────────────────────────────────
@@ -300,8 +417,12 @@ def _create_registry() -> ProviderRegistry:
     if settings.GEMINI_API_KEY or settings.DEFAULT_MODEL_PROVIDER == "gemini":
         registry.register(GeminiModelProvider())
 
-    # Register OpenAI if key available
-    if settings.OPENAI_API_KEY or settings.FALLBACK_MODEL_PROVIDER == "openai":
+    # Register OpenAI if default/fallback or key present (lazy auth at call time)
+    if (
+        settings.OPENAI_API_KEY
+        or settings.FALLBACK_MODEL_PROVIDER == "openai"
+        or settings.DEFAULT_MODEL_PROVIDER == "openai"
+    ):
         registry.register(OpenAIModelProvider())
 
     return registry

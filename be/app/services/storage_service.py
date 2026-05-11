@@ -77,6 +77,29 @@ class StorageService:
             logger.error(f"Failed to download file {object_name}: {e}")
             raise
 
+    @staticmethod
+    def s3_uri_to_bucket_and_key(storage_uri: str) -> tuple[Optional[str], str]:
+        """
+        Parse s3://bucket/key into (bucket, key). If not an s3:// URI, returns (None, storage_uri).
+        """
+        if not storage_uri.startswith("s3://"):
+            return None, storage_uri
+        rest = storage_uri[5:]
+        parts = rest.split("/", 1)
+        if len(parts) == 2:
+            return parts[0], parts[1]
+        return None, rest
+
+    def download_from_uri(self, storage_uri: str) -> bytes:
+        """Download using either an s3://bucket/key URI or a bare object key."""
+        bucket, key = self.s3_uri_to_bucket_and_key(storage_uri)
+        if bucket and bucket != self.bucket_name:
+            logger.warning(
+                f"S3 URI bucket '{bucket}' != configured bucket '{self.bucket_name}'; "
+                "fetching key against configured bucket"
+            )
+        return self.download_file(key)
+
     def list_objects(self, prefix: str) -> List[str]:
         try:
             response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix)

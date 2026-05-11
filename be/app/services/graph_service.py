@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from psycopg_pool import AsyncConnectionPool
 
 from app.core.config import settings
 from app.core.logging import logger, log_event
@@ -14,8 +13,16 @@ from app.db.models.run import Run
 from app.graph.runner.graph_runner import build_graph
 from app.graph.state.graph_state import PipelineState
 
-# Prepare the checkpointer connection URI
-CHECKPOINT_URI = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg://")
+def _postgres_checkpoint_conninfo(database_url: str) -> str:
+    """SQLAlchemy async URLs use postgresql+asyncpg://; libpq/psycopg expect postgresql://."""
+    url = database_url.strip()
+    for prefix in ("postgresql+asyncpg://", "postgres+asyncpg://"):
+        if url.startswith(prefix):
+            return "postgresql://" + url[len(prefix) :]
+    return url
+
+
+CHECKPOINT_URI = _postgres_checkpoint_conninfo(settings.DATABASE_URL)
 
 class GraphExecutionService:
 

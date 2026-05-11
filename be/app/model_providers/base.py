@@ -137,7 +137,7 @@ class ModelResponse:
     request_type: RequestType
     status: ModelCallStatus
 
-    parsed_output: Optional[Dict[str, Any]] = None
+    parsed_output: Optional[Any] = None
     raw_text: Optional[str] = None
     usage: Optional[TokenUsage] = None
     latency_ms: int = 0

@@ -61,7 +61,7 @@ class ScenarioValidationService:
     """
 
     @staticmethod
-    async def run_validation(db: AsyncSession, run_id: str, draft_scenarios: List[Dict[str, Any]], state_catalog: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def run_validation(db: AsyncSession, run_id: str, draft_scenarios: List[Dict[str, Any]], state_catalog: List[Dict[str, Any]], flow_clusters: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Main entry point for Phase 12 validation.
         """
@@ -87,13 +87,18 @@ class ScenarioValidationService:
         for scenario in scenarios:
             log_event("validating_scenario", scenario_id=scenario.id)
             
+            # Find associated flow
+            flow = next((f for f in flow_clusters if f.get("flow_id") == scenario.flow_id or f.get("flow_name") == scenario.flow_id), None)
+            relevant_state_ids = scenario.evidence_json.get("state_ids", [])
+            relevant_states = [s for s in state_catalog if s["state_id"] in relevant_state_ids]
+
             # 1. Build Evidence Context
-            # We use the state_catalog and elements associated with the flow
             evidence_context = {
                 "scenario_title": scenario.scenario_title,
                 "gherkin": scenario.gherkin_text,
                 "structured_steps": scenario.structured_steps_json,
-                "state_catalog": state_catalog # In a real scale, we'd filter to only relevant states
+                "flow_context": flow,
+                "relevant_states": relevant_states
             }
 
             # 2. Call LLM as Judge

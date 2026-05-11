@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ValidationError
 
@@ -197,18 +197,28 @@ class GeminiModelProvider(BaseModelProvider):
         if img.storage_uri:
             from app.services.storage_service import storage_service
             try:
-                # Strip s3://bucket-name/ prefix to get object key
-                key = img.storage_uri
-                if key.startswith("s3://"):
-                    key = key.split("/", 3)[-1]  # drop s3://bucket/
-                return storage_service.download_file(key)
+                return storage_service.download_from_uri(img.storage_uri)
             except Exception as e:
                 logger.warning(f"Failed to download image {img.storage_uri}: {e}")
                 return None
         return None
 
-    def _parse_and_validate(self, raw_text: str, request: ModelRequest) -> Dict[str, Any]:
-        """Parse JSON and validate against Pydantic schema."""
+    @staticmethod
+    def _strip_json_markdown_fence(raw_text: str) -> str:
+        text = raw_text.strip()
+        if not text.startswith("```"):
+            return text
+        first_nl = text.find("\n")
+        if first_nl == -1:
+            return text
+        inner = text[first_nl + 1 :]
+        if inner.rstrip().endswith("```"):
+            inner = inner.rstrip()[:-3].rstrip()
+        return inner.strip()
+
+    def _parse_and_validate(self, raw_text: str, request: ModelRequest) -> Union[BaseModel, Dict[str, Any]]:
+        """Parse JSON and validate against Pydantic schema. Returns the model instance when schema is set."""
+        raw_text = self._strip_json_markdown_fence(raw_text)
         try:
             parsed = json.loads(raw_text)
         except json.JSONDecodeError as e:
@@ -222,7 +232,7 @@ class GeminiModelProvider(BaseModelProvider):
         if request.output_schema:
             try:
                 validated = request.output_schema.model_validate(parsed)
-                return validated.model_dump()
+                return validated
             except ValidationError as e:
                 raise RetryableModelError(ModelProviderError(
                     error_code=ModelErrorCode.MODEL_SCHEMA_MISMATCH,

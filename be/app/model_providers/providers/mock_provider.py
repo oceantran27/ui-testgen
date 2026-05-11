@@ -198,6 +198,10 @@ class MockModelProvider(BaseModelProvider):
 
         # success mode
         output = _build_mock_output(request.output_schema)
-        base_response.parsed_output = output
-        base_response.raw_text = json.dumps(output)
+        if request.output_schema:
+            base_response.parsed_output = request.output_schema.model_validate(output)
+            base_response.raw_text = base_response.parsed_output.model_dump_json()
+        else:
+            base_response.parsed_output = output
+            base_response.raw_text = json.dumps(output)
         return base_response

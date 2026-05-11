@@ -5,9 +5,10 @@ Supports text and vision structured output.
 """
 from __future__ import annotations
 
+import copy
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ValidationError
 
@@ -29,10 +30,75 @@ from app.model_providers.base import (
 )
 
 
+def _normalize_json_schema_for_openai_strict(node: Any) -> None:
+    """
+    OpenAI Chat Completions response_format json_schema with strict=True expects each object to set
+    additionalProperties=false and to list every property key under required.
+    Pydantic model_json_schema() omits these by default — patch recursively ($defs included).
+    """
+    if isinstance(node, list):
+        for item in node:
+            _normalize_json_schema_for_openai_strict(item)
+        return
+    if not isinstance(node, dict):
+        return
+
+    defs = node.get("$defs")
+    if isinstance(defs, dict):
+        for sub in defs.values():
+            _normalize_json_schema_for_openai_strict(sub)
+
+    props = node.get("properties")
+    if isinstance(props, dict):
+        if node.get("type") is None and "$ref" not in node:
+            node["type"] = "object"
+        elif isinstance(node.get("type"), list) and "object" not in node["type"]:
+            node["type"] = "object"
+        node["additionalProperties"] = False
+        node["required"] = list(props.keys())
+        for child in props.values():
+            _normalize_json_schema_for_openai_strict(child)
+
+    items = node.get("items")
+    if items is not None:
+        _normalize_json_schema_for_openai_strict(items)
+
+    for combo_key in ("anyOf", "oneOf", "allOf"):
+        combo = node.get(combo_key)
+        if isinstance(combo, list):
+            for branch in combo:
+                _normalize_json_schema_for_openai_strict(branch)
+
+    prefix_items = node.get("prefixItems")
+    if isinstance(prefix_items, list):
+        for it in prefix_items:
+            _normalize_json_schema_for_openai_strict(it)
+
+
 class OpenAIModelProvider(BaseModelProvider):
 
     def __init__(self):
         self._client = None
+
+    @staticmethod
+    def _uses_restricted_sampling(model_name: str) -> bool:
+        """Models that reject custom temperature / max_tokens (use API defaults)."""
+        m = model_name.lower()
+        return m.startswith("gpt-5") or m.startswith("o1") or m.startswith("o3")
+
+    @staticmethod
+    def _chat_completion_token_kwargs(model_name: str, max_output_tokens: int) -> Dict[str, int]:
+        """Some Chat Completions models reject max_tokens and require max_completion_tokens."""
+        if OpenAIModelProvider._uses_restricted_sampling(model_name):
+            return {"max_completion_tokens": max_output_tokens}
+        return {"max_tokens": max_output_tokens}
+
+    @staticmethod
+    def _chat_completion_temperature_kwargs(model_name: str, temperature: float) -> Dict[str, float]:
+        """Some models only allow the default temperature; omit the parameter."""
+        if OpenAIModelProvider._uses_restricted_sampling(model_name):
+            return {}
+        return {"temperature": temperature}
 
     @property
     def name(self) -> str:
@@ -105,38 +171,44 @@ class OpenAIModelProvider(BaseModelProvider):
             if request.context_json:
                 user_text += f"\n\nContext:\n```json\n{json.dumps(request.context_json, indent=2)}\n```"
 
+            schema_openai_strict: Optional[Dict[str, Any]] = None
             if request.output_schema:
-                schema_hint = json.dumps(request.output_schema.model_json_schema(), indent=2)
-                user_text += f"\n\nRespond ONLY with valid JSON matching this schema:\n```json\n{schema_hint}\n```"
+                schema_openai_strict = copy.deepcopy(request.output_schema.model_json_schema())
+                schema_openai_strict.get("properties", {}).pop("schema_name", None)
+                schema_openai_strict.get("properties", {}).pop("schema_version", None)
+                _normalize_json_schema_for_openai_strict(schema_openai_strict)
+                schema_hint = json.dumps(schema_openai_strict, indent=2)
+                user_text += (
+                    "\n\nRespond ONLY with valid JSON matching this schema:\n```json\n"
+                    f"{schema_hint}\n```"
+                )
 
             user_content.append({"type": "text", "text": user_text})
             messages.append({"role": "user", "content": user_content})
 
             # Build response_format using strict json_schema (openai>=1.40.0)
             response_format: Any = {"type": "json_object"}
-            if request.output_schema:
-                schema_def = request.output_schema.model_json_schema()
-                # Remove schema_name/schema_version from the JSON schema sent to OpenAI
-                schema_def.get("properties", {}).pop("schema_name", None)
-                schema_def.get("properties", {}).pop("schema_version", None)
+            if request.output_schema is not None and schema_openai_strict is not None:
                 response_format = {
                     "type": "json_schema",
                     "json_schema": {
                         "name": request.output_schema.__name__,
                         "strict": True,
-                        "schema": schema_def,
-                    }
+                        "schema": schema_openai_strict,
+                    },
                 }
             elif not request.image_inputs:
                 # Only use json_object for text-only requests without schema
                 response_format = {"type": "json_object"}
 
+            token_kw = self._chat_completion_token_kwargs(model_name, request.max_output_tokens)
+            temp_kw = self._chat_completion_temperature_kwargs(model_name, request.temperature)
             response = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
-                temperature=request.temperature,
-                max_tokens=request.max_output_tokens,
                 response_format=response_format,
+                **temp_kw,
+                **token_kw,
             )
 
             latency_ms = int((time.time() - start_time) * 1000)
@@ -209,7 +281,7 @@ class OpenAIModelProvider(BaseModelProvider):
         elif img.storage_uri:
             from app.services.storage_service import storage_service
             try:
-                raw_bytes = storage_service.download_file(img.storage_uri)
+                raw_bytes = storage_service.download_from_uri(img.storage_uri)
             except Exception as e:
                 logger.warning(f"Failed to download image {img.storage_uri}: {e}")
                 return None
@@ -217,8 +289,8 @@ class OpenAIModelProvider(BaseModelProvider):
             return base64.b64encode(raw_bytes).decode("utf-8")
         return None
 
-    def _parse_and_validate(self, raw_text: str, request: ModelRequest) -> Dict[str, Any]:
-        """Parse JSON and validate against Pydantic schema."""
+    def _parse_and_validate(self, raw_text: str, request: ModelRequest) -> Union[BaseModel, Dict[str, Any]]:
+        """Parse JSON and validate against Pydantic schema. Returns the model instance when schema is set."""
         try:
             parsed = json.loads(raw_text)
         except json.JSONDecodeError as e:
@@ -232,7 +304,7 @@ class OpenAIModelProvider(BaseModelProvider):
         if request.output_schema:
             try:
                 validated = request.output_schema.model_validate(parsed)
-                return validated.model_dump()
+                return validated
             except ValidationError as e:
                 raise RetryableModelError(ModelProviderError(
                     error_code=ModelErrorCode.MODEL_SCHEMA_MISMATCH,

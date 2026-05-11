@@ -17,3 +17,4 @@ class DuplicateGroupMember(Base):
     reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     group = relationship("DuplicateGroup", back_populates="members")
+    image = relationship("Image", back_populates="duplicate_group_members")

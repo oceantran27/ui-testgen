@@ -61,7 +61,7 @@ class ScenarioGenerationService:
     """
 
     @staticmethod
-    async def run_generation(db: AsyncSession, run_id: str, behaviour_intents: List[Dict[str, Any]], state_catalog: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def run_generation(db: AsyncSession, run_id: str, behaviour_intents: List[Dict[str, Any]], state_catalog: List[Dict[str, Any]], flow_clusters: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Main entry point for Phase 11 generation.
         """
@@ -72,7 +72,6 @@ class ScenarioGenerationService:
             return {"error": "NO_GENERATABLE_BEHAVIOUR_INTENTS"}
 
         # 1. Load Intent objects from DB to get full evidence context if needed
-        # (Assuming behaviour_intents passed in contain basic IDs)
         intent_ids = [bi["intent_id"] for bi in behaviour_intents]
         result = await db.execute(
             select(BehaviourIntent).where(BehaviourIntent.id.in_(intent_ids))
@@ -88,18 +87,12 @@ class ScenarioGenerationService:
             log_event("generating_scenario_for_intent", intent_id=intent.id)
             
             # 2. Build Context for LLM
-            # Load associated flow to get state sequence
-            from app.db.models.flow import Flow
-            flow_result = await db.execute(select(Flow).where(Flow.id == intent.flow_id))
-            flow = flow_result.scalar_one_or_none()
+            # Find associated flow from the state list or DB (supporting both)
+            flow = next((f for f in flow_clusters if f.get("flow_id") == intent.flow_id or f.get("flow_name") == intent.flow_id), None)
             
-            if not flow:
-                logger.warning(f"Flow {intent.flow_id} not found for intent {intent.id}")
-                continue
-
             # Extract state details for the prompt
             flow_states = []
-            ordered_ids = flow.ordered_state_ids_json.get("ids", [])
+            ordered_ids = intent.evidence_state_ids_json.get("ids", [])
             for sid in ordered_ids:
                 state_data = next((s for s in state_catalog if s["state_id"] == sid), None)
                 if state_data:
@@ -107,7 +100,7 @@ class ScenarioGenerationService:
                         "id": sid,
                         "page_type": state_data.get("page_type"),
                         "summary": state_data.get("state_summary"),
-                        "elements": state_data.get("actionable_elements", []) + state_data.get("feedback_elements", [])
+                        "elements": state_data.get("ui_elements", [])
                     })
 
             context = {
@@ -118,6 +111,7 @@ class ScenarioGenerationService:
                 "hint": intent.scenario_type_hint,
                 "expected_grounding": intent.expected_grounding,
                 "flow_states": flow_states,
+                "flow_transitions": flow.get("transitions", []) if flow else [],
                 "warnings": intent.warnings_json
             }
 

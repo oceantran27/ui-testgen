@@ -51,53 +51,67 @@ def _generate_artifact_id() -> str:
     return f"art_{uuid.uuid4().hex[:12]}"
 
 
+def _flow_db_id(flow: Dict[str, Any]) -> Optional[str]:
+    fid = flow.get("flow_id")
+    if fid and isinstance(fid, str):
+        return fid
+    return None
+
+
 class BehaviourIntentService:
     """
     LLM-powered behaviour intent inference.
     """
 
     @staticmethod
-    async def run_inference(db: AsyncSession, run_id: str, flow_ids: List[str], state_catalog: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def run_inference(db: AsyncSession, run_id: str, flow_clusters: List[Dict[str, Any]], state_catalog: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Main entry point for Phase 10 inference.
         """
         start_time = time.time()
-        log_event("behaviour_intent_inference_started", run_id=run_id, flow_count=len(flow_ids))
+        log_event("behaviour_intent_inference_started", run_id=run_id, flow_count=len(flow_clusters))
 
-        if not flow_ids:
+        if not flow_clusters:
             return {"error": "NO_USABLE_FLOWS_FOR_INTENT_INFERENCE"}
 
-        # 1. Load Flows
-        result = await db.execute(
-            select(Flow).where(Flow.id.in_(flow_ids))
-        )
-        flows = result.scalars().all()
-        
         all_inferred_intents = []
         
-        for flow in flows:
-            if flow.scenario_eligibility == "should_not_generate_scenario":
-                logger.info(f"Skipping flow {flow.id} as it is marked should_not_generate_scenario")
+        for flow in flow_clusters:
+            if flow.get("scenario_generation_mode") == "do_not_generate":
+                logger.info(f"Skipping flow {flow.get('flow_name')} as it is marked do_not_generate")
                 continue
 
-            log_event("inferring_intent_for_flow", flow_id=flow.id)
+            fid_for_row = _flow_db_id(flow)
+            if not fid_for_row:
+                logger.warning(
+                    "Skipping intent inference for flow %r: missing flow_id (persist Flow rows before Phase 10).",
+                    flow.get("flow_name"),
+                )
+                continue
+
+            log_event("inferring_intent_for_flow", flow_name=flow.get("flow_name"))
             
             # 2. Build Context for LLM
             flow_context = {
-                "flow_id": flow.id,
-                "flow_type": flow.flow_type,
-                "completeness_status": flow.completeness_status,
+                "flow_name": flow.get("flow_name"),
+                "flow_type": flow.get("flow_type"),
+                "ordered_state_ids": flow.get("ordered_state_ids", []),
+                "transitions": flow.get("transitions", []),
+                "behaviour_hint": flow.get("behaviour_hint", ""),
+                "completeness_status": flow.get("completeness_status"),
+                "scenario_generation_mode": flow.get("scenario_generation_mode"),
                 "states": [
                     {
                         "id": s["state_id"],
                         "page_type": s["page_type"],
                         "summary": s.get("state_summary", ""),
                         "has_feedback": s.get("has_feedback", False),
-                        "feedback": s.get("feedback_elements", [])
+                        "feedback_elements": s.get("feedback_elements", [])
                     }
-                    for s in state_catalog if s["state_id"] in flow.ordered_state_ids_json.get("ids", [])
+                    for s in state_catalog if s["state_id"] in flow.get("ordered_state_ids", [])
                 ],
-                "warnings": flow.missing_step_warnings_json
+                "flow_reason": flow.get("reason", ""),
+                "flow_warnings": flow.get("warnings", [])
             }
 
             # 3. Call LLM
@@ -135,7 +149,7 @@ class BehaviourIntentService:
                     bi = BehaviourIntent(
                         id=intent_id,
                         run_id=run_id,
-                        flow_id=flow.id,
+                        flow_id=fid_for_row,
                         intent_name=intent_data.intent_name,
                         behaviour_domain=intent_data.behaviour_domain,
                         behaviour_outcome=intent_data.behaviour_outcome,
@@ -145,28 +159,30 @@ class BehaviourIntentService:
                         should_generate=intent_data.should_generate,
                         confidence=intent_data.confidence,
                         confidence_label=confidence_label,
-                        evidence_state_ids_json={"ids": flow.ordered_state_ids_json.get("ids", [])},
+                        evidence_state_ids_json={"ids": flow.get("ordered_state_ids", [])},
                         raw_result_json=intent_data.model_dump()
                     )
                     db.add(bi)
                     
                     all_inferred_intents.append({
                         "intent_id": intent_id,
-                        "flow_id": flow.id,
+                        "flow_id": fid_for_row,
+                        "flow_name": flow.get("flow_name"),
                         "intent_name": bi.intent_name,
                         "domain": bi.behaviour_domain,
                         "goal": bi.user_goal,
-                        "confidence": bi.confidence
+                        "confidence": bi.confidence,
+                        "scenario_type_hint": bi.scenario_type_hint,
+                        "expected_grounding": bi.expected_grounding
                     })
 
             except Exception as e:
-                logger.exception(f"Failed to infer intent for flow {flow.id}: {e}")
-                # Fallback to unknown if LLM fails
+                logger.exception(f"Failed to infer intent for flow {flow.get('flow_name')}: {e}")
                 intent_id = _generate_intent_id()
                 bi = BehaviourIntent(
                     id=intent_id,
                     run_id=run_id,
-                    flow_id=flow.id,
+                    flow_id=fid_for_row,
                     intent_name="unknown_behaviour",
                     behaviour_domain="unknown",
                     behaviour_outcome="unknown",

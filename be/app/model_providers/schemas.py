@@ -147,14 +147,96 @@ class BehaviourScenarioGenerationResult(BaseModel):
     total_scenarios: int = 0
 
 
-class ScenarioGroundingValidationResult(BaseModel):
-    """Phase 9 — Validate scenarios against UI evidence."""
-    schema_name: str = "ScenarioGroundingValidationResult"
-    schema_version: str = "v1"
-    verdict: Literal["grounded", "hallucinated", "partially_grounded"] = "grounded"
-    confidence: float = 0.0
-    issues: List[Dict] = Field(default_factory=list)
-    reason: str = ""
+# ──────────────────────────────────────────────
+# Research Model-First Schemas (v1)
+# ──────────────────────────────────────────────
+
+class SemanticDuplicateMember(BaseModel):
+    state_id: str
+    image_id: str
+    role: Literal["canonical", "duplicate"]
+
+class SemanticDuplicateGroup(BaseModel):
+    group_id: str
+    canonical_state_id: str
+    duplicate_state_ids: List[str]
+    duplicate_type: Literal[
+        "same_observable_ui_state",
+        "minor_visual_variation",
+        "focus_or_cursor_only",
+        "dynamic_content_only"
+    ]
+    confidence: float
+    evidence: List[str]
+    reason: str
+    should_merge: bool
+
+class SemanticDuplicateOutput(BaseModel):
+    duplicate_groups: List[SemanticDuplicateGroup]
+    non_duplicate_state_ids: List[str]
+    warnings: List[str] = Field(default_factory=list)
+
+
+class FlowTransitionJudgement(BaseModel):
+    from_state_id: str
+    to_state_id: str
+    transition_type: Literal[
+        "form_submission_success",
+        "form_submission_error",
+        "navigation_result",
+        "modal_opened",
+        "filter_or_search_result",
+        "create_update_delete_result",
+        "same_page_feedback",
+        "unknown_transition"
+    ]
+    hypothesized_user_action: str
+    observed_result: str
+    evidence_state_ids: List[str]
+    evidence_element_ids: List[str] = Field(default_factory=list)
+    inference_level: Literal[
+        "grounded_by_before_after_states",
+        "partially_inferred_from_ui_delta",
+        "inferred_only"
+    ]
+    confidence: float
+    confidence_label: Literal["high", "medium", "low"]
+    reason: str
+    warnings: List[str] = Field(default_factory=list)
+
+class FlowClusterOutput(BaseModel):
+    flow_name: str
+    flow_type: Literal[
+        "positive_behaviour_flow",
+        "negative_behaviour_flow",
+        "navigation_flow",
+        "single_state_inferred_flow",
+        "unknown_flow"
+    ]
+    ordered_state_ids: List[str]
+    transitions: List[FlowTransitionJudgement]
+    behaviour_hint: str
+    completeness_status: Literal[
+        "complete_enough",
+        "missing_initial_state",
+        "missing_final_verification",
+        "single_state_inferred",
+        "uncertain_order"
+    ]
+    scenario_generation_mode: Literal[
+        "grounded",
+        "partially_inferred",
+        "inferred_only",
+        "do_not_generate"
+    ]
+    confidence: float
+    reason: str
+    warnings: List[str] = Field(default_factory=list)
+
+class LLMFlowDiscoveryOutput(BaseModel):
+    flows: List[FlowClusterOutput]
+    unassigned_state_ids: List[str]
+    global_warnings: List[str] = Field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
@@ -171,7 +253,8 @@ SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
     "MissingStepAnalysisResult": MissingStepAnalysisResult,
     "BehaviourIntentResult": BehaviourIntentResult,
     "BehaviourScenarioGenerationResult": BehaviourScenarioGenerationResult,
-    "ScenarioGroundingValidationResult": ScenarioGroundingValidationResult,
+    "SemanticDuplicateOutput": SemanticDuplicateOutput,
+    "LLMFlowDiscoveryOutput": LLMFlowDiscoveryOutput,
 }
 
 

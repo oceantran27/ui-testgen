@@ -2,7 +2,6 @@
 Graph Finalizer Node — Phase 4 LangGraph ending point.
 """
 import json
-import time
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -13,6 +12,7 @@ from app.db.models.run import Run
 from app.db.models.job import Job
 from app.db.models.artifact import Artifact
 from app.services.storage_service import storage_service
+from app.core.pipeline_run_log import is_active, log_node, log_node_return, console_err
 
 NODE_NAME = "graph_finalizer_node"
 
@@ -30,16 +30,35 @@ async def graph_finalizer_node(
     run_id = state["run_id"]
     job_id = state.get("job_id")
     log_event("graph_node_started", run_id=run_id, node_name=NODE_NAME)
-    start_time = time.time()
+
+    if is_active():
+        log_node(
+            NODE_NAME,
+            intent_lines=[
+                "Persist graph_execution_report artifact; set Run status completed/failed.",
+                "routing: END.",
+            ],
+            state_keys=(
+                "run_id",
+                "should_stop",
+                "stop_reason",
+                "final_output",
+                "completed_nodes",
+                "failed_nodes",
+            ),
+            state=state,
+        )
 
     try:
         # Determine final status
         if state.get("should_stop"):
             final_status = "failed"
-        elif state.get("canonical_images"):
-            final_status = "partial_completed" # Phase 4 only goes up to here
+        elif state.get("final_output"):
+            final_status = "completed"
+        elif state.get("draft_scenarios"):
+            final_status = "completed"
         else:
-            final_status = "failed" # If not stopped but no images, something is weird. Treat as fail.
+            final_status = "failed"
             
         completed_at = datetime.now(timezone.utc)
         
@@ -83,9 +102,9 @@ async def graph_finalizer_node(
                 run.status = "failed"
                 run.error_message = state.get("stop_reason", "GRAPH_EXECUTION_FAILED")
             else:
-                run.current_phase = "graph_completed_phase_4"
+                run.current_phase = "research_completed_v1"
                 run.progress_percentage = 100
-                run.status = "completed" # For MVP, phase 4 is the end of the line
+                run.status = "completed"
         
         # Update Job
         if job_id:
@@ -100,20 +119,28 @@ async def graph_finalizer_node(
 
         log_event("graph_node_completed", run_id=run_id, node_name=NODE_NAME)
 
-        return {
+        out = {
             "current_node": NODE_NAME,
             "graph_status": final_status,
             "completed_at": completed_at.isoformat(),
             "completed_nodes": [NODE_NAME],
             "artifacts": [{"type": "graph_execution_report", "uri": report_uri}]
         }
+        if is_active():
+            log_node_return(NODE_NAME, [f"status={final_status}"], out)
+        return out
 
     except Exception as e:
         logger.exception(f"[{NODE_NAME}] Error for run {run_id}: {e}")
+        if is_active():
+            console_err(f"{NODE_NAME}: {e}")
         log_event("graph_node_failed", run_id=run_id, node_name=NODE_NAME, error_code=str(e))
-        return {
+        fail = {
             "current_node": NODE_NAME,
             "errors": [f"{NODE_NAME}: {e}"],
             "failed_nodes": [NODE_NAME],
             "graph_status": "failed"
         }
+        if is_active():
+            log_node_return(NODE_NAME, ["exception"], fail)
+        return fail
