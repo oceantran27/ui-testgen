@@ -35,6 +35,11 @@ class Flow(Base):
     adjusted_confidence: Mapped[float] = mapped_column(Float, default=0.0)
     missing_step_warnings_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
+    flow_label: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    entry_state_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    terminal_state_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    flow_completeness_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
     warnings_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
     created_at: Mapped[datetime.datetime] = mapped_column(

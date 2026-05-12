@@ -11,7 +11,6 @@ class Run(Base):
     project_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(String, index=True, default="created")
-    input_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     total_images: Mapped[int] = mapped_column(Integer, default=0)
     valid_images: Mapped[int] = mapped_column(Integer, default=0)
     invalid_images: Mapped[int] = mapped_column(Integer, default=0)

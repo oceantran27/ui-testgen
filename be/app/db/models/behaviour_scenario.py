@@ -25,14 +25,15 @@ class BehaviourScenario(Base):
 
     gherkin_text: Mapped[str] = mapped_column(String)
     structured_steps_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    bdd_steps_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     
     evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     assumptions_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     warnings_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
-
+    
     initial_confidence: Mapped[float] = mapped_column(Float, default=0.0)
     confidence_label: Mapped[str] = mapped_column(String, default="low")
-
+    
     # Validation Results (Phase 12)
     grounding_score: Mapped[float] = mapped_column(Float, default=0.0)
     evidence_coverage_score: Mapped[float] = mapped_column(Float, default=0.0)
@@ -40,6 +41,12 @@ class BehaviourScenario(Base):
     validation_issues_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     revision_suggestions_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     final_confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    
+    final_reliability: Mapped[float] = mapped_column(Float, default=0.0)
+    scores_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    step_audits_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    acceptance_decision_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
     validated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
 
     # Curation Results (Phase 13)

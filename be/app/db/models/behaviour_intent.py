@@ -21,6 +21,14 @@ class BehaviourIntent(Base):
     behaviour_domain: Mapped[str] = mapped_column(String) # e.g. "authentication"
     behaviour_outcome: Mapped[str] = mapped_column(String) # e.g. "success"
     user_goal: Mapped[str] = mapped_column(String) # e.g. "User logs in successfully"
+    
+    intent_scope: Mapped[str] = mapped_column(String, default="end_to_end")
+    observable_precondition_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    main_user_action_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    observable_result_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    grounding_evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    grounding_level: Mapped[str] = mapped_column(String, default="grounded")
+    ambiguity_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
 
     # Scenario hints for Phase 11
     scenario_type_hint: Mapped[str] = mapped_column(String) # e.g. "positive_behaviour"
@@ -32,6 +40,7 @@ class BehaviourIntent(Base):
 
     # Evidence
     evidence_state_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    evidence_element_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     evidence_transition_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     
     warnings_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)

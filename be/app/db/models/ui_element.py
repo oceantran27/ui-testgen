@@ -32,6 +32,9 @@ class UIElement(Base):
     actionable: Mapped[bool] = mapped_column(Boolean, default=False)
     action_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
+    semantic_role: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    visibility: Mapped[str] = mapped_column(String, default="fully_visible")
+    
     visible: Mapped[bool] = mapped_column(Boolean, default=True)
     
     is_feedback: Mapped[bool] = mapped_column(Boolean, default=False)

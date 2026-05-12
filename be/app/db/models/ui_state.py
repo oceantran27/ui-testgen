@@ -34,6 +34,11 @@ class UIState(Base):
     extraction_error: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     raw_extraction_artifact_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
+    state_quality: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
+    is_canonical: Mapped[bool] = mapped_column(Boolean, default=False)
+    canonical_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
