@@ -685,6 +685,10 @@ async def list_flows(
             "ordered_state_ids": ordered,
             "state_ids": ordered,
             "terminal_state_ids": terminals,
+            "state_sequence": f.state_sequence_json.get("sequence", []),
+            "flow_completeness": f.flow_completeness_json,
+            "intent_readiness": f.intent_readiness_json,
+            "flow_evidence_package": f.flow_evidence_package_json,
             "confidence": f.confidence,
             "confidence_label": f.confidence_label,
             "created_at": f.created_at,
@@ -757,9 +761,12 @@ async def get_flow_detail(
                 "from_state_id": t.from_state_id,
                 "to_state_id": t.to_state_id,
                 "transition_type": t.transition_type,
-                "action_type": t.transition_type,
-                "hypothesized_action": t.hypothesized_action,
-                "transition_basis": t.transition_basis or "",
+                "trigger": t.trigger_json,
+                "target_state_evidence": t.target_state_evidence_json,
+                "transition_basis": (t.transition_basis or "").split(",") if t.transition_basis else [],
+                "ordering_strength": t.ordering_strength,
+                "transition_certainty": t.transition_certainty,
+                "uncertainty_reason": t.uncertainty_reason,
                 "score": t.score,
                 "confidence_label": t.confidence_label,
                 "reason": t.reason,
@@ -829,40 +836,6 @@ async def get_canonical_states(
     return json.loads(content)
 
 
-# Agent 4 — Transition Visual Validation endpoints
-# ──────────────────────────────────────────────
-
-@router.get("/{run_id}/transition-validation")
-async def get_transition_validation(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the visual validation results for transitions."""
-    from app.db.models.artifact import Artifact
-    from app.services.storage_service import storage_service
-    from sqlalchemy import select
-    import json
-
-    result = await db.execute(
-        select(Artifact).where(
-            Artifact.run_id == run_id, 
-            Artifact.artifact_type == "transition_visual_validation_report"
-        )
-    )
-    artifact = result.scalar_one_or_none()
-    if not artifact:
-        raise HTTPException(
-            status_code=404,
-            detail={
-                "error_code": "TRANSITION_VISUAL_VALIDATION_REPORT_NOT_FOUND",
-                "message": f"No transition_visual_validation_report artifact for run '{run_id}'.",
-            },
-        )
-
-    content = storage_service.download_file(artifact.storage_uri)
-    return json.loads(content)
-
-
 # Agent 5 — Behaviour Intent Inference endpoints
 # ──────────────────────────────────────────────
 
@@ -890,6 +863,7 @@ async def list_behaviour_intents(
                 "intent_name": i.intent_name,
                 "domain": i.behaviour_domain,
                 "outcome": i.behaviour_outcome,
+                "outcome_certainty": i.outcome_certainty,
                 "intent_scope": i.intent_scope,
                 "user_goal": i.user_goal,
                 "grounding_level": i.grounding_level,

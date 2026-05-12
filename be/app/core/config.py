@@ -105,6 +105,8 @@ class Settings(BaseSettings):
     UI_STATE_EXTRACTION_MAX_RETRIES: int = 2
     # Phase 6 JSON can be very large (many ui_elements); default 4096 often truncates mid-string.
     UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS: int = 16384
+    # Max parallel vision API calls per run during UI state extraction (asyncio-limited).
+    UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
 
     # Phase 7 — Input Level Detection
     ENABLE_INPUT_LEVEL_DETECTION_NODE: bool = True

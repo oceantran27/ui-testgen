@@ -52,6 +52,10 @@ The following variables can be configured in the `.env` file or exported to the 
 - `JOB_EXECUTION_MODE`: `async` or `sync`
 - `WORKER_CONCURRENCY`: Number of concurrent worker processes
 
+### Phase 6 — UI state extraction
+
+- **`UI_STATE_EXTRACTION_MAX_CONCURRENCY`**: Maximum concurrent vision-model calls during UI state extraction for one run (default **5**, allowed range **1–50** in `config.py`). Lower this if Gemini/OpenAI returns rate-limit (429) errors.
+
 ## Config Loading
 
 Configurations are loaded using `pydantic-settings` in `app/core/config.py`.
