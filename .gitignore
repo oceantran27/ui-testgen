@@ -1,6 +1,13 @@
 thesis
 log.txt
 
+# Python
+.venv/
+__pycache__/
+
+# Cursor IDE local (debug logs, agent state)
+.cursor/
+
 # Backend local artifacts (do not commit)
 be/checkpoints.sqlite
 be/log.txt

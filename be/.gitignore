@@ -37,3 +37,6 @@ data
 # Local outputs from standalone experiment scripts
 *standalone_output*.json
 experiments/logs/
+
+# Local runtime logs (pipeline sessions, API error dumps)
+var/
