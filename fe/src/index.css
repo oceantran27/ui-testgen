@@ -1,6 +1,27 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    --fg-primary: #fafafa;
+    --fg-muted: #a4a4a8;
+    --accent: #22d3ee;
+    --surface-0: #09090b;
+    --border-subtle: rgba(63, 63, 70, 0.7);
+    --danger: #f87171;
+    --success: #34d399;
+  }
+}
+
 @layer components {
+  .app-shell-bg {
+    background-color: var(--surface-0);
+    background-image: radial-gradient(
+      ellipse 120% 80% at 50% -20%,
+      rgba(34, 211, 238, 0.12),
+      transparent
+    );
+  }
+
   .card {
     @apply rounded-2xl border border-zinc-700/70 bg-zinc-900/80 p-6 shadow-xl shadow-black/20 backdrop-blur-sm transition-all duration-300 hover:border-zinc-600/80 hover:shadow-2xl;
   }

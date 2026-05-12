@@ -1,9 +1,9 @@
 import { Toaster } from "react-hot-toast";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AdminCRUD } from "./components/AdminCRUD.tsx";
-import { BehaviorFlowPage } from "./components/BehaviorFlowPage";
 import { Error404Page } from "./components/Error404Page.tsx";
-import { PipelineStudio } from "./components/PipelineStudio";
+import { RunListPage } from "./components/runs/RunListPage";
+import { RunWorkspacePage } from "./components/run-workspace/RunWorkspacePage";
 
 function App() {
   return (
@@ -18,8 +18,9 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/" element={<PipelineStudio />} />
-        <Route path="/behavior-flows" element={<BehaviorFlowPage />} />
+        <Route path="/" element={<RunListPage />} />
+        <Route path="/runs/:runId" element={<RunWorkspacePage />} />
+        <Route path="/behavior-flows" element={<Navigate to="/" replace />} />
         <Route path="/admin" element={<AdminCRUD />} />
         <Route path="/404" element={<Error404Page />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
