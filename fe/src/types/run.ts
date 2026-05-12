@@ -223,6 +223,26 @@ export type FlowSummary = {
   entry_state_id?: string | null;
   state_ids: string[];
   terminal_state_ids: string[];
+  state_sequence: Array<{
+    sequence_index: number;
+    canonical_state_id: string;
+    state_role_in_flow: string;
+    page_type: string;
+    state_summary: string;
+    evidence_element_ids: string[];
+  }>;
+  flow_completeness: Record<string, boolean>;
+  intent_readiness: {
+    readiness_level: string;
+    reason: string;
+    usable_for_primary_scenario: boolean;
+  };
+  flow_evidence_package: {
+    state_ids: string[];
+    transition_ids: string[];
+    element_ids: string[];
+    feedback_element_ids: string[];
+  };
 };
 
 export type FlowsListResponse = {
@@ -236,29 +256,34 @@ export type FlowDetailResponse = FlowSummary & {
     transition_id: string;
     from_state_id: string;
     to_state_id: string;
-    action_type: string;
-    transition_basis: string;
-  }>;
-};
-
-export type TransitionVisualValidationResult = {
-  validated_flows: Array<{
-    flow_id: string;
-    transitions: Array<{
-      transition_id: string;
-      visual_delta: {
-        added_elements: any[];
-        removed_elements: any[];
-      };
-      transition_support: string;
-    }>;
+    transition_type: string;
+    trigger: {
+      trigger_element_id: string;
+      action_type: string;
+      action_label: string;
+      trigger_text?: string | null;
+      trigger_semantic_role?: string | null;
+    };
+    target_state_evidence: {
+      target_page_type: string;
+      supporting_element_ids: string[];
+      supporting_feedback_element_ids: string[];
+      reason: string;
+    };
+    transition_basis: string[];
+    ordering_strength: string;
+    transition_certainty: string;
+    uncertainty_reason?: string | null;
   }>;
 };
 
 export type BehaviourIntentSummary = {
   intent_id: string;
+  flow_id: string;
   intent_name: string;
   domain: string;
+  outcome: string;
+  outcome_certainty: string;
   intent_scope: string;
   user_goal: string;
   grounding_level: string;

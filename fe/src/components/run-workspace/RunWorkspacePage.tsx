@@ -26,7 +26,6 @@ import {
   getRunPipelineLog,
   getScenarioDetail,
   getScenarioValidation,
-  getTransitionValidation,
   getUIState,
   listBehaviourIntents,
   listFlows,
@@ -47,7 +46,6 @@ import type {
   UIStateDetailResponse,
   UIStateSummary,
   SemanticCanonicalizationResult,
-  TransitionVisualValidationResult,
   ScenarioValidationResult,
 } from "../../types/run";
 import { useRunPolling } from "../../hooks/useRunPolling";
@@ -72,6 +70,10 @@ function normalizeFlowRow(raw: Record<string, unknown>): FlowSummary {
     entry_state_id: (raw.entry_state_id ?? raw.start_state_id ?? null) as string | null,
     state_ids: ids,
     terminal_state_ids: terminals,
+    state_sequence: (raw.state_sequence ?? []) as any[],
+    flow_completeness: (raw.flow_completeness ?? {}) as Record<string, boolean>,
+    intent_readiness: (raw.intent_readiness ?? { readiness_level: "unknown", reason: "" }) as any,
+    flow_evidence_package: (raw.flow_evidence_package ?? { state_ids: [], transition_ids: [], element_ids: [], feedback_element_ids: [] }) as any,
   };
 }
 
@@ -94,8 +96,13 @@ function normalizeFlowDetailPayload(raw: Record<string, unknown>): FlowDetailRes
       transition_id: String(t.transition_id),
       from_state_id: String(t.from_state_id),
       to_state_id: String(t.to_state_id),
-      action_type: String(t.action_type ?? t.transition_type ?? ""),
-      transition_basis: String(t.transition_basis ?? t.hypothesized_action ?? t.reason ?? ""),
+      transition_type: String(t.transition_type ?? ""),
+      trigger: (t.trigger ?? { trigger_element_id: "", action_type: "", action_label: "" }) as any,
+      target_state_evidence: (t.target_state_evidence ?? { target_page_type: "", supporting_element_ids: [], supporting_feedback_element_ids: [], reason: "" }) as any,
+      transition_basis: Array.isArray(t.transition_basis) ? t.transition_basis : [],
+      ordering_strength: String(t.ordering_strength ?? "medium"),
+      transition_certainty: String(t.transition_certainty ?? "plausible"),
+      uncertainty_reason: (t.uncertainty_reason ?? null) as string | null,
     })),
   };
 }
@@ -106,7 +113,6 @@ type TabId =
   | "states"
   | "canonical"
   | "flows"
-  | "transitions"
   | "intents"
   | "scenarios"
   | "validation"
@@ -120,7 +126,6 @@ const TABS: { id: TabId; label: string; icon?: any }[] = [
   { id: "states", label: "States", icon: FiLayout },
   { id: "canonical", label: "Canonical", icon: FiTarget },
   { id: "flows", label: "Flows", icon: FiMap },
-  { id: "transitions", label: "Transitions", icon: FiActivity },
   { id: "intents", label: "Intents", icon: FiTarget },
   { id: "scenarios", label: "Scenarios", icon: FiFileText },
   { id: "validation", label: "Validation", icon: FiShield },
@@ -171,7 +176,6 @@ export function RunWorkspacePage() {
   const [flowDetail, setFlowDetail] = useState<FlowDetailResponse | null>(
     null,
   );
-  const [transitionResult, setTransitionResult] = useState<TransitionVisualValidationResult | null>(null);
   const [intents, setIntents] = useState<BehaviourIntentSummary[] | null>(null);
   const [scenarios, setScenarios] = useState<ScenarioSummary[] | null>(null);
   const [scenarioDetail, setScenarioDetail] =
@@ -353,21 +357,6 @@ export function RunWorkspacePage() {
           ),
         );
         setFlowDetail(null);
-      } else if (tab === "transitions") {
-        try {
-          const raw = await getTransitionValidation(decodedId);
-          if (
-            raw &&
-            typeof raw === "object" &&
-            Array.isArray((raw as TransitionVisualValidationResult).validated_flows)
-          ) {
-            setTransitionResult(raw as TransitionVisualValidationResult);
-          } else {
-            setTransitionResult(null);
-          }
-        } catch {
-          setTransitionResult(null);
-        }
       } else if (tab === "intents") {
         const res = await listBehaviourIntents(decodedId);
         setIntents(res.intents);
@@ -677,74 +666,69 @@ export function RunWorkspacePage() {
                 </li>
               ))}
             </ul>
-            <div className="rounded-lg border border-zinc-700/60 bg-zinc-950/50 p-3">
+            <div className="rounded-lg border border-zinc-700/60 bg-zinc-950/50 p-4">
               {flowDetail ? (
-                <div className="space-y-3 text-sm text-zinc-300">
-                  <p className="font-semibold text-zinc-100">{flowDetail.flow_label}</p>
-                  <ul className="space-y-2">
-                    {flowDetail.transitions.map(t => (
-                      <li key={t.transition_id} className="text-xs flex items-center gap-2">
-                        <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono">{t.from_state_id.slice(-6)}</span>
-                        <FiChevronRight className="text-zinc-600" />
-                        <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono">{t.to_state_id.slice(-6)}</span>
-                        <span className="text-cyan-400 ml-auto">{t.action_type}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="space-y-4 text-sm text-zinc-300">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-zinc-100 text-lg">{flowDetail.flow_label}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                      flowDetail.intent_readiness.readiness_level === 'ready_for_intent' ? 'bg-emerald-950/30 text-emerald-400' : 'bg-amber-950/30 text-amber-400'
+                    }`}>
+                      {flowDetail.intent_readiness.readiness_level}
+                    </span>
+                  </div>
+                  <p className="text-zinc-400 text-xs italic">{flowDetail.intent_readiness.reason}</p>
+                  
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Inferred Transitions</p>
+                    <ul className="space-y-3">
+                      {flowDetail.transitions.map(t => (
+                        <li key={t.transition_id} className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono text-[10px]">{t.from_state_id.slice(-6)}</span>
+                            <FiChevronRight className="text-zinc-600" />
+                            <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono text-[10px]">{t.to_state_id.slice(-6)}</span>
+                            <div className="ml-auto flex items-center gap-2">
+                              <span className="text-cyan-400 font-bold text-[10px] uppercase">{t.trigger.action_type}</span>
+                              <span className={`text-[10px] font-bold px-1.5 rounded uppercase ${
+                                t.ordering_strength === 'strong' ? 'text-emerald-400' : t.ordering_strength === 'medium' ? 'text-amber-400' : 'text-zinc-500'
+                              }`}>
+                                {t.ordering_strength}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-zinc-300 mb-1">
+                            <span className="text-zinc-500">Evidence:</span> {t.transition_basis.join(", ")}
+                          </p>
+                          {t.uncertainty_reason && (
+                            <p className="text-[10px] text-amber-500/80 italic">Note: {t.uncertainty_reason}</p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              ) : <p className="text-zinc-500 text-sm">Select a flow to see transitions.</p>}
+              ) : <p className="text-zinc-500 text-sm">Select a flow to see transitions and evidence.</p>}
             </div>
           </div>
-        )}
-
-        {tab === "transitions" && !tabLoading && (
-          transitionResult == null || !Array.isArray(transitionResult.validated_flows) ? (
-            <p className="text-sm text-zinc-500">
-              Transition validation report is not available yet.
-            </p>
-          ) : transitionResult.validated_flows.length === 0 ? (
-            <p className="text-sm text-zinc-500">No validated flows in this report.</p>
-          ) : (
-          <div className="space-y-6">
-            {transitionResult.validated_flows.map(vf => (
-              <div key={vf.flow_id} className="space-y-3">
-                <h3 className="text-sm font-bold text-zinc-400">Flow: {vf.flow_id}</h3>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {(vf.transitions ?? []).map(t => {
-                    const vd = t.visual_delta ?? { added_elements: [], removed_elements: [] };
-                    const added = Array.isArray(vd.added_elements) ? vd.added_elements.length : 0;
-                    const removed = Array.isArray(vd.removed_elements) ? vd.removed_elements.length : 0;
-                    return (
-                    <div key={t.transition_id} className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-mono text-zinc-500">{t.transition_id}</span>
-                        <span className={`text-[10px] font-bold px-1.5 rounded ${t.transition_support === 'supported' ? 'bg-emerald-950/30 text-emerald-400' : 'bg-amber-950/30 text-amber-400'}`}>
-                          {(t.transition_support ?? "unknown").toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-zinc-400">
-                        <p>Added: {added}</p>
-                        <p>Removed: {removed}</p>
-                      </div>
-                    </div>
-                  );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-          )
         )}
 
         {tab === "intents" && intents && (
           <div className="grid gap-4 lg:grid-cols-2">
             {intents.map((i) => (
               <div key={i.intent_id} className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 text-sm">
-                <p className="font-bold text-zinc-200 mb-1">{i.intent_name}</p>
+                <div className="flex justify-between items-start mb-2">
+                  <p className="font-bold text-zinc-200">{i.intent_name}</p>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                    i.outcome_certainty === 'grounded' ? 'bg-emerald-950/30 text-emerald-400' : 'bg-amber-950/30 text-amber-400'
+                  }`}>
+                    {i.outcome_certainty}
+                  </span>
+                </div>
                 <p className="text-xs text-zinc-400 mb-3">{i.user_goal}</p>
                 <div className="flex gap-2">
                    <span className="bg-zinc-900 px-2 py-0.5 rounded text-[10px] text-zinc-500 uppercase font-bold">{i.domain}</span>
-                   <span className="bg-zinc-900 px-2 py-0.5 rounded text-[10px] text-cyan-400 uppercase font-bold">{i.grounding_level}</span>
+                   <span className="bg-zinc-900 px-2 py-0.5 rounded text-[10px] text-zinc-500 uppercase font-bold">{i.outcome}</span>
                 </div>
               </div>
             ))}

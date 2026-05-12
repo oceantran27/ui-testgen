@@ -21,7 +21,6 @@ import type {
   UploadImagesResponse,
   PipelineLogResponse,
   SemanticCanonicalizationResult,
-  TransitionVisualValidationResult,
   ScenarioValidationResult,
 } from "../types/run";
 
@@ -173,13 +172,6 @@ export async function getFlowDetail(
 ): Promise<FlowDetailResponse> {
   const { data } = await apiClient.get<FlowDetailResponse>(
     `runs/${encodeURIComponent(runId)}/flows/${encodeURIComponent(flowId)}`,
-  );
-  return data;
-}
-
-export async function getTransitionValidation(runId: string): Promise<TransitionVisualValidationResult> {
-  const { data } = await apiClient.get<TransitionVisualValidationResult>(
-    `runs/${encodeURIComponent(runId)}/transition-validation`,
   );
   return data;
 }
