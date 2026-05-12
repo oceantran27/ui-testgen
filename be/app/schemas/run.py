@@ -51,6 +51,11 @@ class RunResponse(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
+    # LangGraph tracking (also on GET /runs/{id}/graph-status — duplicated here so one poll suffices)
+    current_phase: Optional[str] = None
+    current_node: Optional[str] = None
+    progress_percentage: Optional[int] = None
+    graph_status: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -74,3 +79,16 @@ class RunListResponse(BaseModel):
     """Response for GET /runs"""
     runs: List[RunResponse]
     total: int
+
+
+class PipelineLogResponse(BaseModel):
+    """Latest pipeline.log from worker session dir for this run (if any)."""
+
+    run_id: str
+    content: Optional[str] = None
+    path: Optional[str] = None
+    message: Optional[str] = None
+    next_byte: int = Field(
+        default=0,
+        description="Byte offset after this response; pass as from_byte on the next incremental request.",
+    )

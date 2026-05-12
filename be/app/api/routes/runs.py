@@ -8,6 +8,7 @@ POST /runs/{run_id}/images  → Upload images to a run
 GET  /runs/{run_id}/images  → List images of a run
 POST /runs/{run_id}/submit  → Submit run for processing
 POST /runs/{run_id}/cancel  → Cancel a run
+GET  /runs/{run_id}/pipeline-log → Latest worker pipeline.log text (if any)
 """
 from typing import List, Optional
 
@@ -22,6 +23,7 @@ from app.schemas.run import (
     RunSubmitResponse,
     RunCancelResponse,
     RunListResponse,
+    PipelineLogResponse,
 )
 from app.schemas.image import (
     UploadImagesResponse,
@@ -29,6 +31,7 @@ from app.schemas.image import (
     ImageListResponse,
 )
 from app.services import run_service, image_service
+from app.services.pipeline_log_service import read_pipeline_log_incremental
 from app.core.errors import RunNotFoundException
 
 router = APIRouter(prefix="/runs", tags=["Runs"])
@@ -59,6 +62,10 @@ async def create_run(
         config=run.config_json,
         created_at=run.created_at,
         updated_at=run.updated_at,
+        current_phase=run.current_phase,
+        current_node=run.current_node,
+        progress_percentage=run.progress_percentage,
+        graph_status=run.graph_status,
     )
 
 
@@ -84,6 +91,10 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
             started_at=r.started_at,
             completed_at=r.completed_at,
             error_message=r.error_message,
+            current_phase=r.current_phase,
+            current_node=r.current_node,
+            progress_percentage=r.progress_percentage,
+            graph_status=r.graph_status,
         )
         for r in runs
     ]
@@ -111,6 +122,33 @@ async def get_run(run_id: str, db: AsyncSession = Depends(get_db_session)):
         started_at=run.started_at,
         completed_at=run.completed_at,
         error_message=run.error_message,
+        current_phase=run.current_phase,
+        current_node=run.current_node,
+        progress_percentage=run.progress_percentage,
+        graph_status=run.graph_status,
+    )
+
+
+@router.get("/{run_id}/pipeline-log", response_model=PipelineLogResponse)
+async def get_pipeline_log(
+    run_id: str,
+    from_byte: int = Query(0, ge=0, description="Byte offset for incremental tail reads (0 = full file)"),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Return pipeline session log; use from_byte>0 after first response's next_byte for live tail."""
+    await run_service.get_run(db, run_id)
+    content, path, next_off, _ = read_pipeline_log_incremental(run_id, from_byte=from_byte)
+    msg = None
+    if content is None and path is None:
+        msg = "No pipeline log directory found for this run (worker may not have started or logging is off)."
+    elif content is None and path is not None:
+        msg = "Session directory found but pipeline.log is missing or not readable yet."
+    return PipelineLogResponse(
+        run_id=run_id,
+        content=content,
+        path=path,
+        message=msg,
+        next_byte=next_off,
     )
 
 
@@ -235,6 +273,16 @@ async def cancel_run(
     """Cancel a run that has not started processing."""
     result = await run_service.cancel_run(db, run_id)
     return RunCancelResponse(**result)
+
+
+@router.delete("/{run_id}", status_code=204)
+async def delete_run(
+    run_id: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Permanently delete a run and all associated data."""
+    await run_service.delete_run(db, run_id)
+    return None
 
 
 # ──────────────────────────────────────────────
@@ -576,72 +624,25 @@ async def get_ui_state(
                 "type": e.type,
                 "label": e.label,
                 "text": e.text,
-                "placeholder": e.placeholder,
-                "bbox": {
-                    "x_min": e.bbox_xmin,
-                    "y_min": e.bbox_ymin,
-                    "x_max": e.bbox_xmax,
-                    "y_max": e.bbox_ymax,
-                },
+                "bbox": [e.bbox_ymin, e.bbox_xmin, e.bbox_ymax, e.bbox_xmax],
                 "actionable": e.actionable,
-                "action_type": e.action_type,
                 "is_feedback": e.is_feedback,
-                "feedback_type": e.feedback_type,
-                "confidence": e.confidence,
+                "semantic_role": e.semantic_role,
+                "visibility": e.visibility,
             }
             for e in elements
-        ]
+        ],
+        "feedback_elements": [],
+        "primary_action_candidates": [],
     }
 
 
 # ──────────────────────────────────────────────
-# Phase 7 — Input Level Detection endpoints
+# Agent 1 — UI State Extraction endpoints
 # ──────────────────────────────────────────────
 
-@router.get("/{run_id}/input-level")
-async def get_input_level(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the detected input level and related metadata."""
-    from app.services.run_service import run_service
-    run = await run_service.get_run(db, run_id)
 
-    return {
-        "run_id": run_id,
-        "input_level": run.input_level,
-        "input_level_confidence": run.input_level_confidence,
-        "input_level_reason": run.input_level_reason,
-    }
-
-
-@router.get("/{run_id}/input-level-report")
-async def get_input_level_report(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the full input level detection report from artifacts."""
-    from app.db.models.artifact import Artifact
-    from app.services.storage_service import storage_service
-    from sqlalchemy import select
-    import json
-
-    result = await db.execute(
-        select(Artifact).where(
-            Artifact.run_id == run_id, 
-            Artifact.artifact_type == "input_level_detection_report"
-        )
-    )
-    artifact = result.scalar_one_or_none()
-    if not artifact:
-        return {"error": "Report not found"}
-
-    content = storage_service.download_file(artifact.storage_uri)
-    return json.loads(content)
-
-
-# ──────────────────────────────────────────────
-# Phase 8 — Flow Discovery endpoints
+# Agent 3 — UI Flow Discovery endpoints
 # ──────────────────────────────────────────────
 
 @router.get("/{run_id}/flows")
@@ -660,23 +661,39 @@ async def list_flows(
     )
     flows = result.scalars().all()
 
+    def _id_list(blob) -> list:
+        if not blob:
+            return []
+        if isinstance(blob, list):
+            return blob
+        if isinstance(blob, dict):
+            return blob.get("ids") or blob.get("state_ids") or []
+        return []
+
+    def _flow_payload(f: Flow) -> dict:
+        ordered = _id_list(f.ordered_state_ids_json)
+        terminals = _id_list(f.terminal_state_ids_json)
+        label = f.flow_label or f.name or f.id
+        return {
+            "flow_id": f.id,
+            "name": f.name,
+            "flow_label": label,
+            "flow_type": f.flow_type,
+            "input_level": f.input_level,
+            "start_state_id": f.start_state_id,
+            "entry_state_id": f.entry_state_id or f.start_state_id,
+            "ordered_state_ids": ordered,
+            "state_ids": ordered,
+            "terminal_state_ids": terminals,
+            "confidence": f.confidence,
+            "confidence_label": f.confidence_label,
+            "created_at": f.created_at,
+        }
+
     return {
         "run_id": run_id,
         "total": len(flows),
-        "flows": [
-            {
-                "flow_id": f.id,
-                "name": f.name,
-                "flow_type": f.flow_type,
-                "input_level": f.input_level,
-                "start_state_id": f.start_state_id,
-                "ordered_state_ids": f.ordered_state_ids_json.get("ids", []),
-                "confidence": f.confidence,
-                "confidence_label": f.confidence_label,
-                "created_at": f.created_at,
-            }
-            for f in flows
-        ]
+        "flows": [_flow_payload(f) for f in flows],
     }
 
 
@@ -706,13 +723,30 @@ async def get_flow_detail(
     )
     transitions = result.scalars().all()
 
+    ordered = (
+        flow.ordered_state_ids_json.get("ids", [])
+        if isinstance(flow.ordered_state_ids_json, dict)
+        else (flow.ordered_state_ids_json if isinstance(flow.ordered_state_ids_json, list) else [])
+    )
+    terminals_raw = flow.terminal_state_ids_json or {}
+    terminals = (
+        terminals_raw.get("ids", [])
+        if isinstance(terminals_raw, dict)
+        else (terminals_raw if isinstance(terminals_raw, list) else [])
+    )
+    flow_label = flow.flow_label or flow.name or flow.id
+
     return {
         "flow_id": flow.id,
         "name": flow.name,
+        "flow_label": flow_label,
         "flow_type": flow.flow_type,
         "input_level": flow.input_level,
         "start_state_id": flow.start_state_id,
-        "ordered_state_ids": flow.ordered_state_ids_json.get("ids", []),
+        "entry_state_id": flow.entry_state_id or flow.start_state_id,
+        "ordered_state_ids": ordered,
+        "state_ids": ordered,
+        "terminal_state_ids": terminals,
         "paths": flow.paths_json,
         "confidence": flow.confidence,
         "confidence_label": flow.confidence_label,
@@ -723,7 +757,9 @@ async def get_flow_detail(
                 "from_state_id": t.from_state_id,
                 "to_state_id": t.to_state_id,
                 "transition_type": t.transition_type,
+                "action_type": t.transition_type,
                 "hypothesized_action": t.hypothesized_action,
+                "transition_basis": t.transition_basis or "",
                 "score": t.score,
                 "confidence_label": t.confidence_label,
                 "reason": t.reason,
@@ -759,15 +795,15 @@ async def get_flow_discovery_report(
 
 
 # ──────────────────────────────────────────────
-# Phase 9 — Missing Step Analysis endpoints
+# Agent 2 — Semantic Canonicalization endpoints
 # ──────────────────────────────────────────────
 
-@router.get("/{run_id}/missing-step-report")
-async def get_missing_step_report(
+@router.get("/{run_id}/canonical-states")
+async def get_canonical_states(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return the full missing step analysis report from artifacts."""
+    """Return the semantic canonicalization results."""
     from app.db.models.artifact import Artifact
     from app.services.storage_service import storage_service
     from sqlalchemy import select
@@ -776,47 +812,58 @@ async def get_missing_step_report(
     result = await db.execute(
         select(Artifact).where(
             Artifact.run_id == run_id, 
-            Artifact.artifact_type == "missing_step_analysis_report"
+            Artifact.artifact_type == "semantic_canonicalization_report"
         )
     )
     artifact = result.scalar_one_or_none()
     if not artifact:
-        return {"error": "Report not found"}
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error_code": "SEMANTIC_CANONICALIZATION_REPORT_NOT_FOUND",
+                "message": f"No semantic_canonicalization_report artifact for run '{run_id}'.",
+            },
+        )
 
     content = storage_service.download_file(artifact.storage_uri)
     return json.loads(content)
 
 
-@router.get("/{run_id}/flows/{flow_id}/completeness")
-async def get_flow_completeness(
+# Agent 4 — Transition Visual Validation endpoints
+# ──────────────────────────────────────────────
+
+@router.get("/{run_id}/transition-validation")
+async def get_transition_validation(
     run_id: str,
-    flow_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return completeness and eligibility data for a specific flow."""
-    from app.db.models.flow import Flow
+    """Return the visual validation results for transitions."""
+    from app.db.models.artifact import Artifact
+    from app.services.storage_service import storage_service
     from sqlalchemy import select
-    from fastapi import HTTPException
+    import json
 
     result = await db.execute(
-        select(Flow).where(Flow.id == flow_id, Flow.run_id == run_id)
+        select(Artifact).where(
+            Artifact.run_id == run_id, 
+            Artifact.artifact_type == "transition_visual_validation_report"
+        )
     )
-    flow = result.scalar_one_or_none()
-    if not flow:
-        raise HTTPException(status_code=404, detail="Flow not found")
+    artifact = result.scalar_one_or_none()
+    if not artifact:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error_code": "TRANSITION_VISUAL_VALIDATION_REPORT_NOT_FOUND",
+                "message": f"No transition_visual_validation_report artifact for run '{run_id}'.",
+            },
+        )
 
-    return {
-        "flow_id": flow_id,
-        "completeness_status": flow.completeness_status,
-        "scenario_eligibility": flow.scenario_eligibility,
-        "missing_step_penalty": flow.missing_step_penalty,
-        "adjusted_confidence": flow.adjusted_confidence,
-        "warnings": flow.missing_step_warnings_json,
-    }
+    content = storage_service.download_file(artifact.storage_uri)
+    return json.loads(content)
 
 
-# ──────────────────────────────────────────────
-# Phase 10 — Behaviour Intent Inference endpoints
+# Agent 5 — Behaviour Intent Inference endpoints
 # ──────────────────────────────────────────────
 
 @router.get("/{run_id}/behaviour-intents")
@@ -843,7 +890,9 @@ async def list_behaviour_intents(
                 "intent_name": i.intent_name,
                 "domain": i.behaviour_domain,
                 "outcome": i.behaviour_outcome,
+                "intent_scope": i.intent_scope,
                 "user_goal": i.user_goal,
+                "grounding_level": i.grounding_level,
                 "confidence": i.confidence,
                 "should_generate": i.should_generate,
             }
@@ -877,8 +926,7 @@ async def get_behaviour_intent_report(
     return json.loads(content)
 
 
-# ──────────────────────────────────────────────
-# Phase 11 — Behaviour Scenario Generation endpoints
+# Agent 6 — BDD Scenario Generation endpoints
 # ──────────────────────────────────────────────
 
 @router.get("/{run_id}/scenarios")
@@ -904,6 +952,7 @@ async def list_behaviour_scenarios(
                 "intent_id": s.intent_id,
                 "title": s.scenario_title,
                 "type": s.scenario_type,
+                "scenario_type": s.scenario_type,
                 "grounding_mode": s.grounding_mode,
                 "confidence": s.initial_confidence,
                 "status": s.status,
@@ -940,24 +989,21 @@ async def get_behaviour_scenario_detail(
         "intent_id": scenario.intent_id,
         "flow_id": scenario.flow_id,
         "feature": scenario.feature,
-        "title": scenario.scenario_title,
-        "type": scenario.scenario_type,
-        "grounding_mode": scenario.grounding_mode,
+        "scenario_title": scenario.scenario_title,
+        "scenario_type": scenario.scenario_type,
         "gherkin_text": scenario.gherkin_text,
-        "structured_steps": scenario.structured_steps_json,
-        "evidence": scenario.evidence_json,
-        "assumptions": scenario.assumptions_json,
-        "warnings": scenario.warnings_json,
-        "confidence": scenario.initial_confidence,
+        "bdd_steps": (
+            (scenario.bdd_steps_json.get("steps") or scenario.bdd_steps_json.get("bdd_steps", []))
+            if isinstance(scenario.bdd_steps_json, dict)
+            else []
+        ),
         "status": scenario.status,
         "validation": {
-            "status": scenario.validation_status,
-            "grounding_score": scenario.grounding_score,
-            "coverage_score": scenario.evidence_coverage_score,
+            "validation_status": scenario.validation_status,
+            "final_reliability": scenario.final_reliability,
             "hallucination_flags": scenario.hallucination_flags_json,
-            "issues": scenario.validation_issues_json,
-            "suggestions": scenario.revision_suggestions_json,
-            "final_confidence": scenario.final_confidence,
+            "acceptance_decision": scenario.acceptance_decision_json,
+            "scores": scenario.scores_json,
             "validated_at": scenario.validated_at,
         }
     }
@@ -989,50 +1035,15 @@ async def get_scenario_validation_report(
 
 
 # ──────────────────────────────────────────────
-# Phase 13 — Scenario Curation endpoints
+# Agent 7 — Scenario Validation & Final Output
 # ──────────────────────────────────────────────
 
-@router.get("/{run_id}/curated-scenarios")
-async def list_curated_scenarios(
+@router.get("/{run_id}/scenario-validation")
+async def get_scenario_validation(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """List all curated scenarios for a run (accepted and accepted_with_warning)."""
-    from app.db.models.behaviour_scenario import BehaviourScenario
-    from sqlalchemy import select
-
-    result = await db.execute(
-        select(BehaviourScenario).where(
-            BehaviourScenario.run_id == run_id,
-            BehaviourScenario.final_status.in_(["accepted", "accepted_with_warning"])
-        ).order_by(BehaviourScenario.final_priority, BehaviourScenario.final_confidence.desc())
-    )
-    scenarios = result.scalars().all()
-
-    return {
-        "run_id": run_id,
-        "total": len(scenarios),
-        "scenarios": [
-            {
-                "scenario_id": s.id,
-                "title": s.scenario_title,
-                "type": s.scenario_type,
-                "final_status": s.final_status,
-                "final_priority": s.final_priority,
-                "final_confidence": s.final_confidence,
-                "validation_status": s.validation_status
-            }
-            for s in scenarios
-        ]
-    }
-
-
-@router.get("/{run_id}/scenario-curation-report")
-async def get_scenario_curation_report(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the full scenario curation report from artifacts."""
+    """Return the full scenario validation result (Agent 7)."""
     from app.db.models.artifact import Artifact
     from app.services.storage_service import storage_service
     from sqlalchemy import select
@@ -1041,38 +1052,52 @@ async def get_scenario_curation_report(
     result = await db.execute(
         select(Artifact).where(
             Artifact.run_id == run_id, 
-            Artifact.artifact_type == "scenario_curation_report"
+            Artifact.artifact_type == "scenario_validation_report"
         )
     )
     artifact = result.scalar_one_or_none()
     if not artifact:
-        return {"error": "Report not found"}
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error_code": "SCENARIO_VALIDATION_REPORT_NOT_FOUND",
+                "message": f"No scenario_validation_report artifact for run '{run_id}'.",
+            },
+        )
 
     content = storage_service.download_file(artifact.storage_uri)
     return json.loads(content)
 
 
-@router.get("/{run_id}/scenario-generation-report")
-async def get_scenario_generation_report(
+@router.get("/{run_id}/research-output")
+async def get_research_output(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return the full scenario generation report from artifacts."""
+    """Return final validated scenario package as the research output."""
+    import json
     from app.db.models.artifact import Artifact
     from app.services.storage_service import storage_service
     from sqlalchemy import select
-    import json
+
+    await run_service.get_run(db, run_id)
 
     result = await db.execute(
         select(Artifact).where(
             Artifact.run_id == run_id, 
-            Artifact.artifact_type == "behaviour_scenario_generation_report"
+            Artifact.artifact_type == "scenario_validation_report"
         )
     )
     artifact = result.scalar_one_or_none()
-    if not artifact:
-        return {"error": "Report not found"}
+    if not artifact or not artifact.storage_uri:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error_code": "RESEARCH_OUTPUT_NOT_FOUND",
+                "message": f"No final validated output for run '{run_id}'.",
+            },
+        )
 
-    content = storage_service.download_file(artifact.storage_uri)
-    return json.loads(content)
+    raw = storage_service.download_file(artifact.storage_uri)
+    return json.loads(raw)
 

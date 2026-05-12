@@ -11,15 +11,13 @@ from __future__ import annotations
 
 import json
 import random
-import time
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
 from app.core.config import settings
 from app.model_providers.base import (
     BaseModelProvider,
-    ImageInput,
     ModelCallStatus,
     ModelCapability,
     ModelErrorCode,
@@ -27,27 +25,26 @@ from app.model_providers.base import (
     ModelRequest,
     ModelResponse,
     NonRetryableModelError,
-    RequestType,
     RetryableModelError,
     TokenUsage,
 )
 
 
-def _generate_default_value(field_type: Any) -> Any:
-    """Generate a minimal valid value for common Pydantic field types."""
-    origin = getattr(field_type, "__origin__", None)
-    if origin is list:
-        return []
-    if origin is dict:
-        return {}
-    if field_type is str:
-        return "mock_value"
-    if field_type is int:
-        return 0
-    if field_type is float:
-        return 0.5
-    if field_type is bool:
-        return True
+def _unwrap_to_basemodel(annotation: Any) -> Optional[Type[BaseModel]]:
+    """If annotation is BaseModel or Optional[BaseModel], return the model class."""
+    try:
+        origin = get_origin(annotation)
+        if origin is Union:
+            for arg in get_args(annotation):
+                if arg is type(None):
+                    continue
+                if isinstance(arg, type) and issubclass(arg, BaseModel):
+                    return arg
+            return None
+        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+            return annotation
+    except TypeError:
+        return None
     return None
 
 
@@ -60,13 +57,19 @@ def _build_mock_output(schema_class: Optional[Type[BaseModel]]) -> Dict[str, Any
     for name, field_info in schema_class.model_fields.items():
         annotation = field_info.annotation
 
-        # Use default if available and not PydanticUndefined
+        nested = _unwrap_to_basemodel(annotation)
+        if nested is not None:
+            data[name] = _build_mock_output(nested)
+            continue
+
         default = field_info.default
         try:
             from pydantic_core import PydanticUndefinedType
+
             has_default = not isinstance(default, PydanticUndefinedType)
         except ImportError:
             from pydantic.fields import PydanticUndefinedType  # type: ignore
+
             has_default = not isinstance(default, PydanticUndefinedType)
 
         if has_default and default is not None:
@@ -77,25 +80,22 @@ def _build_mock_output(schema_class: Optional[Type[BaseModel]]) -> Dict[str, Any
             data[name] = field_info.default_factory()
             continue
 
-        # Generate from type annotation
         origin = getattr(annotation, "__origin__", None)
-        # Handle Optional[X] → extract inner type
         if origin is type(None):
             data[name] = None
             continue
 
         args = getattr(annotation, "__args__", ())
-        # Literal → take first value
         try:
-            from typing import Literal, get_origin
+            from typing import Literal
+
             if get_origin(annotation) is Literal:
                 data[name] = args[0]
                 continue
         except Exception:
             pass
 
-        # Optional[X] has NoneType as one of args
-        if origin is type(None) or (args and type(None) in args):
+        if origin is Union or (args and type(None) in args):
             data[name] = None
             continue
 
@@ -117,7 +117,6 @@ def _build_mock_output(schema_class: Optional[Type[BaseModel]]) -> Dict[str, Any
     return data
 
 
-
 class MockModelProvider(BaseModelProvider):
     """Test provider — no API calls, deterministic responses."""
 
@@ -137,9 +136,6 @@ class MockModelProvider(BaseModelProvider):
 
     async def generate(self, request: ModelRequest) -> ModelResponse:
         mode = settings.MOCK_MODEL_MODE
-        start = time.time()
-
-        # Simulate latency
         latency_ms = random.randint(50, 200)
 
         base_response = ModelResponse(
@@ -196,7 +192,6 @@ class MockModelProvider(BaseModelProvider):
             )
             raise RetryableModelError(error)
 
-        # success mode
         output = _build_mock_output(request.output_schema)
         if request.output_schema:
             base_response.parsed_output = request.output_schema.model_validate(output)

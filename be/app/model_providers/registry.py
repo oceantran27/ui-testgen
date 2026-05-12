@@ -25,6 +25,7 @@ from app.model_providers.base import (
     RequestType,
 )
 from app.model_providers.retry_handler import execute_with_retry
+from app.core.prompt_manager import prompt_manager
 
 try:
     from app.core import pipeline_run_log as _prl
@@ -267,6 +268,8 @@ class ModelProviderAdapter:
         max_output_tokens = 4096
         if task_name == "llm_flow_discovery":
             max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+        elif task_name == "semantic_canonicalization":
+            max_output_tokens = settings.SEMANTIC_DUPLICATE_MAX_OUTPUT_TOKENS
 
         request = ModelRequest(
             task_name=task_name,
@@ -325,8 +328,10 @@ class ModelProviderAdapter:
             fallback = self._registry.get_fallback(provider.name)
 
         max_output_tokens = 4096
+        vision_timeout_secs = settings.VISION_MODEL_TIMEOUT_SECONDS
         if task_name == "ui_state_extraction":
             max_output_tokens = settings.UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS
+            vision_timeout_secs = settings.UI_STATE_EXTRACTION_TIMEOUT_SECONDS
 
         request = ModelRequest(
             task_name=task_name,
@@ -342,7 +347,7 @@ class ModelProviderAdapter:
             model_name=model_name_override,
             temperature=temperature,
             max_output_tokens=max_output_tokens,
-            timeout_seconds=settings.VISION_MODEL_TIMEOUT_SECONDS,
+            timeout_seconds=vision_timeout_secs,
         )
 
         return await _execute_with_retry_pipeline_log(provider, request, fallback)
@@ -387,7 +392,7 @@ class ModelProviderAdapter:
             run_id=run_id,
             node_name=node_name,
             request_type=RequestType.PAIRWISE_VISION,
-            system_instruction="You are a UI state comparison expert. Compare the two screenshots provided.",
+            system_instruction=prompt_manager.get_prompt("pairwise_comparison"),
             user_instruction=instruction,
             image_inputs=[image_a, image_b],
             output_schema=output_schema,

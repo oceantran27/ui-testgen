@@ -51,6 +51,7 @@ class GeminiModelProvider(BaseModelProvider):
     def _get_client(self):
         if self._client is None:
             from google import genai
+            from google.genai import types as gtypes
             api_key = settings.GEMINI_API_KEY
             if not api_key:
                 raise NonRetryableModelError(ModelProviderError(
@@ -58,7 +59,11 @@ class GeminiModelProvider(BaseModelProvider):
                     provider=self.name, model_name="", task_name="",
                     retryable=False, message="GEMINI_API_KEY is not set"
                 ))
-            self._client = genai.Client(api_key=api_key)
+            http_options = None
+            if settings.DISABLE_MODEL_HTTP_TIMEOUT:
+                decade_ms = 10 * 365 * 24 * 3600 * 1000
+                http_options = gtypes.HttpOptions(timeout=decade_ms)
+            self._client = genai.Client(api_key=api_key, http_options=http_options)
         return self._client
 
     async def generate(self, request: ModelRequest) -> ModelResponse:

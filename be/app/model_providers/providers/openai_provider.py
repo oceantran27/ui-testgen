@@ -116,6 +116,7 @@ class OpenAIModelProvider(BaseModelProvider):
 
     def _get_client(self):
         if self._client is None:
+            import httpx
             import openai
             api_key = settings.OPENAI_API_KEY
             if not api_key:
@@ -124,7 +125,10 @@ class OpenAIModelProvider(BaseModelProvider):
                     provider=self.name, model_name="", task_name="",
                     retryable=False, message="OPENAI_API_KEY is not set"
                 ))
-            self._client = openai.AsyncOpenAI(api_key=api_key)
+            kw: Dict[str, Any] = {"api_key": api_key}
+            if settings.DISABLE_MODEL_HTTP_TIMEOUT:
+                kw["timeout"] = httpx.Timeout(None)
+            self._client = openai.AsyncOpenAI(**kw)
         return self._client
 
     async def generate(self, request: ModelRequest) -> ModelResponse:

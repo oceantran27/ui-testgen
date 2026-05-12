@@ -2,7 +2,8 @@
 Retry, Timeout & Fallback Handler — wraps provider.generate() with resilience.
 
 Rules per user decision:
-  - Retry: timeout, rate_limit, 5xx, invalid JSON, schema mismatch (RetryableModelError).
+  - Retry: timeout, rate_limit, 5xx, invalid JSON, schema mismatch (RetryableModelError),
+    unless DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT skips asyncio-level timeouts.
   - No retry: auth, config, capability errors (NonRetryableModelError).
   - Fallback: if primary exhausts retries AND ENABLE_MODEL_FALLBACK=true.
 """
@@ -45,14 +46,23 @@ async def execute_with_retry(
     """
     retry_count = 0
 
-    # Determine timeout for this request
-    if request.image_inputs:
-        timeout_secs = settings.VISION_MODEL_TIMEOUT_SECONDS
-    else:
-        timeout_secs = settings.TEXT_MODEL_TIMEOUT_SECONDS
+    use_asyncio_deadline = not settings.DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT
+    if getattr(request, "timeout_seconds", None) is not None and request.timeout_seconds <= 0:
+        use_asyncio_deadline = False
+
+    timeout_secs = 60
+    if use_asyncio_deadline:
+        if getattr(request, "timeout_seconds", None) and request.timeout_seconds > 0:
+            timeout_secs = request.timeout_seconds
+        elif request.image_inputs:
+            timeout_secs = settings.VISION_MODEL_TIMEOUT_SECONDS
+        else:
+            timeout_secs = settings.TEXT_MODEL_TIMEOUT_SECONDS
 
     async def _attempt(p: BaseModelProvider, req: ModelRequest) -> ModelResponse:
-        """Single attempt with timeout."""
+        """Single attempt; optional asyncio deadline around provider.generate()."""
+        if not use_asyncio_deadline:
+            return await p.generate(req)
         try:
             return await asyncio.wait_for(p.generate(req), timeout=timeout_secs)
         except asyncio.TimeoutError:

@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     
     # Queue / Redis config
     REDIS_URL: str = "redis://localhost:6379/0"
+    # ARQ worker: max wall time for entire process_run job.
+    # If ARQ_JOB_NO_TIMEOUT is True or ARQ_JOB_TIMEOUT_SECONDS <= 0, worker uses timedelta.max (no practical wall limit).
+    ARQ_JOB_NO_TIMEOUT: bool = True
+    ARQ_JOB_TIMEOUT_SECONDS: int = 14400  # 4 hours; ARQ default without wiring is 300s.
+    # If True (default): value exactly 300s is treated as ambiguous (matches ARQ library default) and rewritten to ARQ_JOB_LONG_PIPELINE_FALLBACK_SECONDS for process_run.
+    ARQ_INTERPRET_300S_AS_LONG_JOB: bool = True
+    ARQ_JOB_LONG_PIPELINE_FALLBACK_SECONDS: int = 14400
     
     # Phase 2 — Image viewport bands (orientation-invariant)
     VIEWPORT_SHORT_EDGE_MIN: int = 900
@@ -68,6 +75,10 @@ class Settings(BaseSettings):
     
     MODEL_MAX_RETRIES: int = 2
     MODEL_RETRY_BACKOFF_SECONDS: float = 2.0
+    # When True: do not wrap provider.generate() in asyncio.wait_for (no asyncio-level call deadline).
+    DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT: bool = True
+    # When True: open HTTP timeouts as wide as SDK allows (OS/TCP/network may still stall or drop).
+    DISABLE_MODEL_HTTP_TIMEOUT: bool = True
     
     ENABLE_MODEL_FALLBACK: bool = False
     FALLBACK_MODEL_PROVIDER: str = "gemini"
@@ -169,6 +180,8 @@ class Settings(BaseSettings):
     LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5-mini"
     SEMANTIC_DUPLICATE_MODEL_PROVIDER: str = "openai"
     SEMANTIC_DUPLICATE_MODEL_NAME: str = "gpt-5-mini"
+    # GPT-5* may consume output budget for reasoning before emitting JSON; keep aligned with flow/UI ceilings.
+    SEMANTIC_DUPLICATE_MAX_OUTPUT_TOKENS: int = 16384
     # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
     LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
 
@@ -178,6 +191,14 @@ class Settings(BaseSettings):
     SAVE_SEMANTIC_DUPLICATE_REPORT: bool = True
     SAVE_LLM_FLOW_DISCOVERY_REPORT: bool = True
     SAVE_RESEARCH_FINAL_OUTPUT: bool = True
+
+    # Pipeline session logs (per run execution on worker): console + steps/*.json + raw/
+    PIPELINE_RUN_LOG_ENABLED: bool = True
+    PIPELINE_RUN_LOG_ROOT: str = "var/pipeline_run_logs"
+
+    # HTTP 4xx/5xx detail files (API process) — separate from pipeline run folders
+    API_ERROR_LOG_ENABLED: bool = True
+    API_ERROR_LOG_ROOT: str = "var/api_error_logs"
 
     model_config = SettingsConfigDict(
         env_file=".env", 

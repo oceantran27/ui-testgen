@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
 
+from botocore.exceptions import ClientError
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,8 +20,9 @@ from app.core.errors import (
     RunAlreadySubmittedException,
     RunHasNoImagesException,
     RunNotCancellableException,
-    QueueEnqueueFailedException,
+    StorageUploadFailedException,
 )
+from app.db.session import AsyncSessionLocal
 from app.db.models.run import Run
 from app.db.models.image import Image
 from app.db.models.job import Job
@@ -88,6 +90,26 @@ async def create_run(
     return run
 
 
+async def mark_run_failed_worker(run_id: str, error_message: str, max_len: int = 500) -> None:
+    """
+    Persist failed status when the worker job is cancelled (e.g. ARQ timeout) and
+    GraphExecutionService did not update the row. Idempotent: does not overwrite completed.
+    """
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(Run).where(Run.id == run_id))
+        run = result.scalar_one_or_none()
+        if not run:
+            return
+        if run.status in ("completed", "cancelled", "failed"):
+            return
+        run.status = "failed"
+        run.graph_status = "failed"
+        run.error_message = (error_message or "Run failed")[:max_len]
+        run.graph_completed_at = datetime.now(timezone.utc)
+        await db.commit()
+        log_event("run_marked_failed_worker", run_id=run_id, error_code=run.error_message[:80])
+
+
 async def get_run(db: AsyncSession, run_id: str) -> Run:
     """Fetch a run by ID. Raises RunNotFoundException if missing."""
     result = await db.execute(select(Run).where(Run.id == run_id))
@@ -150,9 +172,7 @@ async def submit_run(db: AsyncSession, run_id: str) -> dict:
     db.add(job)
 
     # ── Enqueue ──────────────────────────────
-    arq_job_id = await queue_service.enqueue_job("process_run", run_id=run_id)
-    if not arq_job_id:
-        raise QueueEnqueueFailedException(run_id)
+    await queue_service.enqueue_job("process_run", run_id=run_id)
 
     run.status = "queued"
     await db.commit()
@@ -176,6 +196,15 @@ async def cancel_run(db: AsyncSession, run_id: str) -> dict:
 
     log_event("run_cancelled", run_id=run_id)
     return {"run_id": run_id, "status": "cancelled", "message": "Run cancelled successfully."}
+
+
+async def delete_run(db: AsyncSession, run_id: str) -> bool:
+    """Hard delete a run and its related records (cascaded in DB)."""
+    run = await get_run(db, run_id)
+    await db.delete(run)
+    await db.commit()
+    log_event("run_deleted", run_id=run_id)
+    return True
 
 
 # ──────────────────────────────────────────────
@@ -215,13 +244,20 @@ async def _save_input_manifest(db: AsyncSession, run: Run) -> None:
         ],
     }
 
-    manifest_bytes = json.dumps(manifest, indent=2, ensure_ascii=False).encode("utf-8")
-    object_key = f"artifacts/{run.id}/input_intake/input_manifest.json"
-    storage_uri = storage_service.upload_file(
-        file_content=manifest_bytes,
-        object_name=object_key,
-        content_type="application/json",
+    manifest_bytes = json.dumps(manifest, indent=2, ensure_ascii=False, default=str).encode(
+        "utf-8"
     )
+    object_key = f"artifacts/{run.id}/input_intake/input_manifest.json"
+    try:
+        storage_uri = storage_service.upload_file(
+            file_content=manifest_bytes,
+            object_name=object_key,
+            content_type="application/json",
+        )
+    except ClientError as e:
+        raise StorageUploadFailedException(
+            "input_manifest.json", reason=str(e)
+        ) from e
 
     artifact = Artifact(
         id=_generate_artifact_id(),

@@ -28,7 +28,7 @@ async def test_mock_adapter_direct():
     os.environ["DEFAULT_MODEL_PROVIDER"] = "mock"
 
     from app.model_providers import model_adapter
-    from app.model_providers.schemas import SemanticDuplicateVerificationResult
+    from app.model_providers.schemas import UIStateExtractionResult
     from app.model_providers.base import ImageInput
 
     # --- Text structured ---
@@ -38,7 +38,7 @@ async def test_mock_adapter_direct():
         node_name="test_node",
         system_instruction="You are a test assistant.",
         user_instruction="Classify this input.",
-        output_schema=SemanticDuplicateVerificationResult,
+        output_schema=UIStateExtractionResult,
         prompt_name="test_prompt",
         prompt_version="v1",
     )
@@ -56,7 +56,7 @@ async def test_mock_adapter_direct():
         system_instruction="You are a UI analyst.",
         user_instruction="Describe this screenshot.",
         image_inputs=[ImageInput(image_id="img_test", image_bytes=b"fake_image_bytes")],
-        output_schema=SemanticDuplicateVerificationResult,
+        output_schema=UIStateExtractionResult,
         prompt_name="test_vision_prompt",
         prompt_version="v1",
     )
@@ -67,11 +67,11 @@ async def test_mock_adapter_direct():
     resp3 = await model_adapter.call_pairwise_vision(
         task_name="semantic_duplicate_verification",
         run_id="run_test",
-        node_name="duplicate_detection_node",
+        node_name="semantic_duplicate_adjudication_node",
         instruction="Are these two screenshots showing the same UI state?",
         image_a=ImageInput(image_id="img_a", image_bytes=b"image_a_bytes"),
         image_b=ImageInput(image_id="img_b", image_bytes=b"image_b_bytes"),
-        output_schema=SemanticDuplicateVerificationResult,
+        output_schema=UIStateExtractionResult,
         prompt_name="semantic_duplicate_verification_prompt",
         prompt_version="v1",
     )

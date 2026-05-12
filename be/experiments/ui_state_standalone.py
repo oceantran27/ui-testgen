@@ -100,6 +100,7 @@ async def main_async() -> None:
         viewport_bands_from_settings,
     )
     from app.services.ui_state_service import (
+        _confidence_from_extraction,
         _convert_bbox,
         _generate_state_id,
         _generate_state_signature,
@@ -237,10 +238,11 @@ async def main_async() -> None:
         state_id = _generate_state_id()
         state_ids.append(state_id)
 
+        conf = _confidence_from_extraction(result_data.extraction_status, result_data.state_quality)
         conf_label = "low"
-        if result_data.confidence >= 0.85:
+        if conf >= 0.75:
             conf_label = "high"
-        elif result_data.confidence >= 0.65:
+        elif conf >= 0.5:
             conf_label = "medium"
 
         signature = _generate_state_signature(result_data.page_type, result_data.ui_elements)
@@ -249,19 +251,18 @@ async def main_async() -> None:
         feedback_count = 0
         elements_out: List[Dict[str, Any]] = []
         for el_data in result_data.ui_elements:
-            bbox = _convert_bbox(el_data.bbox_ymin_xmin_ymax_xmax)
+            bbox = _convert_bbox(el_data.bbox)
             elements_out.append(
                 {
+                    "element_id": el_data.element_id,
                     "type": el_data.type,
                     "label": el_data.label,
                     "text": el_data.text,
-                    "placeholder": el_data.placeholder,
-                    "bbox": bbox,
+                    "bbox_norm01": bbox,
                     "actionable": el_data.actionable,
-                    "action_type": el_data.action_type,
                     "is_feedback": el_data.is_feedback,
-                    "feedback_type": el_data.feedback_type,
-                    "confidence": el_data.confidence,
+                    "semantic_role": el_data.semantic_role,
+                    "visibility": el_data.visibility,
                 }
             )
             if el_data.actionable:
@@ -277,28 +278,30 @@ async def main_async() -> None:
             page_type_distribution.get(result_data.page_type, 0) + 1
         )
 
-        if result_data.warnings:
-            warnings.extend([f"[{image_id}] {w}" for w in result_data.warnings])
+        if result_data.state_quality.warnings:
+            warnings.extend([f"[{image_id}] {w}" for w in result_data.state_quality.warnings])
 
         state_catalog.append(
             {
                 "state_id": state_id,
                 "image_id": image_id,
+                "extraction_status": result_data.extraction_status,
                 "page_type": result_data.page_type,
                 "state_summary": result_data.state_summary,
                 "state_signature": signature,
-                "visible_texts": result_data.visible_texts[:10],
+                "visible_texts": [v.model_dump() for v in result_data.visible_texts[:10]],
+                "feedback_element_count": len(result_data.feedback_elements),
                 "element_count": len(result_data.ui_elements),
                 "actionable_element_count": actionable_count,
-                "feedback_element_count": feedback_count,
-                "confidence": result_data.confidence,
+                "feedback_ui_count": feedback_count,
+                "confidence": conf,
             }
         )
 
         extraction_per_image.append(
             {
                 **base_entry,
-                "extraction_status": "success",
+                "extraction_status": result_data.extraction_status,
                 "state_id": state_id,
                 "state_signature": signature,
                 "confidence_label": conf_label,
