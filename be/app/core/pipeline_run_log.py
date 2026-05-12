@@ -1,7 +1,7 @@
 """
-Optional dual-channel logging for pipeline experiments: short console, detailed files.
+Dual-channel logging for pipeline runs: short console (BEGIN/END, WARN, ERROR), detailed files.
 
-Activated by standalone harness via activate(). Nodes and model_adapter no-op when inactive.
+Activated via activate() from GraphExecutionService (worker). Nodes and model_adapter no-op when inactive.
 """
 from __future__ import annotations
 
@@ -39,6 +39,7 @@ def activate(run_id: str, log_dir: Path) -> None:
     log_dir = Path(log_dir)
     log_dir.mkdir(parents=True, exist_ok=True)
     (log_dir / "raw").mkdir(parents=True, exist_ok=True)
+    (log_dir / "steps").mkdir(parents=True, exist_ok=True)
     _ctx.set(PipelineRunLogContext(run_id=run_id, log_dir=log_dir))
 
 
@@ -50,21 +51,36 @@ def _ctx_or_none() -> Optional[PipelineRunLogContext]:
     return _ctx.get()
 
 
+def _console_step_boundary(label: str, node_name: str) -> None:
+    print("-----", flush=True)
+    print(f"{label} {node_name}", flush=True)
+    print("-----", flush=True)
+
+
 def console_line(message: str) -> None:
-    """Short progress line only (stdout)."""
+    """Ad-hoc progress line (stdout). Prefer BEGIN/END helpers for nodes."""
     print(message, flush=True)
 
 
 def console_warn(message: str) -> None:
+    print("-----", flush=True)
     print(f"WARN: {message}", flush=True)
+    print("-----", flush=True)
 
 
 def console_err(message: str) -> None:
+    print("-----", flush=True)
     print(f"ERROR: {message}", flush=True)
+    print("-----", flush=True)
 
 
 def _pipeline_log_path(ctx: PipelineRunLogContext) -> Path:
     return ctx.log_dir / "pipeline.log"
+
+
+def _step_file_path(ctx: PipelineRunLogContext, node_name: str) -> Path:
+    safe = node_name.replace("/", "_").replace("\\", "_")
+    return ctx.log_dir / "steps" / f"{safe}.json"
 
 
 def _write_file_line(ctx: PipelineRunLogContext, line: str) -> None:
@@ -97,7 +113,7 @@ def file_detail(
             f"[{prefix}] state_slice=\n{json.dumps(_json_safe(state_slice), indent=2, ensure_ascii=False)}",
         )
     if raw_path is not None:
-        _write_file_line(ctx, f"[{prefix}] raw_file={raw_path}")
+        _write_file_line(ctx, f"[{prefix}] file={raw_path}")
     if raw is not None:
         _write_file_line(
             ctx,
@@ -124,15 +140,33 @@ def log_node_return(
     intent_lines: Sequence[str],
     ret: Mapping[str, Any],
 ) -> None:
-    """Log LangGraph node return dict (raw) to raw/ and reference in pipeline.log."""
+    """Record node exit in steps/{node}.json; mirror summary in pipeline.log."""
     ctx = _ctx_or_none()
     if ctx is None:
         return
-    path = write_raw_json(f"node_{node_name}_return", {"node": node_name, "return": dict(ret)})
+    _console_step_boundary("END", node_name)
+    step_path = _step_file_path(ctx, node_name)
+    doc: Dict[str, Any] = {}
+    if step_path.exists():
+        try:
+            doc = json.loads(step_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            doc = {"node": node_name, "_parse_error": "previous_step_file_invalid_json"}
+    if "node" not in doc:
+        doc["node"] = node_name
+    doc["exit"] = {
+        "intent_lines": list(intent_lines),
+        "return": _json_safe(dict(ret)),
+    }
+    doc["exit_at_utc"] = datetime.now(timezone.utc).isoformat()
+    step_path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
     file_detail(
         f"node:{node_name}:return",
         [f"node={node_name}", *list(intent_lines)],
-        raw_path=path,
+        raw_path=step_path,
     )
 
 
@@ -144,23 +178,36 @@ def log_node(
     state: Mapping[str, Any],
     extra_raw: Any = None,
 ) -> None:
-    """Log node entry: logic + raw slice of pipeline state for listed keys."""
+    """Log node entry: steps/{node}.json (enter) + pipeline.log index."""
     ctx = _ctx_or_none()
     if ctx is None:
         return
-    console_line(f"→ {node_name}")
+    _console_step_boundary("BEGIN", node_name)
     slice_: Dict[str, Any] = {}
     for k in state_keys:
         if k in state:
             slice_[k] = state[k]
-    payload: Dict[str, Any] = {"node": node_name, "state_slice": slice_}
+    enter: Dict[str, Any] = {
+        "intent_lines": list(intent_lines),
+        "state_slice": _json_safe(slice_),
+    }
     if extra_raw is not None:
-        payload["extra"] = extra_raw
-    path = write_raw_json(f"node_{node_name}", payload)
+        enter["extra"] = _json_safe(extra_raw)
+    doc = {
+        "node": node_name,
+        "run_id": ctx.run_id,
+        "enter": enter,
+        "enter_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    step_path = _step_file_path(ctx, node_name)
+    step_path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
     file_detail(
         f"node:{node_name}",
         [f"node={node_name}", *list(intent_lines)],
-        raw_path=path,
+        raw_path=step_path,
     )
 
 
@@ -197,4 +244,3 @@ def _json_safe(obj: Any) -> Any:
     if isinstance(obj, type):
         return str(obj)
     return str(obj)
-

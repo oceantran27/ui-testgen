@@ -157,11 +157,18 @@ class StorageUploadFailedException(BaseAPIException):
 
 
 class QueueEnqueueFailedException(BaseAPIException):
-    def __init__(self, run_id: str):
+    def __init__(self, run_id: str, reason: Optional[str] = None):
+        msg = (
+            f"Failed to enqueue processing job for run '{run_id}'. "
+            "Ensure Redis is running and REDIS_URL is correct."
+        )
+        if reason:
+            msg = f"Failed to enqueue processing job for run '{run_id}': {reason}"
         super().__init__(
             error_code="QUEUE_ENQUEUE_FAILED",
-            message=f"Failed to enqueue processing job for run '{run_id}'.",
-            status_code=500
+            message=msg,
+            details={"run_id": run_id, "reason": reason or ""},
+            status_code=503,
         )
 
 
