@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create the uploads directory
-RUN mkdir -p uploads
+RUN mkdir -p uploads var/pipeline_run_logs
 
 # Expose the port the app runs on
 EXPOSE 18080
