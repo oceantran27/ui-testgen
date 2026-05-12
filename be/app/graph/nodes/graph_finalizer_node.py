@@ -12,9 +12,11 @@ from app.db.models.run import Run
 from app.db.models.job import Job
 from app.db.models.artifact import Artifact
 from app.services.storage_service import storage_service
+from app.services.graph_progress import persist_run_graph_progress
 from app.core.pipeline_run_log import is_active, log_node, log_node_return, console_err
 
 NODE_NAME = "graph_finalizer_node"
+
 
 def _generate_artifact_id() -> str:
     import uuid
@@ -29,6 +31,7 @@ async def graph_finalizer_node(
     """
     run_id = state["run_id"]
     job_id = state.get("job_id")
+    await persist_run_graph_progress(run_id, NODE_NAME)
     log_event("graph_node_started", run_id=run_id, node_name=NODE_NAME)
 
     if is_active():
@@ -56,6 +59,9 @@ async def graph_finalizer_node(
         elif state.get("final_output"):
             final_status = "completed"
         elif state.get("draft_scenarios"):
+            final_status = "completed"
+        # Research pipeline uses scenario_draft_package / packages, not draft_scenarios.
+        elif state.get("scenario_draft_package") or state.get("validated_scenario_package"):
             final_status = "completed"
         else:
             final_status = "failed"

@@ -1,9 +1,5 @@
 """
 PipelineState — shared TypedDict state for the entire LangGraph pipeline.
-
-Only a subset of fields is used per phase. Later phases will add more fields
-(e.g. duplicate_groups, ui_extractions, flow_graph, scenarios) without
-breaking earlier nodes.
 """
 from __future__ import annotations
 
@@ -47,47 +43,39 @@ class PipelineState(TypedDict, total=False):
     # ── Phase 2: Image Preprocessing ─────────
     raw_image_ids: List[str]                          # image IDs loaded from DB
     valid_images: List[ImagePreprocessingResult]      # passed all checks
-    invalid_images: List[ImagePreprocessingResult]    # failed at least one check
     image_quality_report: Dict[str, Any]              # full report dict
     preprocessing_warnings: Annotated[List[str], operator.add]
 
-    # ── Phase 3: Duplicate Detection (Exact & Semantic) ──
+    # ── Phase 3: Exact Duplicate Detection ──
     exact_duplicate_groups: List[Dict[str, Any]]
     exact_canonical_images: List[str]
     exact_duplicate_report: Dict[str, Any]
     
-    semantic_duplicate_groups: List[Dict[str, Any]]
-    canonical_state_catalog: List[Dict[str, Any]]
-    semantic_duplicate_report: Dict[str, Any]
+    # ── 7-Agent Pipeline Packages (Strict JSON) ──
     
-    # ── Phase 6: UI State Understanding ──
-    state_catalog: List[Dict[str, Any]]               # list of extracted UI states
-    ui_state_extraction_report: Dict[str, Any]
+    # A1: UI State Extraction
+    ui_state_package: Dict[str, Any]
+    
+    # A2: Semantic Canonicalization
+    canonical_state_set: Dict[str, Any]
+    
+    # A3: UI Flow Discovery
+    flow_discovery_result: Dict[str, Any]
+    
+    # A4: Transition Visual Validation
+    validated_flow_package: Dict[str, Any]
+    
+    # A5: Behaviour Intent Inference
+    intent_package: Dict[str, Any]
+    
+    # A6: BDD Scenario Generation
+    scenario_draft_package: Dict[str, Any]
+    
+    # A7: Scenario Validation
+    validated_scenario_package: Dict[str, Any]
 
-    # ── Phase 8: Flow Discovery (LLM-guided) ──
-    flow_clusters: List[Dict[str, Any]]
-    unassigned_state_ids: List[str]
-    flow_discovery_report: Dict[str, Any]
-    detected_flows: List[str]                         # list of flow IDs
-
-    # ── Phase 10: Behaviour Intent Inference ──
-    behaviour_intents: List[Dict[str, Any]]
-    behaviour_intent_report: Dict[str, Any]
-
-    # ── Phase 11: Behaviour Scenario Generation ──
-    draft_scenarios: List[Dict[str, Any]]
-    scenario_generation_report: Dict[str, Any]
-
-    # ── Phase 12: Scenario Grounding & Validation ──
-    validated_scenarios: List[Dict[str, Any]]
-    low_confidence_scenarios: List[Dict[str, Any]]
-    needs_revision_scenarios: List[Dict[str, Any]]
-    rejected_scenarios: List[Dict[str, Any]]
-    scenario_validation_report: Dict[str, Any]
-
-    # ── Phase 14: Output Assembly ──
+    # Final assembled artifact (output_assembly_node) — must be declared or LangGraph drops it.
     final_output: Dict[str, Any]
-    final_artifacts: List[Dict[str, Any]]
 
     # ── Phase 4: Pipeline control & Metrics ──
     warnings: Annotated[List[str], operator.add]      # accumulated warnings
@@ -104,10 +92,3 @@ class PipelineState(TypedDict, total=False):
     
     should_stop: bool                                 # set True to halt pipeline early
     stop_reason: Optional[str]                        # e.g. "NO_VALID_IMAGES"
-
-    # ── Phase 5: Model Provider Tracking ─────
-    model_calls_summary: Annotated[List[Dict[str, Any]], operator.add]   # one entry per model call
-    model_total_tokens: int                           # accumulated across all calls
-    model_total_latency_ms: int                       # accumulated across all calls
-    model_warnings: Annotated[List[str], operator.add]
-    model_errors: Annotated[List[str], operator.add]

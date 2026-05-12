@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
 from app.services.exact_duplicate_service import run_exact_duplicate_detection
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
+from app.services.graph_progress import persist_run_graph_progress
 
 async def exact_duplicate_node(state: PipelineState, db: AsyncSession) -> Dict[str, Any]:
     run_id = state["run_id"]
+    await persist_run_graph_progress(run_id, "exact_duplicate_node")
     # We only process valid images from preprocessing
     image_ids = [img["image_id"] for img in state.get("valid_images", [])]
 

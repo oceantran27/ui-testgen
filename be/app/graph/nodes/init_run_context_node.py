@@ -10,6 +10,7 @@ from app.graph.state.graph_state import PipelineState
 from app.db.models.run import Run
 from app.core.config import settings
 from app.core.pipeline_run_log import is_active, log_node, log_node_return, console_err
+from app.services.graph_progress import persist_run_graph_progress
 
 NODE_NAME = "init_run_context_node"
 
@@ -21,6 +22,7 @@ async def init_run_context_node(
     Initializes the graph state by reading run config from DB and setting up default metrics.
     """
     run_id = state["run_id"]
+    await persist_run_graph_progress(run_id, NODE_NAME)
     log_event("graph_node_started", run_id=run_id, node_name=NODE_NAME)
 
     if is_active():

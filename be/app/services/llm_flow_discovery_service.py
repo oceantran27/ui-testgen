@@ -1,5 +1,5 @@
 """
-LLM Flow Discovery Service — Phase Research v1.
+UI Flow Discovery Service — Agent 3.
 Discovers user behavior flows using structured LLM reasoning.
 """
 import json
@@ -8,76 +8,60 @@ import uuid
 from typing import Any, Dict, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.config import settings
 from app.core.logging import log_event, logger
 from app.db.models.flow import Flow
+from app.db.models.flow_transition import FlowTransition
 from app.model_providers import model_adapter
-from app.model_providers.schemas import LLMFlowDiscoveryOutput
+from app.model_providers.schemas import UIFlowDiscoveryResult
+from app.core.prompt_manager import prompt_manager
 
 
 def _generate_flow_id() -> str:
     return f"fl_{uuid.uuid4().hex[:12]}"
 
-
-def _llm_flow_type_to_db(flow_type: str) -> str:
-    if flow_type == "single_state_inferred_flow":
-        return "single_state_pseudo_flow"
-    return "linear_flow"
+def _generate_transition_id() -> str:
+    return f"tr_{uuid.uuid4().hex[:12]}"
 
 
-def _confidence_label(score: float) -> str:
-    if score >= 0.8:
-        return "high"
-    if score >= 0.5:
-        return "medium"
-    return "low"
-
-
-async def run_llm_flow_discovery(
+async def run_ui_flow_discovery(
     db: AsyncSession, 
     run_id: str, 
-    canonical_state_catalog: List[Dict[str, Any]]
+    canonical_state_set: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Groups canonical states into behavior flows and infers transitions.
     """
     start_time = time.time()
-    log_event("llm_flow_discovery_started", run_id=run_id)
+    log_event("ui_flow_discovery_started", run_id=run_id)
 
-    if not canonical_state_catalog:
-        return {
-            "flow_clusters": [],
-            "unassigned_state_ids": [],
-            "report": {"reason": "NO_CANONICAL_STATES"}
-        }
+    canonical_states = canonical_state_set.get("canonical_states", [])
+    if not canonical_states:
+        return UIFlowDiscoveryResult(
+            flow_discovery_result_id="",
+            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", ""),
+            flows=[],
+            unassigned_state_ids=[],
+            discovery_warnings=["NO_CANONICAL_STATES"],
+        ).model_dump()
 
-    system_instruction = (
-        "You are a Senior QA Flow Reasoning Agent. Your task is to discover possible user behavior flows "
-        "from unordered UI states extracted from screenshots.\n\n"
-        "Rules:\n"
-        "- Use only the provided UI states and visible evidence.\n"
-        "- Do not assume backend data or business rules not visible in the states.\n"
-        "- A flow is a sequence of UI states that can plausibly represent a user action and an observable UI result.\n"
-        "- If the order is uncertain, mark uncertain_order.\n"
-        "- If a final observable result is missing, mark missing_final_verification.\n"
-        "- If only one state can be used, create a single_state_inferred_flow.\n"
-        "- Every transition must cite evidence_state_ids and evidence_element_ids when available.\n"
-    )
+    system_instruction = prompt_manager.get_prompt("llm_flow_discovery")
 
     user_instruction = (
-        f"Group the following {len(canonical_state_catalog)} canonical UI states into behaviour flows "
+        f"Group the following {len(canonical_states)} canonical UI states into behaviour flows "
         f"and infer ordered transitions:\n"
-        f"{json.dumps(canonical_state_catalog, indent=2)}\n"
+        f"{json.dumps(canonical_states, indent=2)}\n"
     )
 
     response = await model_adapter.call_text_structured(
-        task_name="llm_flow_discovery",
+        task_name="ui_flow_discovery",
         run_id=run_id,
         node_name="llm_flow_discovery_node",
         system_instruction=system_instruction,
         user_instruction=user_instruction,
-        output_schema=LLMFlowDiscoveryOutput,
+        output_schema=UIFlowDiscoveryResult,
         prompt_name="llm_flow_discovery_prompt",
         prompt_version="v1",
         provider_override=settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
@@ -85,57 +69,62 @@ async def run_llm_flow_discovery(
     )
 
     if response.status.value != "success" or not response.parsed_output:
-        logger.error(f"LLM Flow Discovery failed: {response.error}")
-        return {
-            "flow_clusters": [],
-            "unassigned_state_ids": [s["state_id"] for s in canonical_state_catalog],
-            "report": {"error": str(response.error)}
-        }
+        logger.error(f"UI Flow Discovery failed: {response.error}")
+        err = UIFlowDiscoveryResult(
+            flow_discovery_result_id="",
+            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", ""),
+            flows=[],
+            unassigned_state_ids=[],
+            discovery_warnings=[str(response.error or "LLM_FAILED")],
+        ).model_dump()
+        err["report"] = {"error": str(response.error)}
+        return err
 
-    result: LLMFlowDiscoveryOutput = response.parsed_output
+    result: UIFlowDiscoveryResult = response.parsed_output
 
-    flow_clusters: List[Dict[str, Any]] = []
-    for cluster in result.flows:
-        flow_id = _generate_flow_id()
-        ordered = list(cluster.ordered_state_ids)
-        start_sid = ordered[0] if ordered else None
-        conf_label = _confidence_label(cluster.confidence)
-        warnings_payload: dict[str, Any] | None = (
-            {"llm_warnings": list(cluster.warnings)} if cluster.warnings else None
-        )
+    for flow_data in result.flows:
+        # Save Flow to DB
         flow_row = Flow(
-            id=flow_id,
+            id=flow_data.flow_id,
             run_id=run_id,
-            name=cluster.flow_name,
-            flow_type=_llm_flow_type_to_db(cluster.flow_type),
-            input_level="LLM_RESEARCH",
-            start_state_id=start_sid,
-            ordered_state_ids_json={"ids": ordered},
-            completeness_status=cluster.completeness_status,
-            confidence=cluster.confidence,
-            confidence_label=conf_label,
-            warnings_json=warnings_payload,
+            name=flow_data.flow_label,
+            flow_type=flow_data.flow_type,
+            flow_label=flow_data.flow_label,
+            input_level="AGENT_3_FLOW_DISCOVERY",
+            entry_state_id=flow_data.entry_state_id,
+            ordered_state_ids_json={"ids": flow_data.state_ids},
+            terminal_state_ids_json={"ids": flow_data.terminal_state_ids},
+            flow_completeness_json=flow_data.flow_completeness.model_dump(),
+            confidence=0.0, # Placeholder
         )
         db.add(flow_row)
-        dumped = cluster.model_dump()
-        dumped["flow_id"] = flow_id
-        flow_clusters.append(dumped)
+        
+        # Save Transitions
+        for tr_data in flow_data.transitions:
+            tr_row = FlowTransition(
+                id=tr_data.transition_id,
+                run_id=run_id,
+                flow_id=flow_data.flow_id,
+                from_state_id=tr_data.from_state_id,
+                to_state_id=tr_data.to_state_id,
+                transition_type="llm_inferred",
+                trigger_element_id=tr_data.trigger_element_id,
+                transition_basis=tr_data.transition_basis,
+                ordering_strength=tr_data.ordering_strength,
+                supporting_evidence_refs_json={"refs": [r.model_dump() for r in tr_data.supporting_evidence_refs]},
+                uncertainty_reason=tr_data.uncertainty_reason,
+            )
+            db.add(tr_row)
 
     await db.commit()
 
     report = {
-        "input_state_count": len(canonical_state_catalog),
         "discovered_flow_count": len(result.flows),
         "unassigned_state_count": len(result.unassigned_state_ids),
-        "warnings": result.global_warnings,
-        "persisted_flow_ids": [c["flow_id"] for c in flow_clusters],
+        "warnings": result.discovery_warnings,
     }
 
     duration_ms = int((time.time() - start_time) * 1000)
-    log_event("llm_flow_discovery_completed", run_id=run_id, duration_ms=duration_ms)
+    log_event("ui_flow_discovery_completed", run_id=run_id, duration_ms=duration_ms)
 
-    return {
-        "flow_clusters": flow_clusters,
-        "unassigned_state_ids": result.unassigned_state_ids,
-        "report": report
-    }
+    return result.model_dump()

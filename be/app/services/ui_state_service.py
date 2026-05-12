@@ -1,45 +1,41 @@
 """
-UI State Service — Phase 6 implementation.
-Extracts UI elements and state information from canonical images using VLM.
+UI State Service — extracts UI states from canonical images (Agent 1).
+
+Builds a UIStatePackage (extracted_states) for semantic canonicalization per prompts.
 """
+import json
+import time
 import uuid
 from typing import Any, Dict, List
-import time
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.logging import log_event, logger
-from app.db.models.image import Image
-from app.db.models.ui_state import UIState
-from app.db.models.ui_element import UIElement
+from app.core.prompt_manager import prompt_manager
 from app.db.models.artifact import Artifact
-from app.services.storage_service import storage_service
+from app.db.models.image import Image
+from app.db.models.ui_element import UIElement
+from app.db.models.ui_state import UIState
 from app.model_providers import model_adapter
-from app.model_providers.schemas import UIStateExtractionResult, UIElementData
 from app.model_providers.base import ImageInput
-import json
+from app.model_providers.schemas import UIElementA1, UIStateExtractionResult
+from app.services.storage_service import storage_service
+
 
 def _generate_state_id() -> str:
     return f"st_{uuid.uuid4().hex[:12]}"
 
-def _generate_element_id() -> str:
-    return f"el_{uuid.uuid4().hex[:12]}"
 
 def _generate_artifact_id() -> str:
     return f"art_{uuid.uuid4().hex[:12]}"
 
 
-def _convert_bbox(gemini_bbox: List[int]) -> Dict[str, float]:
-    """
-    Convert Gemini bbox [ymin, xmin, ymax, xmax] (0-1000 scale)
-    to internal format {x_min, y_min, x_max, y_max} (0.0 - 1.0).
-    """
-    if len(gemini_bbox) != 4:
+def _convert_bbox(normalized_0_1000: List[int]) -> Dict[str, float]:
+    if len(normalized_0_1000) != 4:
         return {"x_min": 0.0, "y_min": 0.0, "x_max": 0.0, "y_max": 0.0}
-    
-    ymin, xmin, ymax, xmax = gemini_bbox
+    ymin, xmin, ymax, xmax = normalized_0_1000
     return {
         "x_min": max(0.0, min(1.0, xmin / 1000.0)),
         "y_min": max(0.0, min(1.0, ymin / 1000.0)),
@@ -48,84 +44,109 @@ def _convert_bbox(gemini_bbox: List[int]) -> Dict[str, float]:
     }
 
 
-def _generate_state_signature(page_type: str, elements: List[UIElementData]) -> str:
-    """Generate a compact semantic signature for the state."""
-    inputs = []
-    actions = []
+def _confidence_from_extraction(extraction_status: str, quality: Any) -> float:
+    base = {"success": 0.88, "partial": 0.62, "failed": 0.05}.get(extraction_status, 0.5)
+    vr = getattr(quality, "visual_readability", "") or ""
+    ec = getattr(quality, "extraction_completeness", "") or ""
+    if vr == "high" and ec == "complete":
+        base = min(1.0, base + 0.08)
+    elif vr == "low" or ec == "poor":
+        base = max(0.05, base - 0.25)
+    return round(base, 3)
+
+
+def _confidence_label(conf: float) -> str:
+    if conf >= 0.75:
+        return "high"
+    if conf >= 0.5:
+        return "medium"
+    return "low"
+
+
+def _generate_state_signature(page_type: str, elements: List[UIElementA1]) -> str:
+    inputs: List[str] = []
+    actions: List[str] = []
     feedback = "none"
-    
     for el in elements:
-        if el.type in ["input", "textarea", "checkbox", "radio", "dropdown"]:
-            if el.label or el.placeholder or el.text:
-                inputs.append((el.label or el.placeholder or el.text)[:20])
-        elif el.actionable and el.action_type in ["click", "submit", "navigate"]:
-            if el.label or el.text:
-                actions.append((el.label or el.text)[:20])
-        elif el.is_feedback and el.feedback_type in ["error", "success", "warning"]:
+        if el.type in ("input", "textarea", "checkbox", "radio", "dropdown"):
+            label = el.label or el.text or ""
+            if label:
+                inputs.append(label[:20])
+        elif el.actionable:
+            label = el.label or el.text or ""
+            if label:
+                actions.append(label[:20])
+        if el.is_feedback and el.feedback_type:
             feedback = el.feedback_type
-
-    inputs_str = ",".join(inputs[:5]) if inputs else "none"
-    actions_str = ",".join(actions[:5]) if actions else "none"
-    
-    return f"{page_type}|inputs:{inputs_str}|actions:{actions_str}|feedback:{feedback}"
+    return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(actions[:5]) or 'none'}|feedback:{feedback}"
 
 
-async def run_ui_state_extraction(db: AsyncSession, run_id: str, canonical_images: List[str]) -> Dict[str, Any]:
-    """
-    Execute Phase 6 for a given list of canonical image IDs.
-    Returns the state catalog and report.
-    """
+def _flags_from_elements(elements: List[UIElementA1]) -> tuple[bool, bool, bool, bool]:
+    has_form = any(
+        el.type in ("input", "textarea", "dropdown", "checkbox", "radio", "form")
+        for el in elements
+    )
+    has_table = any(el.type == "table" for el in elements)
+    has_modal = any(el.type in ("modal", "drawer", "toast", "banner", "alert") for el in elements)
+    has_feedback = any(el.is_feedback for el in elements)
+    return has_form, has_table, has_modal, has_feedback
+
+
+def _safe_element_db_id(state_id: str, element_id: str, idx: int) -> str:
+    raw = f"{state_id}_{element_id}"
+    if len(raw) > 200:
+        return f"{state_id}_E{idx}"
+    return raw
+
+
+async def run_ui_state_extraction(
+    db: AsyncSession, run_id: str, canonical_images: List[str]
+) -> Dict[str, Any]:
     start_time = time.time()
     log_event("ui_state_extraction_started", run_id=run_id, node_name="ui_state_extraction")
 
     if not canonical_images:
         log_event("ui_state_extraction_skipped", run_id=run_id, reason="NO_CANONICAL_IMAGES")
-        return {"state_catalog": [], "report": {}}
+        return {
+            "ui_state_package_id": f"ui_pkg_{uuid.uuid4().hex[:12]}",
+            "extracted_states": [],
+            "state_catalog": [],
+            "report": {},
+        }
 
-    # Load canonical images from DB
     result = await db.execute(
         select(Image).where(Image.id.in_(canonical_images), Image.run_id == run_id)
     )
     images = list(result.scalars().all())
 
-    state_catalog = []
+    extracted_states: List[Dict[str, Any]] = []
     extracted_states_count = 0
     failed_extractions_count = 0
-    
     page_type_distribution: Dict[str, int] = {}
     total_ui_elements = 0
     total_actionable_elements = 0
     total_feedback_elements = 0
-    failed_items = []
-    warnings = []
+    failed_items: List[str] = []
+    warnings: List[str] = []
 
-    for idx, img in enumerate(images):
+    ui_pkg_id = f"ui_pkg_{uuid.uuid4().hex[:12]}"
+
+    for img in images:
         if not img.normalized_uri:
             warnings.append(f"Image {img.id} missing normalized_uri. Skipped.")
             failed_extractions_count += 1
             failed_items.append(img.id)
             continue
-            
-        system_instruction = (
-            "You are an expert UI Analyst. Your task is to extract structural and semantic information "
-            "from the provided UI screenshot. Return a structured JSON matching the requested schema.\n"
-            "Rules:\n"
-            "- Only describe elements that are VISIBLE in the screenshot.\n"
-            "- Do NOT hallucinate elements that might exist but are not currently visible.\n"
-            "- Use the provided Enums strictly.\n"
-            "- Extract text accurately. If text is illegible, leave it empty or mark low confidence.\n"
-            "- Actionable elements are things the user can interact with (buttons, inputs, links).\n"
-            "- Feedback elements are system messages (errors, success toasts, validation text).\n"
-            "- Bounding boxes must be returned as [ymin, xmin, ymax, xmax] scaled 0-1000.\n"
-        )
-        
+
+        system_instruction = prompt_manager.get_prompt("ui_state_extraction")
         user_instruction = (
-            "Analyze this screenshot and extract the UI state. Identify the page type, visible texts, "
-            "and all significant UI elements. Determine if they are actionable or feedback elements."
+            "Analyze this screenshot and extract the UI state per your contract "
+            "(state_id may use image id; use source_image_id exactly as provided in JSON metadata)."
         )
-        
+        user_instruction += f'\nMetadata JSON: {{"image_id": "{img.id}", "image_uri": "{img.normalized_uri}"}}'
+
         image_input = ImageInput(image_id=img.id, storage_uri=img.normalized_uri)
-        
+
         response = await model_adapter.call_vision_structured(
             task_name="ui_state_extraction",
             run_id=run_id,
@@ -137,37 +158,29 @@ async def run_ui_state_extraction(db: AsyncSession, run_id: str, canonical_image
             prompt_name="ui_state_extraction_prompt",
             prompt_version="v1",
         )
-        
+
         if response.status.value != "success" or not response.parsed_output:
             logger.error(f"UI Extraction failed for image {img.id}: {response.error}")
             failed_extractions_count += 1
             failed_items.append(img.id)
-            
-            # Save failed state
             failed_state = UIState(
                 id=_generate_state_id(),
                 run_id=run_id,
                 image_id=img.id,
                 page_type="unknown_page",
                 extraction_status="failed",
-                extraction_error=str(response.error)
+                extraction_error=str(response.error),
             )
             db.add(failed_state)
             continue
 
         result_data: UIStateExtractionResult = response.parsed_output
         state_id = _generate_state_id()
-        
-        # Calculate derived confidence
-        conf_label = "low"
-        if result_data.confidence >= 0.85:
-            conf_label = "high"
-        elif result_data.confidence >= 0.65:
-            conf_label = "medium"
-            
+        conf = _confidence_from_extraction(result_data.extraction_status, result_data.state_quality)
+        conf_label = _confidence_label(conf)
+        has_form, has_table, has_modal, has_feedback = _flags_from_elements(result_data.ui_elements)
         signature = _generate_state_signature(result_data.page_type, result_data.ui_elements)
-        
-        # Save UIState
+
         db_state = UIState(
             id=state_id,
             run_id=run_id,
@@ -175,47 +188,45 @@ async def run_ui_state_extraction(db: AsyncSession, run_id: str, canonical_image
             page_type=result_data.page_type,
             state_summary=result_data.state_summary,
             state_signature=signature,
-            confidence=result_data.confidence,
+            confidence=conf,
             confidence_label=conf_label,
-            has_form=result_data.has_form,
-            has_table=result_data.has_table,
-            has_modal=result_data.has_modal,
-            has_feedback=result_data.has_feedback,
-            extraction_status="success",
+            has_form=has_form,
+            has_table=has_table,
+            has_modal=has_modal,
+            has_feedback=has_feedback,
+            state_quality=result_data.state_quality.model_dump(),
+            extraction_status=result_data.extraction_status,
         )
         db.add(db_state)
-        
-        extracted_states_count += 1
-        page_type_distribution[result_data.page_type] = page_type_distribution.get(result_data.page_type, 0) + 1
-        
+
         actionable_count = 0
         feedback_count = 0
-        
-        # Save UIElements
+
         for idx, el_data in enumerate(result_data.ui_elements):
-            bbox = _convert_bbox(el_data.bbox_ymin_xmin_ymax_xmax)
-            
+            bbox = _convert_bbox(el_data.bbox)
             db_el = UIElement(
-                id=f"{state_id}_E{idx+1}",
+                id=_safe_element_db_id(state_id, el_data.element_id, idx),
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
                 type=el_data.type,
                 label=el_data.label,
                 text=el_data.text,
-                placeholder=el_data.placeholder,
+                placeholder=None,
                 bbox_xmin=bbox["x_min"],
                 bbox_ymin=bbox["y_min"],
                 bbox_xmax=bbox["x_max"],
                 bbox_ymax=bbox["y_max"],
                 actionable=el_data.actionable,
-                action_type=el_data.action_type,
+                action_type=None,
+                semantic_role=el_data.semantic_role,
+                visibility=el_data.visibility,
+                visible=True,
                 is_feedback=el_data.is_feedback,
-                feedback_type=el_data.feedback_type,
-                confidence=el_data.confidence,
+                feedback_type=None,
+                confidence=0.0,
             )
             db.add(db_el)
-            
             total_ui_elements += 1
             if el_data.actionable:
                 actionable_count += 1
@@ -223,48 +234,42 @@ async def run_ui_state_extraction(db: AsyncSession, run_id: str, canonical_image
             if el_data.is_feedback:
                 feedback_count += 1
                 total_feedback_elements += 1
-                
-        if result_data.warnings:
-            warnings.extend([f"[{img.id}] {w}" for w in result_data.warnings])
 
-        # Add to catalog
-        state_catalog.append({
+        state_row = {
+            "extraction_status": result_data.extraction_status,
             "state_id": state_id,
-            "image_id": img.id,
+            "source_image_id": img.id,
             "page_type": result_data.page_type,
             "state_summary": result_data.state_summary,
-            "state_signature": signature,
-            "visible_texts": result_data.visible_texts,
-            "ui_elements": [el.model_dump() for el in result_data.ui_elements],
-            "actionable_elements": [el.model_dump() for el in result_data.ui_elements if el.actionable],
-            "feedback_elements": [el.model_dump() for el in result_data.ui_elements if el.is_feedback],
-            "has_form": result_data.has_form,
-            "has_table": result_data.has_table,
-            "has_modal": result_data.has_modal,
-            "has_feedback": result_data.has_feedback,
-            "element_count": len(result_data.ui_elements),
-            "actionable_element_count": actionable_count,
-            "feedback_element_count": feedback_count,
-            "confidence": result_data.confidence,
-        })
-        
+            "visible_texts": [v.model_dump() for v in result_data.visible_texts],
+            "ui_elements": [u.model_dump() for u in result_data.ui_elements],
+            "feedback_elements": [f.model_dump() for f in result_data.feedback_elements],
+            "primary_action_candidates": [p.model_dump() for p in result_data.primary_action_candidates],
+            "state_quality": result_data.state_quality.model_dump(),
+        }
+        extracted_states.append(state_row)
+        extracted_states_count += 1
+        page_type_distribution[result_data.page_type] = page_type_distribution.get(result_data.page_type, 0) + 1
+        for w in result_data.state_quality.warnings:
+            warnings.append(f"[{img.id}] {w}")
+
     await db.commit()
-    
-    # 7. Build Report
+
     report = {
         "run_id": run_id,
+        "ui_state_package_id": ui_pkg_id,
         "canonical_images_count": len(images),
         "extracted_states_count": extracted_states_count,
         "failed_extractions_count": failed_extractions_count,
-        "state_ids": [s["state_id"] for s in state_catalog],
+        "state_ids": [s["state_id"] for s in extracted_states],
         "page_type_distribution": page_type_distribution,
         "total_ui_elements": total_ui_elements,
         "total_actionable_elements": total_actionable_elements,
         "total_feedback_elements": total_feedback_elements,
         "failed_items": failed_items,
-        "warnings": warnings
+        "warnings": warnings,
     }
-    
+
     if settings.SAVE_UI_STATE_EXTRACTION_REPORT:
         report_bytes = json.dumps(report, indent=2).encode("utf-8")
         report_key = f"artifacts/{run_id}/ui_state_extraction/ui_state_extraction_report.json"
@@ -285,6 +290,10 @@ async def run_ui_state_extraction(db: AsyncSession, run_id: str, canonical_image
     log_event("ui_state_extraction_completed", run_id=run_id, duration_ms=duration_ms)
 
     return {
-        "state_catalog": state_catalog,
-        "report": report
+        "schema_version": "1.0",
+        "agent_name": "ui_state_extraction_agent",
+        "ui_state_package_id": ui_pkg_id,
+        "extracted_states": extracted_states,
+        "state_catalog": extracted_states,
+        "report": report,
     }
