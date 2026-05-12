@@ -1,0 +1,576 @@
+{
+  "ui_elements": [
+    {
+      "type": "button",
+      "label": "Home",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        16.0,
+        40.0,
+        35.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "File",
+      "text": "File",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        38.0,
+        38.0,
+        59.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Resize",
+      "text": "Resize",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        77.0,
+        39.0,
+        114.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Editing",
+      "text": "Editing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        121.0,
+        39.0,
+        181.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Start your trial for ₱0",
+      "text": "Start your trial for ₱0",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        751.0,
+        62.0,
+        866.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Share",
+      "text": "Share",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        945.0,
+        63.0,
+        997.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Templates",
+      "text": "Templates",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        0.0,
+        165.0,
+        59.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Elements",
+      "text": "Elements",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        149.0,
+        0.0,
+        226.0,
+        59.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Text",
+      "text": "Text",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        209.0,
+        0.0,
+        274.0,
+        59.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Brand",
+      "text": "Brand",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        269.0,
+        0.0,
+        334.0,
+        60.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Uploads",
+      "text": "Uploads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        332.0,
+        0.0,
+        402.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        394.0,
+        0.0,
+        457.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Projects",
+      "text": "Projects",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        456.0,
+        0.0,
+        525.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Apps",
+      "text": "Apps",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        0.0,
+        578.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Magic Media",
+      "text": "Magic Media",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        577.0,
+        0.0,
+        659.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Charts",
+      "text": "Charts",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        640.0,
+        0.0,
+        701.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Equations",
+      "text": "Equations",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        703.0,
+        0.0,
+        766.0,
+        61.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Back",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        93.0,
+        44.0,
+        112.0,
+        56.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Feuille simple",
+      "text": "Feuille simple",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        108.0,
+        41.0,
+        176.0,
+        223.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Sheet • Unlimited",
+      "text": "Sheet • Unlimited",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        176.0,
+        41.0,
+        198.0,
+        219.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "View more by Canva Creative Studio",
+      "text": "View more by Canva Creative Studio",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        237.0,
+        39.0,
+        277.0,
+        438.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "More like this",
+      "text": "More like this",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        356.0,
+        41.0,
+        376.0,
+        196.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Title template thumbnail",
+      "text": "Titre",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        392.0,
+        39.0,
+        464.0,
+        128.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Title template thumbnail",
+      "text": "Titre",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        392.0,
+        134.0,
+        464.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Campaign timeline template thumbnail",
+      "text": "CAMPAIGN TIMELINE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        520.0,
+        134.0,
+        591.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Suivi de campagne template thumbnail",
+      "text": "Suivi de campagne",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        520.0,
+        39.0,
+        592.0,
+        128.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Suivi des actifs template thumbnail",
+      "text": "Suivi des actifs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        39.0,
+        719.0,
+        127.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "SUM DES PROSPECTS template thumbnail",
+      "text": "SUM DES PROSPECTS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        134.0,
+        719.0,
+        224.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Suivi du profil du candidat template thumbnail",
+      "text": "Suivi du profil du candidat",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        392.0,
+        227.0,
+        464.0,
+        317.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Feuille du temps de travail template thumbnail",
+      "text": "FEUILLE DU TEMPS DE TRAV",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        229.0,
+        718.0,
+        319.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Plan média template thumbnail",
+      "text": "Plan média",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        323.0,
+        719.0,
+        414.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "sheet tab 1",
+      "text": "1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        795.0,
+        596.0,
+        854.0,
+        632.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "sheet tab 2",
+      "text": "2",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        794.0,
+        637.0,
+        853.0,
+        674.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add page",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        805.0,
+        537.0,
+        864.0,
+        588.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "More page options",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        805.0,
+        591.0,
+        864.0,
+        638.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Pages",
+      "text": "Pages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        947.0,
+        945.0,
+        996.0,
+        997.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Zoom slider",
+      "text": "90%",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        946.0,
+        744.0,
+        997.0,
+        917.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Untitled design - Sheet",
+      "text": "Untitled design - Sheet",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        1.0,
+        654.0,
+        52.0,
+        739.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Actions",
+      "text": "Actions",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        419.0,
+        112.0,
+        477.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Colonne 4",
+      "text": "Colonne 4",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        372.0,
+        253.0,
+        391.0,
+        434.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Colonne 5",
+      "text": "Colonne 5",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        438.0,
+        391.0,
+        535.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Colonne 6",
+      "text": "Colonne 6",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        538.0,
+        391.0,
+        631.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Colonne 7",
+      "text": "Colonne 7",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        632.0,
+        391.0,
+        726.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Colonne 8",
+      "text": "Colonne 8",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        726.0,
+        391.0,
+        823.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,368 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Profile",
+      "text": "Profile",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        304.0,
+        54.0,
+        375.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Representative photo",
+      "text": "Representative photo",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        111.0,
+        303.0,
+        134.0,
+        441.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "profile avatar",
+      "text": "D",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        304.0,
+        252.0,
+        348.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Name",
+      "text": "Dai Duong",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        290.0,
+        301.0,
+        350.0,
+        619.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Username",
+      "text": "heydayne",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        409.0,
+        301.0,
+        467.0,
+        618.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Email",
+      "text": "heydayne@gmail.com",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        524.0,
+        301.0,
+        584.0,
+        618.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Verify now",
+      "text": "Verify now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        580.0,
+        457.0,
+        595.0,
+        620.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Email is not verified.",
+      "text": "Email is not verified. Verify now",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        574.0,
+        301.0,
+        596.0,
+        621.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Current password",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        654.0,
+        301.0,
+        707.0,
+        619.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "show_password",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        653.0,
+        606.0,
+        690.0,
+        619.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "New password",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        753.0,
+        301.0,
+        806.0,
+        619.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "show_password",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        753.0,
+        606.0,
+        790.0,
+        619.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "SAVE CHANGES",
+      "text": "SAVE CHANGES",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        825.0,
+        302.0,
+        874.0,
+        371.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "EXTRACT MY DATA",
+      "text": "EXTRACT MY DATA",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        936.0,
+        303.0,
+        954.0,
+        399.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "DELETE MY ACCOUNT",
+      "text": "DELETE MY ACCOUNT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        961.0,
+        303.0,
+        983.0,
+        392.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Account",
+      "text": "Account",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        653.0,
+        132.0,
+        689.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Private settings",
+      "text": "Private settings",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        654.0,
+        108.0,
+        775.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Profile",
+      "text": "Profile",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        125.0,
+        654.0,
+        149.0,
+        723.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Notification",
+      "text": "Notification",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        176.0,
+        654.0,
+        201.0,
+        785.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Courses",
+      "text": "Courses",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        654.0,
+        249.0,
+        768.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Duolingo for Schools",
+      "text": "Duolingo for Schools",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        274.0,
+        654.0,
+        301.0,
+        866.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Social network account",
+      "text": "Social network account",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        321.0,
+        654.0,
+        347.0,
+        889.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Privacy Settings",
+      "text": "Privacy Settings",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        372.0,
+        654.0,
+        398.0,
+        806.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Subscription plan",
+      "text": "Subscription plan",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        445.0,
+        654.0,
+        480.0,
+        797.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Select subscription plan",
+      "text": "Select subscription plan",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        523.0,
+        654.0,
+        552.0,
+        775.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Support",
+      "text": "Support",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        603.0,
+        653.0,
+        640.0,
+        729.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Help Center",
+      "text": "Help Center",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        685.0,
+        654.0,
+        710.0,
+        749.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "LOGOUT",
+      "text": "LOGOUT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        787.0,
+        654.0,
+        834.0,
+        853.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,589 @@
+{
+  "ui_elements": [
+    {
+      "type": "button",
+      "label": "Main menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        33.0,
+        53.0,
+        52.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wikipedia",
+      "text": "WIKIPEDIA",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        91.0,
+        52.0,
+        181.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search Wikipedia",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        228.0,
+        48.0,
+        545.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        546.0,
+        48.0,
+        595.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        23.0,
+        781.0,
+        45.0,
+        836.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        23.0,
+        842.0,
+        44.0,
+        930.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        23.0,
+        932.0,
+        44.0,
+        974.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "IPv6",
+      "text": "IPv6",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        203.0,
+        137.0,
+        272.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Languages",
+      "text": "62 languages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        100.0,
+        707.0,
+        128.0,
+        819.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Article",
+      "text": "Article",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        204.0,
+        167.0,
+        253.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Talk",
+      "text": "Talk",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        251.0,
+        166.0,
+        284.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        625.0,
+        167.0,
+        669.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Edit",
+      "text": "Edit",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        670.0,
+        166.0,
+        705.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        707.0,
+        167.0,
+        765.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        769.0,
+        167.0,
+        815.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "From Wikipedia, the free encyclopedia",
+      "text": "From Wikipedia, the free encyclopedia",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        175.0,
+        205.0,
+        200.0,
+        456.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "Update notice",
+      "text": "Parts of this article (those related to RFC 8200 and RFC 8201) need to be updated. Please help update this article to reflect recent events or newly available information. (July 2017)",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        213.0,
+        254.0,
+        304.0,
+        752.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Internet Protocol version 6 (IPv6)",
+      "text": "Internet Protocol version 6 (IPv6)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        200.0,
+        348.0,
+        644.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Internet Protocol version 6 infobox",
+      "text": "Internet Protocol version 6",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        320.0,
+        509.0,
+        997.0,
+        783.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Contents",
+      "text": "Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        45.0,
+        164.0,
+        106.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "hide contents",
+      "text": "hide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        108.0,
+        166.0,
+        129.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Main features",
+      "text": "Main features",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        211.0,
+        44.0,
+        226.0,
+        138.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Motivation and origin",
+      "text": "Motivation and origin",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        245.0,
+        44.0,
+        259.0,
+        169.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Comparison with IPv4",
+      "text": "Comparison with IPv4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        281.0,
+        44.0,
+        295.0,
+        177.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IPv6 packets",
+      "text": "IPv6 packets",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        319.0,
+        45.0,
+        333.0,
+        129.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Addressing",
+      "text": "Addressing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        369.0,
+        44.0,
+        382.0,
+        118.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IPv6 in the Domain Name System",
+      "text": "IPv6 in the Domain Name System",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        406.0,
+        44.0,
+        423.0,
+        221.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Transition mechanisms",
+      "text": "Transition mechanisms",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        462.0,
+        44.0,
+        476.0,
+        182.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        501.0,
+        44.0,
+        514.0,
+        98.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Standardization through RFCs",
+      "text": "Standardization through RFCs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        538.0,
+        44.0,
+        555.0,
+        219.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Deployment",
+      "text": "Deployment",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        592.0,
+        44.0,
+        605.0,
+        118.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Peering issues",
+      "text": "Peering issues",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        628.0,
+        44.0,
+        642.0,
+        136.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See also",
+      "text": "See also",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        665.0,
+        44.0,
+        678.0,
+        111.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "References",
+      "text": "References",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        702.0,
+        44.0,
+        716.0,
+        116.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "External links",
+      "text": "External links",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        740.0,
+        44.0,
+        753.0,
+        132.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Appearance",
+      "text": "Appearance",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        846.0,
+        165.0,
+        926.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "hide appearance",
+      "text": "hide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        930.0,
+        165.0,
+        971.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Small",
+      "text": "Small",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        211.0,
+        839.0,
+        224.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        248.0,
+        839.0,
+        265.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Large",
+      "text": "Large",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        286.0,
+        840.0,
+        302.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard width",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        326.0,
+        839.0,
+        343.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Wide",
+      "text": "Wide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        840.0,
+        380.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Automatic",
+      "text": "Automatic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        403.0,
+        840.0,
+        419.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Light",
+      "text": "Light",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        438.0,
+        839.0,
+        455.0,
+        853.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Dark",
+      "text": "Dark",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        475.0,
+        840.0,
+        492.0,
+        853.0
+      ]
+    }
+  ]
+}

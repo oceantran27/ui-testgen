@@ -1,0 +1,654 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Top app bar",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        59.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "File",
+      "text": "File",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        37.0,
+        40.0,
+        62.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Resize",
+      "text": "Resize",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        77.0,
+        40.0,
+        120.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Editing",
+      "text": "Editing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        125.0,
+        41.0,
+        179.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Ask Canva",
+      "text": "Ask Canva",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        361.0,
+        96.0,
+        431.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Edit",
+      "text": "Edit",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        76.0,
+        441.0,
+        94.0,
+        473.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "5.0s",
+      "text": "5.0s",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        487.0,
+        95.0,
+        525.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Animate",
+      "text": "Animate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        572.0,
+        95.0,
+        627.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Position",
+      "text": "Position",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        658.0,
+        94.0,
+        706.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Present",
+      "text": "Present",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        853.0,
+        55.0,
+        892.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Share",
+      "text": "Share",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        931.0,
+        58.0,
+        996.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Templates",
+      "text": "Templates",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        2.0,
+        121.0,
+        52.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Elements",
+      "text": "Elements",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        163.0,
+        1.0,
+        209.0,
+        49.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Text",
+      "text": "Text",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        242.0,
+        1.0,
+        278.0,
+        47.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Brand",
+      "text": "Brand",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        319.0,
+        1.0,
+        362.0,
+        48.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Uploads",
+      "text": "Uploads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        397.0,
+        1.0,
+        447.0,
+        50.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        477.0,
+        1.0,
+        525.0,
+        48.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Projects",
+      "text": "Projects",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        557.0,
+        1.0,
+        609.0,
+        48.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Apps",
+      "text": "Apps",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        637.0,
+        1.0,
+        688.0,
+        48.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Untitled design - Presentation",
+      "text": "Untitled design - Presentation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        541.0,
+        45.0,
+        683.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Start your trial for ৳0",
+      "text": "Start your trial for ৳0",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        698.0,
+        49.0,
+        788.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "profile avatar",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        802.0,
+        51.0,
+        824.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "add",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        825.0,
+        51.0,
+        868.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "analytics",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        871.0,
+        51.0,
+        914.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "comments",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        917.0,
+        51.0,
+        961.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "present options",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        962.0,
+        51.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "search slide templates",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        78.0,
+        1.0,
+        96.0,
+        231.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "back",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        104.0,
+        46.0,
+        116.0,
+        56.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Beige Blue Simple Geometric Research Project Presentation",
+      "text": "Beige Blue Simple Geometric Research Project Presentation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        46.0,
+        193.0,
+        228.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Presentation · 1920 x 1080 px",
+      "text": "Presentation · 1920 x 1080 px",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        218.0,
+        47.0,
+        240.0,
+        176.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "View more by Tropical Peach",
+      "text": "View more by Tropical Peach",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        261.0,
+        47.0,
+        286.0,
+        230.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Apply all 12 pages",
+      "text": "Apply all 12 pages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        315.0,
+        46.0,
+        341.0,
+        229.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "template page thumbnails",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        3.0,
+        925.0,
+        220.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "title slide thumbnail",
+      "text": "RESEARCH PROJECT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        5.0,
+        432.0,
+        152.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "overview slide thumbnail",
+      "text": "Overview",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        151.0,
+        433.0,
+        226.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "abstract slide thumbnail",
+      "text": "Abstract",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        434.0,
+        5.0,
+        500.0,
+        152.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "introduction slide thumbnail",
+      "text": "Introduction",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        434.0,
+        151.0,
+        499.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "problem slide thumbnail",
+      "text": "Problem",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        500.0,
+        5.0,
+        565.0,
+        153.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "objective slide thumbnail",
+      "text": "Objective",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        500.0,
+        151.0,
+        565.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "methodology slide thumbnail",
+      "text": "Methodology",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        565.0,
+        5.0,
+        631.0,
+        153.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "result slide thumbnail",
+      "text": "Result",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        565.0,
+        151.0,
+        630.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "result slide thumbnail",
+      "text": "Result",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        630.0,
+        5.0,
+        696.0,
+        153.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "conclusion slide thumbnail",
+      "text": "Conclusion",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        630.0,
+        151.0,
+        695.0,
+        225.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "reference slide thumbnail",
+      "text": "Reference",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        695.0,
+        5.0,
+        761.0,
+        153.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "thank you slide thumbnail",
+      "text": "THANK YOU",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        695.0,
+        151.0,
+        761.0,
+        225.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "selected slide canvas",
+      "text": "RESEARCH PROJECT\nPresented by Benjamin Shah",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        117.0,
+        209.0,
+        844.0,
+        843.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "zoom slider",
+      "text": "64%",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        920.0,
+        791.0,
+        981.0,
+        959.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "pages view",
+      "text": "Pages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        924.0,
+        893.0,
+        979.0,
+        947.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "page counter",
+      "text": "1 / 12",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        924.0,
+        948.0,
+        980.0,
+        992.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "add page",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        882.0,
+        878.0,
+        937.0,
+        942.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Project Links",
+      "text": "Project Links",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        36.0,
+        8.0,
+        72.0,
+        153.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        80.0,
+        10.0,
+        100.0,
+        62.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "PyPI Releases",
+      "text": "PyPI Releases",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        109.0,
+        9.0,
+        128.0,
+        115.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Source Code",
+      "text": "Source Code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        10.0,
+        157.0,
+        110.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Issue Tracker",
+      "text": "Issue Tracker",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        168.0,
+        10.0,
+        187.0,
+        117.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Chat",
+      "text": "Chat",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        196.0,
+        10.0,
+        214.0,
+        48.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Contents",
+      "text": "Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        257.0,
+        8.0,
+        293.0,
+        114.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Welcome to Flask",
+      "text": "Welcome to Flask",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        324.0,
+        8.0,
+        344.0,
+        134.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "User’s Guide",
+      "text": "User’s Guide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        353.0,
+        9.0,
+        370.0,
+        136.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "API Reference",
+      "text": "API Reference",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        383.0,
+        9.0,
+        400.0,
+        141.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Additional Notes",
+      "text": "Additional Notes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        412.0,
+        8.0,
+        430.0,
+        153.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Quick search",
+      "text": "Quick search",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        474.0,
+        8.0,
+        508.0,
+        124.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        521.0,
+        8.0,
+        558.0,
+        198.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go",
+      "text": "Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        522.0,
+        199.0,
+        558.0,
+        218.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Flask logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        361.0,
+        212.0,
+        576.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Flask",
+      "text": "Flask",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        68.0,
+        613.0,
+        182.0,
+        812.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Welcome to Flask's documentation. Flask is a lightweight WSGI web application framework.",
+      "text": "Welcome to Flask’s documentation. Flask is a lightweight WSGI web application framework.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        219.0,
+        10.0,
+        265.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Installation",
+      "text": "Installation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        267.0,
+        141.0,
+        284.0,
+        382.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Quickstart",
+      "text": "Quickstart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        267.0,
+        583.0,
+        285.0,
+        712.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial",
+      "text": "Tutorial",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        84.0,
+        316.0,
+        155.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Patterns for Flask",
+      "text": "Patterns for Flask",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        324.0,
+        403.0,
+        340.0,
+        655.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "API",
+      "text": "API",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        325.0,
+        773.0,
+        340.0,
+        802.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Werkzeug",
+      "text": "Werkzeug",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        29.0,
+        385.0,
+        157.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Jinja",
+      "text": "Jinja",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        255.0,
+        385.0,
+        293.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Click",
+      "text": "Click",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        370.0,
+        415.0,
+        385.0,
+        456.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "User’s Guide",
+      "text": "User’s Guide",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        471.0,
+        273.0,
+        521.0,
+        383.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Python Version",
+      "text": "Python Version",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        791.0,
+        55.0,
+        807.0,
+        277.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Dependencies",
+      "text": "Dependencies",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        823.0,
+        57.0,
+        838.0,
+        257.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Virtual environments",
+      "text": "Virtual environments",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        854.0,
+        56.0,
+        870.0,
+        374.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Install Flask",
+      "text": "Install Flask",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        884.0,
+        56.0,
+        899.0,
+        260.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "A Minimal Application",
+      "text": "A Minimal Application",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        915.0,
+        107.0,
+        929.0,
+        453.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Debug Mode",
+      "text": "Debug Mode",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        945.0,
+        107.0,
+        960.0,
+        281.0
+      ]
+    }
+  ]
+}

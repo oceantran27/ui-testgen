@@ -1,0 +1,537 @@
+{
+  "ui_elements": [
+    {
+      "type": "banner",
+      "label": "Planning your ingress-nginx migration? Start here: kubernetes.nginx.org.",
+      "text": "Planning your ingress-nginx migration? Start here: kubernetes.nginx.org.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        31.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "nginx",
+      "text": "nginx",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        45.0,
+        42.0,
+        78.0,
+        124.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introductory description",
+      "text": "nginx (\"engine x\") is an HTTP web server, reverse proxy, content cache, load balancer, TCP/UDP proxy server, and mail proxy server. Originally written by Igor Sysoev and distributed under the 2-clause BSD License. Enterprise distributions, commercial support and training are available from F5, Inc.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        43.0,
+        198.0,
+        853.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        217.0,
+        41.0,
+        237.0,
+        90.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Code",
+      "text": "Code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        217.0,
+        95.0,
+        237.0,
+        149.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Install",
+      "text": "Install",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        217.0,
+        154.0,
+        237.0,
+        211.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Beginner's Guide",
+      "text": "Beginner's Guide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        217.0,
+        216.0,
+        237.0,
+        350.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Latest News",
+      "text": "Latest News",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        289.0,
+        42.0,
+        325.0,
+        185.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-21 njs-0.9.7 version has been released, featuring WebCrypto Ed25519 and X25519 support, wrapKey() and unwrapKey(), and crypto.randomUUID().",
+      "text": "2026-04-21 njs-0.9.7 version has been released, featuring WebCrypto Ed25519 and X25519 support, wrapKey() and unwrapKey(), and crypto.randomUUID().",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        350.0,
+        42.0,
+        406.0,
+        821.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-20 nginx-acme-0.4.0 version has been released, featuring ACME Renewal Information support.",
+      "text": "2026-04-20 nginx-acme-0.4.0 version has been released, featuring ACME Renewal Information support.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        400.0,
+        42.0,
+        442.0,
+        808.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-14 nginx-1.30.0 stable version has been released, incorporating new features and bug fixes from the 1.29.x mainline branch — including Early Hints, HTTP/2 to backend and Encrypted ClientHello, sticky sessions support for upstreams, Multipath TCP support, the default proxy HTTP version set to HTTP/1.1 with keep-alive enabled, and more.",
+      "text": "2026-04-14 nginx-1.30.0 stable version has been released, incorporating new features and bug fixes from the 1.29.x mainline branch — including Early Hints, HTTP/2 to backend and Encrypted ClientHello, sticky sessions support for upstreams, Multipath TCP support, the default proxy HTTP version set to HTTP/1.1 with keep-alive enabled, and more.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        449.0,
+        42.0,
+        559.0,
+        806.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-07 nginx-1.29.8 mainline version has been released.",
+      "text": "2026-04-07 nginx-1.29.8 mainline version has been released.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        569.0,
+        42.0,
+        602.0,
+        626.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Older news",
+      "text": "Older news",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        642.0,
+        42.0,
+        665.0,
+        126.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Other NGINX Projects",
+      "text": "Other NGINX Projects",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        699.0,
+        42.0,
+        732.0,
+        320.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "NGINX JavaScript (njs)",
+      "text": "NGINX JavaScript (njs) extends nginx functionality with an ECMAScript-compatible interpreter for HTTP and Stream modules. Docs • Code",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        740.0,
+        41.0,
+        821.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        852.0,
+        130.0,
+        872.0,
+        165.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Code",
+      "text": "Code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        852.0,
+        169.0,
+        872.0,
+        212.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "NGINX Ingress Controller",
+      "text": "NGINX Ingress Controller connects Kubernetes apps and services with rock solid request handling, auth, self-service CRDs, and easy debugging. Not to be confused with ingress-nginx, the separate Kubernetes community project. Docs • Code",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        830.0,
+        41.0,
+        910.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        933.0,
+        130.0,
+        953.0,
+        165.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Code",
+      "text": "Code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        933.0,
+        169.0,
+        953.0,
+        212.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "NGINX Gateway Fabric",
+      "text": "NGINX Gateway Fabric provides L4 and L7 routing capabilities in Kubernetes, implementing the Gateway API using NGINX as the data plane. Docs • Code",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        916.0,
+        41.0,
+        998.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        998.0,
+        130.0,
+        1000.0,
+        165.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Code",
+      "text": "Code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        998.0,
+        169.0,
+        1000.0,
+        212.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "NGINX logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        53.0,
+        798.0,
+        144.0,
+        865.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "NGINX logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        49.0,
+        796.0,
+        143.0,
+        870.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "русский",
+      "text": "русский",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        153.0,
+        793.0,
+        172.0,
+        840.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "news",
+      "text": "news",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        210.0,
+        793.0,
+        230.0,
+        823.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "about",
+      "text": "about",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        236.0,
+        793.0,
+        256.0,
+        826.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "download",
+      "text": "download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        261.0,
+        793.0,
+        282.0,
+        851.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "security",
+      "text": "security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        290.0,
+        793.0,
+        310.0,
+        846.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "documentation",
+      "text": "documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        793.0,
+        338.0,
+        904.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "faq",
+      "text": "faq",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        347.0,
+        793.0,
+        367.0,
+        814.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "books",
+      "text": "books",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        793.0,
+        394.0,
+        836.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "community",
+      "text": "community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        401.0,
+        793.0,
+        421.0,
+        878.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "enterprise",
+      "text": "enterprise",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        428.0,
+        793.0,
+        448.0,
+        877.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "community forum (new)",
+      "text": "community forum (new)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        527.0,
+        792.0,
+        548.0,
+        950.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "x.com",
+      "text": "x.com",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        556.0,
+        792.0,
+        575.0,
+        832.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "blog",
+      "text": "blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        583.0,
+        792.0,
+        602.0,
+        826.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "njs",
+      "text": "njs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        651.0,
+        793.0,
+        670.0,
+        818.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "ingress controller",
+      "text": "ingress controller",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        680.0,
+        793.0,
+        700.0,
+        857.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "gateway fabric",
+      "text": "gateway fabric",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        708.0,
+        793.0,
+        729.0,
+        839.0
+      ]
+    }
+  ]
+}

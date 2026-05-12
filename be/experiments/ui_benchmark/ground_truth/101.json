@@ -1,0 +1,277 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Top navigation",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        126.0,
+        53.0,
+        882.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Get started",
+      "text": "Get started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        250.0,
+        29.0,
+        337.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Downloads",
+      "text": "Downloads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        349.0,
+        31.0,
+        426.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Playground",
+      "text": "Playground",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        442.0,
+        31.0,
+        534.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        553.0,
+        31.0,
+        645.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        670.0,
+        31.0,
+        776.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        810.0,
+        31.0,
+        868.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        902.0,
+        31.0,
+        946.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Blog",
+      "text": "Blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        959.0,
+        31.0,
+        987.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Haskell logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        162.0,
+        226.0,
+        385.0,
+        771.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Haskell",
+      "text": "Haskell",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        172.0,
+        367.0,
+        381.0,
+        777.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Enjoy long-term maintainable software you can rely on",
+      "text": "Enjoy long-term maintainable software you can rely on",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        228.0,
+        326.0,
+        773.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Get started",
+      "text": "Get started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        333.0,
+        362.0,
+        384.0,
+        475.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Open playground",
+      "text": "Open playground",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        334.0,
+        485.0,
+        382.0,
+        643.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Model complex domains",
+      "text": "Model complex domains",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        92.0,
+        511.0,
+        368.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Build reliable software",
+      "text": "Build reliable software",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        375.0,
+        511.0,
+        606.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Refactor with confidence",
+      "text": "Refactor with confidence",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        651.0,
+        511.0,
+        897.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Try it!",
+      "text": "Try it!",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        846.0,
+        96.0,
+        887.0,
+        180.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Type Haskell expressions in here.",
+      "text": "Type Haskell expressions in here.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        900.0,
+        95.0,
+        931.0,
+        413.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Got 5 minutes?",
+      "text": "Got 5 minutes?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        844.0,
+        526.0,
+        884.0,
+        721.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Type help to start the tutorial.",
+      "text": "Type help to start the tutorial.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        897.0,
+        526.0,
+        930.0,
+        777.0
+      ]
+    }
+  ]
+}

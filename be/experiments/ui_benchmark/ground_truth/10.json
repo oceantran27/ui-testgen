@@ -1,0 +1,459 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Amazon",
+      "text": "amazon",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        12.0,
+        38.0,
+        81.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Deliver to Vietnam",
+      "text": "Deliver to Vietnam",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        86.0,
+        38.0,
+        168.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "All",
+      "text": "All",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        170.0,
+        53.0,
+        207.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": "gaming hats",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        197.0,
+        51.0,
+        640.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        628.0,
+        52.0,
+        659.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "EN",
+      "text": "EN",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        688.0,
+        40.0,
+        739.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Account & Lists",
+      "text": "Hello, sign in Account & Lists",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        738.0,
+        46.0,
+        828.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Returns & Orders",
+      "text": "Returns & Orders",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        833.0,
+        45.0,
+        886.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Cart",
+      "text": "Cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        890.0,
+        55.0,
+        955.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "1-48 of 687 results for \"gaming hats\"",
+      "text": "1-48 of 687 results for \"gaming hats\"",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        122.0,
+        5.0,
+        166.0,
+        320.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Sort by: Featured",
+      "text": "Sort by: Featured",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        124.0,
+        825.0,
+        153.0,
+        925.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "All menu",
+      "text": "All",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        51.0,
+        12.0,
+        98.0,
+        61.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Today's Deals",
+      "text": "Today's Deals",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        64.0,
+        99.0,
+        136.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Prime Video",
+      "text": "Prime Video",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        83.0,
+        139.0,
+        100.0,
+        201.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Registry",
+      "text": "Registry",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        84.0,
+        203.0,
+        100.0,
+        252.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Gift Cards",
+      "text": "Gift Cards",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        84.0,
+        254.0,
+        100.0,
+        329.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Customer Service",
+      "text": "Customer Service",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        85.0,
+        332.0,
+        101.0,
+        433.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Sell",
+      "text": "Sell",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        84.0,
+        436.0,
+        100.0,
+        470.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Results",
+      "text": "Results",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        6.0,
+        220.0,
+        227.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Check each product page for other buying options. Price and other details may vary based on product size and color.",
+      "text": "Check each product page for other buying options. Price and other details may vary based on product size and color.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        230.0,
+        7.0,
+        251.0,
+        665.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "I Paused My Game to Be Here Hat for Men Women, Funny Adjustable Cotton Embroidered Gamer Baseball Cap",
+      "text": "I Paused My Game to Be Here Hat for Men Women, Funny Adjustable Cotton Embroidered Gamer Baseball Cap",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        257.0,
+        193.0,
+        999.0,
+        363.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Product image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        260.0,
+        192.0,
+        573.0,
+        366.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "4.7 out of 5 stars",
+      "text": "4.7",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        611.0,
+        195.0,
+        644.0,
+        308.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add to cart",
+      "text": "Add to cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        861.0,
+        770.0,
+        899.0,
+        919.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Fortnite Baseball Cap for Boys, Quality Made Boys Hat and Fitted Cap, Flatbrim Baseball Hat with Sleek Design",
+      "text": "Fortnite Baseball Cap for Boys, Quality Made Boys Hat and Fitted Cap, Flatbrim Baseball Hat with Sleek Design",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        257.0,
+        365.0,
+        999.0,
+        533.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Do Not Disturb Gaming Socks Black Beanie Hat Father’s Day Gamer Gifts for Teens Boys Men Kids",
+      "text": "Do Not Disturb Gaming Socks Black Beanie Hat Father’s Day Gamer Gifts for Teens Boys Men Kids",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        257.0,
+        537.0,
+        998.0,
+        705.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add to cart",
+      "text": "Add to cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        932.0,
+        574.0,
+        971.0,
+        618.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Gamer Gifts for Men Women, Adjustable Washed Cotton Embroidered Gaming Hats",
+      "text": "Gamer Gifts for Men Women, Adjustable Washed Cotton Embroidered Gaming Hats",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        259.0,
+        710.0,
+        999.0,
+        877.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add to cart",
+      "text": "Add to cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        854.0,
+        717.0,
+        893.0,
+        817.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "Subtotal $17.99",
+      "text": "Subtotal $17.99",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        948.0,
+        145.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go to Cart",
+      "text": "Go to Cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        57.0,
+        946.0,
+        91.0,
+        999.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Cart item image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        116.0,
+        955.0,
+        274.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$17.99",
+      "text": "$17.99",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        149.0,
+        957.0,
+        177.0,
+        998.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Increase quantity",
+      "text": "+",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        956.0,
+        570.0,
+        997.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Decrease quantity",
+      "text": "1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        913.0,
+        571.0,
+        956.0
+      ]
+    }
+  ]
+}

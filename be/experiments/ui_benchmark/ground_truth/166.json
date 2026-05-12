@@ -1,0 +1,758 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Wikipedia menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        79.0,
+        42.0,
+        94.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wikipedia home",
+      "text": "Wikipedia",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        118.0,
+        49.0,
+        197.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search Wikipedia",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        243.0,
+        52.0,
+        508.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        478.0,
+        52.0,
+        510.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        790.0,
+        44.0,
+        836.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        840.0,
+        40.0,
+        907.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        909.0,
+        41.0,
+        948.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "World Wide Web",
+      "text": "World Wide Web",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        91.0,
+        239.0,
+        140.0,
+        358.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Article",
+      "text": "Article",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        241.0,
+        158.0,
+        271.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Talk",
+      "text": "Talk",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        140.0,
+        277.0,
+        158.0,
+        298.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        136.0,
+        644.0,
+        156.0,
+        670.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Edit",
+      "text": "Edit",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        136.0,
+        675.0,
+        157.0,
+        694.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        715.0,
+        157.0,
+        784.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        136.0,
+        790.0,
+        157.0,
+        829.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "152 languages",
+      "text": "152 languages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        90.0,
+        701.0,
+        111.0,
+        784.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "From Wikipedia, the free encyclopedia",
+      "text": "From Wikipedia, the free encyclopedia",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        169.0,
+        239.0,
+        186.0,
+        383.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Intro paragraph text",
+      "text": "\"Internet surfing\" redirects here. For the underlying network, see Internet. \"WWW\" and \"The Web\" redirect here. For other uses, see WWW (disambiguation) and The Web (disambiguation). For the historical web browser, see WorldWideWeb.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        206.0,
+        243.0,
+        258.0,
+        846.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Article introduction",
+      "text": "The World Wide Web (also known as WWW, W3, or simply the Web) is a public interconnected information system that enables content sharing over the Internet.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        281.0,
+        241.0,
+        340.0,
+        850.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Article body text",
+      "text": "The Web was invented by English computer scientist Tim Berners-Lee while at CERN in 1989 and opened to the public in 1993.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        339.0,
+        243.0,
+        478.0,
+        852.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "World Wide Web infobox",
+      "text": "World Wide Web",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        628.0,
+        637.0,
+        771.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Abbreviation",
+      "text": "Abbreviation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        319.0,
+        635.0,
+        334.0,
+        374.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "WWW, W3",
+      "text": "WWW, W3",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        726.0,
+        334.0,
+        787.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Status",
+      "text": "Status",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        349.0,
+        636.0,
+        364.0,
+        373.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Active",
+      "text": "Active",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        348.0,
+        726.0,
+        364.0,
+        768.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Year started",
+      "text": "Year started",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        380.0,
+        636.0,
+        394.0,
+        374.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "1989; 37 years ago",
+      "text": "1989; 37 years ago",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        381.0,
+        726.0,
+        396.0,
+        810.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "First published",
+      "text": "First published",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        412.0,
+        635.0,
+        427.0,
+        376.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "6 August 1991; 34 years ago",
+      "text": "6 August 1991; 34 years ago",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        414.0,
+        726.0,
+        430.0,
+        853.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Organization",
+      "text": "Organization",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        445.0,
+        636.0,
+        461.0,
+        374.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "CERN (1989–1994) / W3C (1994–current)",
+      "text": "CERN (1989–1994) W3C (1994–current)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        446.0,
+        726.0,
+        495.0,
+        862.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Authors",
+      "text": "Authors",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        504.0,
+        636.0,
+        520.0,
+        373.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Tim Berners-Lee",
+      "text": "Tim Berners-Lee",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        504.0,
+        726.0,
+        520.0,
+        796.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "License",
+      "text": "License",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        534.0,
+        635.0,
+        548.0,
+        373.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Public domain",
+      "text": "Public domain",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        534.0,
+        726.0,
+        550.0,
+        788.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Appearance",
+      "text": "Appearance",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        793.0,
+        159.0,
+        858.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "hide",
+      "text": "hide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        860.0,
+        158.0,
+        879.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Small",
+      "text": "Small",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        220.0,
+        791.0,
+        234.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        251.0,
+        791.0,
+        265.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Large",
+      "text": "Large",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        281.0,
+        791.0,
+        296.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        397.0,
+        791.0,
+        411.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Wide",
+      "text": "Wide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        428.0,
+        791.0,
+        443.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Automatic",
+      "text": "Automatic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        471.0,
+        791.0,
+        485.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Light",
+      "text": "Light",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        501.0,
+        791.0,
+        516.0,
+        803.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Dark",
+      "text": "Dark",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        532.0,
+        791.0,
+        547.0,
+        803.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Contents",
+      "text": "Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        81.0,
+        158.0,
+        121.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "hide",
+      "text": "hide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        127.0,
+        158.0,
+        148.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "History",
+      "text": "History",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        208.0,
+        81.0,
+        230.0,
+        137.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Nomenclature",
+      "text": "Nomenclature",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        239.0,
+        81.0,
+        259.0,
+        177.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Function",
+      "text": "Function",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        270.0,
+        81.0,
+        292.0,
+        133.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        301.0,
+        81.0,
+        321.0,
+        132.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Privacy",
+      "text": "Privacy",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        332.0,
+        81.0,
+        352.0,
+        129.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Standards",
+      "text": "Standards",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        81.0,
+        383.0,
+        136.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Accessibility",
+      "text": "Accessibility",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        394.0,
+        81.0,
+        414.0,
+        147.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Internationalisation",
+      "text": "Internationalisation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        426.0,
+        81.0,
+        447.0,
+        191.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See also",
+      "text": "See also",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        457.0,
+        81.0,
+        477.0,
+        135.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "References",
+      "text": "References",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        488.0,
+        81.0,
+        509.0,
+        143.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Further reading",
+      "text": "Further reading",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        81.0,
+        540.0,
+        170.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "External links",
+      "text": "External links",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        550.0,
+        81.0,
+        570.0,
+        161.0
+      ]
+    }
+  ]
+}

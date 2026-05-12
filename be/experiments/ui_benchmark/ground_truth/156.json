@@ -1,0 +1,212 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "MDN top navigation",
+      "text": "HTML CSS JavaScript Web APIs All Learn Tools About Blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        102.0,
+        0.0,
+        154.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Overview of HTTP",
+      "text": "Overview of HTTP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        294.0,
+        18.0,
+        383.0,
+        192.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Filter",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        225.0,
+        12.0,
+        274.0,
+        182.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Overview of HTTP",
+      "text": "Overview of HTTP",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        212.0,
+        225.0,
+        268.0,
+        587.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "protocol",
+      "text": "protocol",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        311.0,
+        282.0,
+        321.0,
+        378.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Components of HTTP-based systems",
+      "text": "Components of HTTP-based systems",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        741.0,
+        794.0,
+        825.0,
+        972.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Components of HTTP-based systems",
+      "text": "Components of HTTP-based systems",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        788.0,
+        396.0,
+        983.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Basic aspects of HTTP",
+      "text": "Basic aspects of HTTP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        403.0,
+        790.0,
+        447.0,
+        968.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "What can be controlled by HTTP",
+      "text": "What can be controlled by HTTP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        458.0,
+        791.0,
+        520.0,
+        988.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HTTP flow",
+      "text": "HTTP flow",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        534.0,
+        791.0,
+        571.0,
+        975.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HTTP Messages",
+      "text": "HTTP Messages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        585.0,
+        790.0,
+        640.0,
+        975.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "APIs based on HTTP",
+      "text": "APIs based on HTTP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        647.0,
+        791.0,
+        702.0,
+        976.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Conclusion",
+      "text": "Conclusion",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        790.0,
+        749.0,
+        927.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See also",
+      "text": "See also",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        768.0,
+        790.0,
+        806.0,
+        902.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Theme",
+      "text": "Theme",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        160.0,
+        802.0,
+        191.0,
+        876.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "English (US)",
+      "text": "English (US)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        160.0,
+        883.0,
+        193.0,
+        987.0
+      ]
+    }
+  ]
+}

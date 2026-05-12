@@ -1,0 +1,290 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "RISE",
+      "text": "RISE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        14.0,
+        56.0,
+        122.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Store",
+      "text": "Store",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        75.0,
+        57.0,
+        121.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Knowledge base",
+      "text": "Knowledge base",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        704.0,
+        51.0,
+        771.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Custom page",
+      "text": "Custom page",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        19.0,
+        794.0,
+        52.0,
+        886.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Sign in",
+      "text": "Sign in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        922.0,
+        53.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Store",
+      "text": "Store",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        101.0,
+        71.0,
+        138.0,
+        131.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "- Category -",
+      "text": "- Category -",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        87.0,
+        584.0,
+        142.0,
+        710.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        727.0,
+        142.0,
+        838.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        98.0,
+        827.0,
+        136.0,
+        856.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Checkout",
+      "text": "Checkout",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        858.0,
+        141.0,
+        929.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Logo Design",
+      "text": "Logo Design $100.00/PC Logo design for your brand.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        165.0,
+        73.0,
+        533.0,
+        251.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "10GB Hosting",
+      "text": "10GB Hosting $100.00/PC Cloud Hosting service 10GB Space - Fr...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        165.0,
+        550.0,
+        533.0,
+        726.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Art pictures",
+      "text": "Art pictures $40.00/PC Hand art pictures for your website.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        19.0,
+        533.0,
+        251.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add to cart",
+      "text": "Add to cart",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        351.0,
+        560.0,
+        389.0,
+        559.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "view_item",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        352.0,
+        609.0,
+        389.0,
+        559.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Content writing",
+      "text": "Content writing $15.00/Hour We write content for different types of ...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        748.0,
+        532.0,
+        929.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Custom app development",
+      "text": "Custom app development $1,000.00/PC App for your business.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        555.0,
+        72.0,
+        933.0,
+        250.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Domain .com",
+      "text": "Domain .com $11.00/PC Get a dot com domain only $11",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        555.0,
+        550.0,
+        932.0,
+        726.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "SEO",
+      "text": "SEO $10.00/Hour SEO for your website.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        556.0,
+        18.0,
+        932.0,
+        250.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Website Design",
+      "text": "Website Design $20.00/Hour Custom website templates for your brand.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        556.0,
+        748.0,
+        933.0,
+        929.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "cart item count",
+      "text": "1",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        872.0,
+        957.0,
+        901.0,
+        972.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "shopping cart",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        882.0,
+        943.0,
+        945.0,
+        990.0
+      ]
+    }
+  ]
+}

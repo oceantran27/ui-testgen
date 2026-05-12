@@ -1,0 +1,290 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "日本語ホームページ",
+      "text": "日本語ホームページ",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        714.0,
+        32.0,
+        803.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "简体中文首页",
+      "text": "简体中文首页",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        810.0,
+        33.0,
+        881.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "W3C logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        159.0,
+        215.0,
+        270.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Top navigation menu",
+      "text": "Standards & groups",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        279.0,
+        188.0,
+        758.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Standards & groups",
+      "text": "Standards & groups",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        278.0,
+        170.0,
+        390.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Get involved",
+      "text": "Get involved",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        403.0,
+        169.0,
+        497.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Resources",
+      "text": "Resources",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        510.0,
+        170.0,
+        585.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "News & events",
+      "text": "News & events",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        598.0,
+        169.0,
+        696.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Support us",
+      "text": "Support us",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        713.0,
+        169.0,
+        790.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        814.0,
+        169.0,
+        864.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        124.0,
+        872.0,
+        159.0,
+        892.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Sign in",
+      "text": "Sign in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        119.0,
+        899.0,
+        159.0,
+        939.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "user account",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        117.0,
+        942.0,
+        163.0,
+        959.0
+      ]
+    },
+    {
+      "type": "breadcrumb",
+      "label": "Home",
+      "text": "Home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        233.0,
+        172.0,
+        265.0,
+        264.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Web Standards",
+      "text": "Web Standards",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        348.0,
+        173.0,
+        420.0,
+        409.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Read this page in:",
+      "text": "Read this page in:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        448.0,
+        172.0,
+        474.0,
+        545.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "中文（简体）",
+      "text": "中文（简体）",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        448.0,
+        271.0,
+        471.0,
+        303.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "日本語",
+      "text": "日本語",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        450.0,
+        334.0,
+        471.0,
+        355.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Web standards are blueprints –or building blocks– of a consistent and harmonious digitally connected world. They are implemented in browsers, blogs, search engines, and other software that power our experience on the web.",
+      "text": "Web standards are blueprints –or building blocks– of a consistent and harmonious digitally connected world. They are implemented in browsers, blogs, search engines, and other software that power our experience on the web.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        500.0,
+        172.0,
+        710.0,
+        422.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "decorative web standards illustration",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        334.0,
+        561.0,
+        767.0,
+        998.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The promise of web standards",
+      "text": "The promise of web standards",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        826.0,
+        286.0,
+        867.0,
+        658.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "W3C standards define an open web platform for application development. The web has the unprecedented potential to enable developers to build rich interactive experiences, that can be available on any device.",
+      "text": "W3C standards define an open web platform for application development. The web has the unprecedented potential to enable developers to build rich interactive experiences, that can be available on any device.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        890.0,
+        289.0,
+        957.0,
+        661.0
+      ]
+    }
+  ]
+}

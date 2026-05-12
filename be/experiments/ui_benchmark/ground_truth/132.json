@@ -1,0 +1,1265 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "The Linux Kernel Archives",
+      "text": "The Linux Kernel Archives",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        241.0,
+        87.0,
+        758.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        289.0,
+        138.0,
+        341.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Contact us",
+      "text": "Contact us",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        349.0,
+        137.0,
+        433.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "FAQ",
+      "text": "FAQ",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        450.0,
+        137.0,
+        488.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Releases",
+      "text": "Releases",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        518.0,
+        137.0,
+        576.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Signatures",
+      "text": "Signatures",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        604.0,
+        137.0,
+        671.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Site news",
+      "text": "Site news",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        693.0,
+        137.0,
+        765.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Protocol",
+      "text": "Protocol",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        367.0,
+        261.0,
+        389.0,
+        430.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Location",
+      "text": "Location",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        368.0,
+        433.0,
+        389.0,
+        522.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HTTP",
+      "text": "HTTP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        395.0,
+        261.0,
+        431.0,
+        304.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "https://www.kernel.org/pub/",
+      "text": "https://www.kernel.org/pub/",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        395.0,
+        433.0,
+        432.0,
+        566.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GIT",
+      "text": "GIT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        430.0,
+        261.0,
+        471.0,
+        286.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "https://git.kernel.org/",
+      "text": "https://git.kernel.org/",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        430.0,
+        432.0,
+        472.0,
+        548.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "RSYNC",
+      "text": "RSYNC",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        260.0,
+        511.0,
+        317.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "rsync://rsync.kernel.org/pub/",
+      "text": "rsync://rsync.kernel.org/pub/",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        432.0,
+        511.0,
+        593.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Latest Release 7.0.1",
+      "text": "Latest Release 7.0.1",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        382.0,
+        617.0,
+        569.0,
+        767.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "mainline: 7.0",
+      "text": "mainline: 7.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        259.0,
+        641.0,
+        405.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-12",
+      "text": "2026-04-12",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        618.0,
+        405.0,
+        643.0,
+        500.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        500.0,
+        642.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        558.0,
+        642.0,
+        598.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        596.0,
+        642.0,
+        653.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        672.0,
+        642.0,
+        756.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        757.0,
+        642.0,
+        807.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "stable: 7.0.1",
+      "text": "stable: 7.0.1",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        259.0,
+        674.0,
+        411.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-22",
+      "text": "2026-04-22",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        405.0,
+        675.0,
+        502.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        500.0,
+        674.0,
+        558.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        558.0,
+        674.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        597.0,
+        674.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        672.0,
+        674.0,
+        756.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        757.0,
+        674.0,
+        807.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        807.0,
+        674.0,
+        904.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "stable: 6.19.14 [EOL]",
+      "text": "stable: 6.19.14 [EOL]",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        258.0,
+        705.0,
+        449.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-22",
+      "text": "2026-04-22",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        405.0,
+        706.0,
+        502.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        500.0,
+        705.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        558.0,
+        705.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        597.0,
+        705.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        654.0,
+        705.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        757.0,
+        705.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        841.0,
+        705.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        681.0,
+        891.0,
+        705.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 6.18.24",
+      "text": "longterm: 6.18.24",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        259.0,
+        736.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-22",
+      "text": "2026-04-22",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        405.0,
+        737.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        500.0,
+        736.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        558.0,
+        736.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        597.0,
+        736.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        654.0,
+        736.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        757.0,
+        736.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        841.0,
+        736.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        712.0,
+        891.0,
+        736.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 6.12.83",
+      "text": "longterm: 6.12.83",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        259.0,
+        767.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-22",
+      "text": "2026-04-22",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        405.0,
+        767.0,
+        502.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        500.0,
+        768.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        558.0,
+        768.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        597.0,
+        768.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        654.0,
+        768.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        757.0,
+        768.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        841.0,
+        768.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        745.0,
+        891.0,
+        768.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 6.6.135",
+      "text": "longterm: 6.6.135",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        259.0,
+        798.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-18",
+      "text": "2026-04-18",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        405.0,
+        799.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        500.0,
+        800.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        558.0,
+        800.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        597.0,
+        800.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        654.0,
+        800.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        757.0,
+        800.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        841.0,
+        800.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        891.0,
+        800.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 6.1.169",
+      "text": "longterm: 6.1.169",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        259.0,
+        830.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-18",
+      "text": "2026-04-18",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        405.0,
+        831.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        500.0,
+        832.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        558.0,
+        832.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        597.0,
+        832.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        654.0,
+        832.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        757.0,
+        832.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        841.0,
+        832.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        891.0,
+        832.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 5.15.203",
+      "text": "longterm: 5.15.203",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        259.0,
+        863.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-18",
+      "text": "2026-04-18",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        405.0,
+        863.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        500.0,
+        864.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        558.0,
+        864.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        597.0,
+        864.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        654.0,
+        864.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        757.0,
+        864.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        841.0,
+        864.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        841.0,
+        891.0,
+        864.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "longterm: 5.10.253",
+      "text": "longterm: 5.10.253",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        259.0,
+        894.0,
+        429.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-18",
+      "text": "2026-04-18",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        405.0,
+        895.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[tarball]",
+      "text": "[tarball]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        500.0,
+        896.0,
+        559.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[pgp]",
+      "text": "[pgp]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        558.0,
+        896.0,
+        597.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[patch]",
+      "text": "[patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        597.0,
+        896.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[inc. patch]",
+      "text": "[inc. patch]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        654.0,
+        896.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[view diff]",
+      "text": "[view diff]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        757.0,
+        896.0,
+        841.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        841.0,
+        896.0,
+        891.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[changelog]",
+      "text": "[changelog]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        891.0,
+        896.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "linux-next: next-20260424",
+      "text": "linux-next: next-20260424",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        905.0,
+        259.0,
+        927.0,
+        476.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-24",
+      "text": "2026-04-24",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        905.0,
+        405.0,
+        927.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "[browse]",
+      "text": "[browse]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        905.0,
+        757.0,
+        927.0,
+        807.0
+      ]
+    }
+  ]
+}

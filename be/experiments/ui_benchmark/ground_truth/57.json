@@ -1,0 +1,407 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Top navigation bar",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        200.0,
+        70.0,
+        800.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        235.0,
+        60.0,
+        372.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Hồ Hằng",
+      "text": "Hồ Hằng",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        316.0,
+        213.0,
+        378.0,
+        430.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2nd",
+      "text": "2nd",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        322.0,
+        427.0,
+        376.0,
+        453.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Teko’s hiring: SWE & Data Platform (HaNoi)",
+      "text": "Teko’s hiring: SWE & Data Platform (HaNoi)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        391.0,
+        214.0,
+        417.0,
+        588.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Da Nang City, Vietnam",
+      "text": "Da Nang City, Vietnam",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        423.0,
+        213.0,
+        451.0,
+        483.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Contact info",
+      "text": "Contact info",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        424.0,
+        486.0,
+        450.0,
+        566.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "500+ connections",
+      "text": "500+ connections",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        460.0,
+        214.0,
+        485.0,
+        318.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Anh Quang and Phúc are mutual connections",
+      "text": "Anh Quang and Phúc are mutual connections",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        514.0,
+        244.0,
+        545.0,
+        437.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Accept",
+      "text": "Accept",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        560.0,
+        215.0,
+        610.0,
+        263.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Ignore",
+      "text": "Ignore",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        562.0,
+        270.0,
+        610.0,
+        329.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "More actions",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        561.0,
+        334.0,
+        611.0,
+        350.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "TEKO Việt Nam",
+      "text": "TEKO Việt Nam",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        383.0,
+        718.0,
+        420.0,
+        796.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Duy Tan University",
+      "text": "Duy Tan University",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        420.0,
+        716.0,
+        447.0,
+        799.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "About",
+      "text": "About",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        651.0,
+        217.0,
+        681.0,
+        270.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Teko là công ty Công nghệ làm SaaS Product thuộc tập đoàn VNLIFE - một trong các Unicorn của Việt Nam. Teko cung cấp các giải pháp cho các doanh nghiệp: Quản lý bán hàng đa kênh, Supply Chain, Warehouse, Customer Data Platform,...",
+      "text": "Teko là công ty Công nghệ làm SaaS Product thuộc tập đoàn VNLIFE - một trong các Unicorn của Việt Nam. Teko cung cấp các giải pháp cho các doanh nghiệp: Quản lý bán hàng đa kênh, Supply Chain, Warehouse, Customer Data Platform,...",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        688.0,
+        217.0,
+        746.0,
+        795.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Activity",
+      "text": "Activity",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        792.0,
+        217.0,
+        823.0,
+        273.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2,129 followers",
+      "text": "2,129 followers",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        828.0,
+        217.0,
+        847.0,
+        306.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Hồ has no recent posts",
+      "text": "Hồ has no recent posts",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        861.0,
+        218.0,
+        893.0,
+        398.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Recent posts Hồ shares will be displayed here.",
+      "text": "Recent posts Hồ shares will be displayed here.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        894.0,
+        217.0,
+        917.0,
+        444.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Follow",
+      "text": "Follow",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        788.0,
+        609.0,
+        832.0,
+        665.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Show all",
+      "text": "Show all",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        950.0,
+        390.0,
+        981.0,
+        447.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Experience",
+      "text": "Experience",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        959.0,
+        219.0,
+        989.0,
+        337.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "More profiles for you",
+      "text": "More profiles for you",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        101.0,
+        655.0,
+        926.0,
+        816.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Advertisement",
+      "text": "Master the 5 principles of marketing growth / Brand and Demand in APAC / Learn more",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        79.0,
+        653.0,
+        321.0,
+        817.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Learn more",
+      "text": "Learn more",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        264.0,
+        713.0,
+        304.0,
+        781.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Connect",
+      "text": "Connect",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        448.0,
+        687.0,
+        471.0,
+        477.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Connect",
+      "text": "Connect",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        561.0,
+        686.0,
+        611.0,
+        479.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Connect",
+      "text": "Connect",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        675.0,
+        690.0,
+        723.0,
+        481.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Message",
+      "text": "Message",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        790.0,
+        684.0,
+        843.0,
+        478.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Messaging",
+      "text": "Messaging",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        954.0,
+        0.0,
+        1000.0,
+        1000.0
+      ]
+    }
+  ]
+}

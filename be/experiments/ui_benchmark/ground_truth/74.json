@@ -1,0 +1,160 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "日本語ホームページ",
+      "text": "日本語ホームページ",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        715.0,
+        39.0,
+        831.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "简体中文首页",
+      "text": "简体中文首页",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        847.0,
+        39.0,
+        946.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "W3C logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        96.0,
+        35.0,
+        202.0,
+        173.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Making the web work",
+      "text": "Making the web work",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        47.0,
+        348.0,
+        514.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The World Wide Web Consortium (W3C) develops standards and guidelines to help everyone build and enjoy a web based on the principles of accessibility, internationalization, privacy and security.",
+      "text": "The World Wide Web Consortium (W3C) develops standards and guidelines to help everyone build and enjoy a web based on the principles of accessibility, internationalization, privacy and security.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        382.0,
+        49.0,
+        489.0,
+        898.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "standards and guidelines",
+      "text": "standards and guidelines",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        383.0,
+        571.0,
+        412.0,
+        788.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "accessibility",
+      "text": "accessibility",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        442.0,
+        740.0,
+        470.0,
+        864.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "internationalization",
+      "text": "internationalization",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        477.0,
+        50.0,
+        524.0,
+        439.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "privacy",
+      "text": "privacy",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        477.0,
+        447.0,
+        524.0,
+        546.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "security",
+      "text": "security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        477.0,
+        572.0,
+        524.0,
+        684.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Read more about W3C",
+      "text": "Read more about W3C",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        547.0,
+        48.0,
+        598.0,
+        260.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Menu",
+      "text": "Menu",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        106.0,
+        883.0,
+        169.0,
+        949.0
+      ]
+    }
+  ]
+}

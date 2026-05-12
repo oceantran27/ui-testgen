@@ -1,0 +1,225 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "top navigation",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        383.0,
+        53.0,
+        808.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Get started",
+      "text": "Get started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        9.0,
+        397.0,
+        39.0,
+        435.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Downloads",
+      "text": "Downloads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        449.0,
+        39.0,
+        501.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Playground",
+      "text": "Playground",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        515.0,
+        39.0,
+        566.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        579.0,
+        39.0,
+        631.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        644.0,
+        39.0,
+        709.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        721.0,
+        39.0,
+        760.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        774.0,
+        39.0,
+        808.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Blog",
+      "text": "Blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        816.0,
+        39.0,
+        844.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Haskell logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        199.0,
+        334.0,
+        416.0,
+        704.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Haskell",
+      "text": "Haskell",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        195.0,
+        399.0,
+        413.0,
+        674.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Enjoy long-term maintainable software you can rely on",
+      "text": "Enjoy long-term maintainable software you can rely on",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        431.0,
+        332.0,
+        486.0,
+        730.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Get started",
+      "text": "Get started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        512.0,
+        416.0,
+        561.0,
+        511.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Open playground",
+      "text": "Open playground",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        510.0,
+        517.0,
+        559.0,
+        607.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Model complex domains",
+      "text": "Model complex domains",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        690.0,
+        197.0,
+        722.0,
+        321.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Build reliable software",
+      "text": "Build reliable software",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        690.0,
+        402.0,
+        722.0,
+        550.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Refactor with confidence",
+      "text": "Refactor with confidence",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        690.0,
+        623.0,
+        722.0,
+        778.0
+      ]
+    }
+  ]
+}

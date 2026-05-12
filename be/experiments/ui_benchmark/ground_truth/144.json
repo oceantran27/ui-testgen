@@ -1,0 +1,186 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Table of Contents",
+      "text": "Table of Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        80.0,
+        14.0,
+        311.0,
+        229.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduction",
+      "text": "Introduction",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        106.0,
+        240.0,
+        140.0,
+        369.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Python Standard Library",
+      "text": "The Python Standard Library",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        216.0,
+        243.0,
+        246.0,
+        349.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Built-in Functions",
+      "text": "Built-in Functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        395.0,
+        385.0,
+        425.0,
+        832.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        74.0,
+        40.0,
+        215.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "3.14.4",
+      "text": "3.14.4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        244.0,
+        46.0,
+        305.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Auto",
+      "text": "Auto",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        19.0,
+        689.0,
+        41.0,
+        730.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Quick search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        738.0,
+        44.0,
+        835.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go",
+      "text": "Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        838.0,
+        46.0,
+        866.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "previous",
+      "text": "previous",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        19.0,
+        868.0,
+        37.0,
+        925.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "next",
+      "text": "next",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        930.0,
+        37.0,
+        967.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "modules",
+      "text": "modules",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        973.0,
+        37.0,
+        995.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "index",
+      "text": "index",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        999.0,
+        38.0,
+        999.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Python library contains several different kinds of components.",
+      "text": "The “Python library” contains several different kinds of components.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        196.0,
+        245.0,
+        217.0,
+        806.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,693 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Contacts",
+      "text": "Contacts",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        48.0,
+        112.0,
+        140.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Showing 3 records",
+      "text": "Showing 3 records",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        456.0,
+        116.0,
+        547.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "View",
+      "text": "View",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        79.0,
+        549.0,
+        127.0,
+        683.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Show Filters",
+      "text": "Show Filters",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        684.0,
+        127.0,
+        757.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Board",
+      "text": "Board",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        73.0,
+        758.0,
+        127.0,
+        822.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Refresh",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        823.0,
+        127.0,
+        850.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Export",
+      "text": "Export",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        851.0,
+        127.0,
+        927.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Create",
+      "text": "Create",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        74.0,
+        928.0,
+        127.0,
+        999.0
+      ]
+    },
+    {
+      "type": "table",
+      "label": "Contacts table",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        128.0,
+        41.0,
+        513.0,
+        999.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Select all",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        43.0,
+        174.0,
+        72.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Name",
+      "text": "Name",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        65.0,
+        174.0,
+        88.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Address",
+      "text": "Address",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        190.0,
+        175.0,
+        240.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Category",
+      "text": "Category",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        515.0,
+        175.0,
+        560.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Status",
+      "text": "Status",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        566.0,
+        175.0,
+        609.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Phone",
+      "text": "Phone",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        615.0,
+        175.0,
+        658.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Email",
+      "text": "Email",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        722.0,
+        175.0,
+        765.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Options",
+      "text": "Options",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        899.0,
+        175.0,
+        959.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Select row",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        192.0,
+        43.0,
+        226.0,
+        72.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Hans Müller",
+      "text": "Hans Müller",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        64.0,
+        258.0,
+        139.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Friedrichstraße 12, Berlin, Berlin, 10117, Germany",
+      "text": "Friedrichstraße 12, Berlin, Berlin, 10117, Germany",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        225.0,
+        190.0,
+        258.0,
+        476.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Affiliate",
+      "text": "Affiliate",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        516.0,
+        258.0,
+        577.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "On Hold",
+      "text": "On Hold",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        580.0,
+        257.0,
+        635.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "h.mueller@berlin-tech.de",
+      "text": "h.mueller@berlin-tech.de",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        720.0,
+        257.0,
+        919.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "View contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        904.0,
+        258.0,
+        924.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Edit contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        925.0,
+        258.0,
+        947.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Call contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        948.0,
+        258.0,
+        971.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Delete contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        973.0,
+        258.0,
+        995.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Select row",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        288.0,
+        43.0,
+        323.0,
+        72.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "James Edward Harrison",
+      "text": "James Edward Harrison",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        291.0,
+        63.0,
+        323.0,
+        151.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "42 High Street, London, Greater London, SW1A 1AA, United Kingdom",
+      "text": "42 High Street, London, Greater London, SW1A 1AA, United Kingdom",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        190.0,
+        326.0,
+        515.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Customer",
+      "text": "Customer",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        517.0,
+        324.0,
+        581.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Active",
+      "text": "Active",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        581.0,
+        324.0,
+        629.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "+442079460958",
+      "text": "+442079460958",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        629.0,
+        323.0,
+        698.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "james.harrison@globallogistics.co.uk",
+      "text": "james.harrison@globallogistics.co.uk",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        720.0,
+        324.0,
+        930.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "View contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        904.0,
+        324.0,
+        924.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Edit contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        925.0,
+        324.0,
+        947.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Call contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        948.0,
+        324.0,
+        971.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Delete contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        973.0,
+        324.0,
+        995.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Select row",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        362.0,
+        43.0,
+        397.0,
+        72.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Sarah Jenkins",
+      "text": "Sarah Jenkins",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        361.0,
+        63.0,
+        396.0,
+        145.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "View contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        362.0,
+        904.0,
+        397.0,
+        924.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Edit contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        362.0,
+        925.0,
+        397.0,
+        947.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Call contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        362.0,
+        948.0,
+        397.0,
+        971.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Delete contact",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        362.0,
+        973.0,
+        397.0,
+        995.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Actions",
+      "text": "Actions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        410.0,
+        66.0,
+        458.0,
+        200.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Apply actions",
+      "text": "✓",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        410.0,
+        201.0,
+        459.0,
+        229.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "Previous page",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        408.0,
+        907.0,
+        459.0,
+        935.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "Page 1",
+      "text": "1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        408.0,
+        935.0,
+        459.0,
+        964.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "Next page",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        408.0,
+        964.0,
+        459.0,
+        999.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "VNU",
+      "text": "VNU",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        123.0,
+        53.0,
+        166.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Ocean Tran",
+      "text": "Ocean Tran",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        542.0,
+        52.0,
+        697.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "6 days Pro trial",
+      "text": "6 days Pro trial",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        691.0,
+        53.0,
+        835.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        834.0,
+        53.0,
+        899.0
+      ]
+    }
+  ]
+}

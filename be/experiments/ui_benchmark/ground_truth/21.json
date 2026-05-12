@@ -1,0 +1,303 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        14.0,
+        92.0,
+        47.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "PRODUCT STORE",
+      "text": "PRODUCT STORE",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        41.0,
+        55.0,
+        82.0,
+        176.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "top_navigation",
+      "text": "Home Contact About us Cart Log in Sign up",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        34.0,
+        569.0,
+        80.0,
+        820.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "carousel_previous",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        322.0,
+        206.0,
+        346.0,
+        232.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "carousel_next",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        320.0,
+        799.0,
+        346.0,
+        824.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "featured_product_image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        115.0,
+        232.0,
+        553.0,
+        786.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "categories_panel",
+      "text": "CATEGORIES Phones Laptops Monitors",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        625.0,
+        109.0,
+        907.0,
+        484.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "CATEGORIES",
+      "text": "CATEGORIES",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        648.0,
+        106.0,
+        740.0,
+        205.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Phones",
+      "text": "Phones",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        126.0,
+        804.0,
+        213.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Laptops",
+      "text": "Laptops",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        804.0,
+        126.0,
+        873.0,
+        213.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Monitors",
+      "text": "Monitors",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        868.0,
+        126.0,
+        930.0,
+        213.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Samsung galaxy s6 product card",
+      "text": "Samsung galaxy s6 $360 The Samsung Galaxy S6 is powered by 1.5GHz octa-core Samsung Exynos 7420 processor",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        628.0,
+        222.0,
+        879.0,
+        541.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Samsung galaxy s6 image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        640.0,
+        245.0,
+        763.0,
+        426.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Samsung galaxy s6",
+      "text": "Samsung galaxy s6",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        806.0,
+        306.0,
+        854.0,
+        542.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$360",
+      "text": "$360",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        856.0,
+        309.0,
+        875.0,
+        352.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Nokia lumia 1520 product card",
+      "text": "Nokia lumia 1520 $820 The Nokia Lumia 1520 is powered by 2.2GHz quad-core Qualcomm Snapdragon 800",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        628.0,
+        548.0,
+        879.0,
+        824.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Nokia lumia 1520 image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        641.0,
+        555.0,
+        760.0,
+        726.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Nokia lumia 1520",
+      "text": "Nokia lumia 1520",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        807.0,
+        629.0,
+        854.0,
+        825.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$820",
+      "text": "$820",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        858.0,
+        632.0,
+        875.0,
+        676.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Nexus 6 product card",
+      "text": "Nexus 6 $650 The Motorola Google Nexus 6 is powered by 2.7GHz quad-core Qualcomm Snapdragon 805",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        628.0,
+        836.0,
+        879.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Nexus 6 image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        640.0,
+        842.0,
+        760.0,
+        994.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Nexus 6",
+      "text": "Nexus 6",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        806.0,
+        853.0,
+        854.0,
+        947.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$650",
+      "text": "$650",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        857.0,
+        853.0,
+        875.0,
+        897.0
+      ]
+    }
+  ]
+}

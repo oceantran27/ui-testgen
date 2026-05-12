@@ -1,0 +1,459 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Elixir logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        19.0,
+        145.0,
+        109.0,
+        268.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir",
+      "text": "elixir",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        40.0,
+        212.0,
+        101.0,
+        339.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Top navigation",
+      "text": "HOME INSTALL LEARNING DOCS GUIDES CASES BLOG",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        469.0,
+        47.0,
+        851.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir is a dynamic, functional language for building scalable and maintainable applications.",
+      "text": "Elixir is a dynamic, functional language for building scalable and maintainable applications.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        157.0,
+        148.0,
+        200.0,
+        680.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir runs on the Erlang VM, known for creating low-latency, distributed, and fault-tolerant systems.",
+      "text": "Elixir runs on the Erlang VM, known for creating low-latency, distributed, and fault-tolerant systems. These capabilities and Elixir tooling allow developers to be productive in several domains, such as web development, embedded software, machine learning, data pipelines, and multimedia processing, across a wide range of industries.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        221.0,
+        148.0,
+        344.0,
+        679.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Here is a peek:",
+      "text": "Here is a peek:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        349.0,
+        147.0,
+        377.0,
+        268.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Code example",
+      "text": "iex> \"Elixir\" |> String.graphemes() |> Enum.frequencies() %{ \"E\" => 1, \"i\" => 2, \"l\" => 1, \"r\" => 1, \"x\" => 1 }",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        392.0,
+        148.0,
+        501.0,
+        676.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Getting Started guide",
+      "text": "Getting Started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        503.0,
+        240.0,
+        528.0,
+        353.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Learning page",
+      "text": "Learning page",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        503.0,
+        407.0,
+        528.0,
+        507.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Companies using Elixir in production",
+      "text": "Companies using Elixir in production",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        560.0,
+        148.0,
+        592.0,
+        593.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See more cases",
+      "text": "See more cases →",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        567.0,
+        533.0,
+        594.0,
+        678.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Company card",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        618.0,
+        153.0,
+        737.0,
+        292.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Company card",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        617.0,
+        306.0,
+        737.0,
+        445.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Remote company card",
+      "text": "remote",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        619.0,
+        458.0,
+        737.0,
+        596.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Platform features",
+      "text": "Platform features",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        748.0,
+        147.0,
+        778.0,
+        292.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Scalability",
+      "text": "Scalability",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        809.0,
+        147.0,
+        837.0,
+        279.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir code runs inside lightweight threads of execution.",
+      "text": "All Elixir code runs inside lightweight threads of execution (called processes) that are isolated and exchange information via messages.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        850.0,
+        147.0,
+        999.0,
+        690.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News: Elixir v1.19.0 released",
+      "text": "News: Elixir v1.19.0 released",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        672.0,
+        175.0,
+        850.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search...",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        205.0,
+        669.0,
+        227.0,
+        821.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "IMPORTANT LINKS",
+      "text": "IMPORTANT LINKS",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        261.0,
+        671.0,
+        274.0,
+        809.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Development & Team",
+      "text": "Development & Team",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        294.0,
+        681.0,
+        318.0,
+        834.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Source code & issues tracker",
+      "text": "Source code & issues tracker",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        332.0,
+        681.0,
+        356.0,
+        884.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Watch the Elixir mini-documentary!",
+      "text": "Watch the Elixir mini-documentary!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        389.0,
+        661.0,
+        456.0,
+        879.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "JOIN THE COMMUNITY",
+      "text": "JOIN THE COMMUNITY",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        499.0,
+        670.0,
+        514.0,
+        811.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Hex.pm package manager",
+      "text": "Hex.pm package manager",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        534.0,
+        682.0,
+        559.0,
+        842.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "@elixirlang on Twitter",
+      "text": "@elixirlang on Twitter",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        570.0,
+        682.0,
+        594.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "#elixir on irc.libera.chat",
+      "text": "#elixir on irc.libera.chat",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        605.0,
+        682.0,
+        629.0,
+        860.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Elixir Forum",
+      "text": "Elixir Forum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        642.0,
+        682.0,
+        665.0,
+        780.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Elixir on Slack",
+      "text": "Elixir on Slack",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        679.0,
+        682.0,
+        703.0,
+        806.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Elixir on Discord",
+      "text": "Elixir on Discord",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        715.0,
+        682.0,
+        739.0,
+        828.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IDE/Editor support",
+      "text": "IDE/Editor support",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        751.0,
+        682.0,
+        775.0,
+        839.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Meetups around the world",
+      "text": "Meetups around the world",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        787.0,
+        682.0,
+        811.0,
+        886.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Jobs and hiring (community wiki)",
+      "text": "Jobs and hiring (community wiki)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        823.0,
+        682.0,
+        847.0,
+        918.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Events and resources (community wiki)",
+      "text": "Events and resources (community wiki)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        859.0,
+        682.0,
+        883.0,
+        901.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Erlang Ecosystem Foundation logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        919.0,
+        674.0,
+        989.0,
+        860.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,576 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Google Translate",
+      "text": "Google Translate",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        38.0,
+        58.0,
+        147.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Text",
+      "text": "Text",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        104.0,
+        75.0,
+        145.0,
+        160.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Images",
+      "text": "Images",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        103.0,
+        167.0,
+        145.0,
+        247.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Documents",
+      "text": "Documents",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        102.0,
+        255.0,
+        145.0,
+        356.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Websites",
+      "text": "Websites",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        103.0,
+        365.0,
+        145.0,
+        474.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Detect language",
+      "text": "Detect language",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        84.0,
+        218.0,
+        281.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        303.0,
+        219.0,
+        353.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Spanish",
+      "text": "Spanish",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        353.0,
+        219.0,
+        412.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "French",
+      "text": "French",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        414.0,
+        217.0,
+        466.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "language options",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        184.0,
+        471.0,
+        217.0,
+        518.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "swap languages",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        493.0,
+        219.0,
+        509.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        533.0,
+        218.0,
+        591.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Spanish",
+      "text": "Spanish",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        184.0,
+        595.0,
+        219.0,
+        663.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Arabic",
+      "text": "Arabic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        184.0,
+        668.0,
+        219.0,
+        724.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "language options",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        184.0,
+        736.0,
+        217.0,
+        783.0
+      ]
+    },
+    {
+      "type": "textarea",
+      "label": "source text input",
+      "text": "Good",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        227.0,
+        75.0,
+        470.0,
+        499.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "clear text",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        244.0,
+        460.0,
+        262.0,
+        482.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See dictionary",
+      "text": "See dictionary",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        337.0,
+        83.0,
+        355.0,
+        449.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "voice input",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        381.0,
+        81.0,
+        416.0,
+        140.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "listen source text",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        382.0,
+        143.0,
+        417.0,
+        193.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "translations are gender-specific note",
+      "text": "Translations are gender-specific. Learn more",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        240.0,
+        522.0,
+        263.0,
+        739.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Buena",
+      "text": "Buena",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        293.0,
+        522.0,
+        334.0,
+        617.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "(feminine)",
+      "text": "(feminine)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        295.0,
+        632.0,
+        332.0,
+        669.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See dictionary",
+      "text": "See dictionary",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        361.0,
+        522.0,
+        381.0,
+        461.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "listen translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        522.0,
+        433.0,
+        543.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "copy translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        762.0,
+        434.0,
+        783.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "google search translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        803.0,
+        434.0,
+        820.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "translation feedback",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        839.0,
+        434.0,
+        873.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "share translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        401.0,
+        878.0,
+        434.0,
+        900.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Bueno",
+      "text": "Bueno",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        523.0,
+        522.0,
+        557.0,
+        615.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "(masculine)",
+      "text": "(masculine)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        526.0,
+        633.0,
+        559.0,
+        672.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See dictionary",
+      "text": "See dictionary",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        624.0,
+        522.0,
+        646.0,
+        461.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "listen translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        661.0,
+        522.0,
+        693.0,
+        542.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "copy translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        662.0,
+        762.0,
+        693.0,
+        783.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "google search translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        663.0,
+        803.0,
+        694.0,
+        820.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "translation feedback",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        662.0,
+        839.0,
+        694.0,
+        873.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "share translation",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        664.0,
+        878.0,
+        694.0,
+        900.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "More translations",
+      "text": "More translations",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        700.0,
+        521.0,
+        733.0,
+        624.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Expand all",
+      "text": "Expand all",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        700.0,
+        852.0,
+        732.0,
+        907.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "more translations list",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        755.0,
+        522.0,
+        998.0,
+        912.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "buen",
+      "text": "buen",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        756.0,
+        525.0,
+        783.0,
+        561.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Adjective",
+      "text": "Adjective",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        756.0,
+        631.0,
+        783.0,
+        693.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "good",
+      "text": "good",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        756.0,
+        699.0,
+        783.0,
+        740.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "expand translation row",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        756.0,
+        934.0,
+        783.0,
+        962.0
+      ]
+    }
+  ]
+}

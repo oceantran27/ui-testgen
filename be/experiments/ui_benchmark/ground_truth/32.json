@@ -1,0 +1,355 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Order your favorite pizza",
+      "text": "Order your favorite pizza",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        28.0,
+        388.0,
+        68.0,
+        613.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Tell us what is your name:",
+      "text": "Tell us what is your name:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        133.0,
+        394.0,
+        166.0,
+        604.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Enter you name please",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        177.0,
+        391.0,
+        218.0,
+        606.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "First, choose your pizza size:",
+      "text": "First, choose your pizza size:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        227.0,
+        394.0,
+        250.0,
+        605.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "pizza price is depending on the size of the pizza",
+      "text": "(pizza price is depending on the size of the pizza)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        275.0,
+        384.0,
+        314.0,
+        605.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "for two 7,50€",
+      "text": "for two 7,50€",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        325.0,
+        392.0,
+        342.0,
+        605.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "for four 10,50€",
+      "text": "for four 10,50€",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        350.0,
+        392.0,
+        367.0,
+        605.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "for six 12,50€",
+      "text": "for six 12,50€",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        375.0,
+        393.0,
+        392.0,
+        606.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "for eight 15,50€",
+      "text": "for eight 15,50€",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        400.0,
+        392.0,
+        417.0,
+        605.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Pick your toppings:",
+      "text": "Pick your toppings:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        443.0,
+        394.0,
+        463.0,
+        605.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Incl. 4 toppings. Extra is 0.50e per topping.",
+      "text": "(Incl. 4 toppings. Extra is 0.50e per topping.)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        468.0,
+        384.0,
+        495.0,
+        606.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Pepperoni",
+      "text": "Pepperoni",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        503.0,
+        390.0,
+        517.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Kebab",
+      "text": "Kebab",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        529.0,
+        390.0,
+        543.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Chicken",
+      "text": "Chicken",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        553.0,
+        390.0,
+        567.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Pork",
+      "text": "Pork",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        579.0,
+        390.0,
+        592.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Minced meat",
+      "text": "Minced meat",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        604.0,
+        390.0,
+        618.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Mozzarella",
+      "text": "Mozzarella",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        629.0,
+        390.0,
+        643.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Red onion",
+      "text": "Red onion",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        653.0,
+        390.0,
+        667.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Mushroom",
+      "text": "Mushroom",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        679.0,
+        390.0,
+        693.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Pineapple",
+      "text": "Pineapple",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        703.0,
+        390.0,
+        717.0,
+        605.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Jalapeno",
+      "text": "Jalapeno",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        727.0,
+        390.0,
+        741.0,
+        605.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "At last, select where you want to eat?",
+      "text": "At last, select where you want to eat?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        765.0,
+        390.0,
+        789.0,
+        606.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Select your delivery type",
+      "text": "Select your delivery type",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        808.0,
+        390.0,
+        829.0,
+        559.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Select a delivery method, home delivery costs €5, while other methods are free.",
+      "text": "Select a delivery method, home delivery costs €5, while other methods are free.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        846.0,
+        390.0,
+        875.0,
+        606.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Delivery to home",
+      "text": "Delivery to home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        905.0,
+        390.0,
+        948.0,
+        606.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Order pizza",
+      "text": "Order pizza",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        971.0,
+        412.0,
+        1000.0,
+        502.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Reset order",
+      "text": "Reset order",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        971.0,
+        503.0,
+        1000.0,
+        605.0
+      ]
+    }
+  ]
+}

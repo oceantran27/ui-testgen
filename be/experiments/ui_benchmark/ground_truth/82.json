@@ -1,0 +1,264 @@
+{
+  "ui_elements": [
+    {
+      "type": "icon_button",
+      "label": "Menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        24.0,
+        115.0,
+        65.0,
+        179.0
+      ]
+    },
+    {
+      "type": "search",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        34.0,
+        196.0,
+        68.0,
+        283.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "IETF logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        747.0,
+        72.0,
+        843.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "IETF 125 in review",
+      "text": "IETF 125 in review",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        170.0,
+        116.0,
+        223.0,
+        433.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Select sessions from the IETF 125 Shenzhen meeting on 14-20 March 2026 were streamed live available for anyone to view, and all sessions are available on demand.",
+      "text": "Select sessions from the IETF 125 Shenzhen meeting on 14-20 March 2026 were streamed live available for anyone to view, and all sessions are available on demand.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        245.0,
+        118.0,
+        370.0,
+        671.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "See more",
+      "text": "See more",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        357.0,
+        115.0,
+        430.0,
+        235.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Upcoming events",
+      "text": "Upcoming events",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        512.0,
+        118.0,
+        560.0,
+        413.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "What's new?",
+      "text": "What's new?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        512.0,
+        496.0,
+        560.0,
+        722.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "IETF 126 Vienna",
+      "text": "IETF 126 Vienna",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        586.0,
+        123.0,
+        798.0,
+        492.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Vienna event image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        589.0,
+        125.0,
+        797.0,
+        245.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IETF 126 Vienna",
+      "text": "IETF 126 Vienna",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        591.0,
+        267.0,
+        651.0,
+        492.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "IETF 126 starts Saturday 18 July and runs through Friday afternoon, 24 July.",
+      "text": "IETF 126 starts Saturday 18 July and runs through Friday afternoon, 24 July.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        652.0,
+        263.0,
+        773.0,
+        494.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Vienna, Austria",
+      "text": "Vienna, Austria",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        783.0,
+        264.0,
+        799.0,
+        491.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "IETF 126 Vienna",
+      "text": "IETF 126 Vienna",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        819.0,
+        123.0,
+        999.0,
+        490.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "IETF Secretariat continues under new approach",
+      "text": "IETF Secretariat continues under new approach",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        585.0,
+        512.0,
+        849.0,
+        825.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IETF Secretariat continues under new approach",
+      "text": "IETF Secretariat continues under new approach",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        604.0,
+        528.0,
+        681.0,
+        821.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "As of 1 April 2026, the IETF Secretariat function will be staffed through an Employer of Record (EOR) arrangement rather than a service contract awarded through a Request for Proposal (RFP) process, as it has been until now.",
+      "text": "As of 1 April 2026, the IETF Secretariat function will be staffed through an Employer of Record (EOR) arrangement rather than a service contract awarded through a Request for Proposal (RFP) process, as it has been until now.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        659.0,
+        527.0,
+        799.0,
+        819.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "31 Mar 2026",
+      "text": "31 Mar 2026",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        803.0,
+        530.0,
+        825.0,
+        821.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Suggested IETF 125 Sessions for Getting Familiar with New Topics",
+      "text": "Suggested IETF 125 Sessions for Getting Familiar with New Topics",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        851.0,
+        511.0,
+        999.0,
+        834.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Suggested IETF 125 Sessions for Getting Familiar with New Topics",
+      "text": "Suggested IETF 125 Sessions for Getting Familiar with New Topics",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        873.0,
+        529.0,
+        980.0,
+        820.0
+      ]
+    }
+  ]
+}

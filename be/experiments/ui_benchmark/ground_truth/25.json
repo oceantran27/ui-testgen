@@ -1,0 +1,381 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "80 hotels in New York",
+      "text": "80 hotels in New York",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        181.0,
+        24.0,
+        207.0,
+        181.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Filters",
+      "text": "Filters",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        99.0,
+        407.0,
+        139.0,
+        152.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Entire home",
+      "text": "Entire home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        100.0,
+        163.0,
+        137.0,
+        213.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Room",
+      "text": "Room",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        100.0,
+        218.0,
+        137.0,
+        251.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Hotel",
+      "text": "Hotel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        100.0,
+        256.0,
+        137.0,
+        284.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        604.0,
+        66.0,
+        630.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Become a host",
+      "text": "Become a host",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        844.0,
+        54.0,
+        930.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Language selector",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        23.0,
+        938.0,
+        53.0,
+        959.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        24.0,
+        960.0,
+        52.0,
+        981.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Radio Hotel",
+      "text": "Radio Hotel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        288.0,
+        22.0,
+        603.0,
+        340.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "John Hotel",
+      "text": "John Hotel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        289.0,
+        269.0,
+        603.0,
+        544.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Save to wishlist",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        291.0,
+        30.0,
+        318.0,
+        63.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Save to wishlist",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        291.0,
+        517.0,
+        318.0,
+        548.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Radio Hotel",
+      "text": "Radio Hotel",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        340.0,
+        22.0,
+        354.0,
+        111.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Hotel in Washington Heights",
+      "text": "Hotel in Washington Heights",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        614.0,
+        22.0,
+        635.0,
+        234.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "4.5 (1047)",
+      "text": "4.5 (1047)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        640.0,
+        705.0,
+        660.0,
+        920.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "From ₫4,905,315 ₫4,486,440 for 1 night",
+      "text": "From ₫4,905,315 ₫4,486,440 for 1 night",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        744.0,
+        22.0,
+        769.0,
+        464.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Plus, get ₫376,987 in Airbnb credit",
+      "text": "Plus, get ₫376,987 in Airbnb credit",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        22.0,
+        793.0,
+        375.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "John Hotel",
+      "text": "John Hotel",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        613.0,
+        269.0,
+        634.0,
+        670.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Hotel in Flushing",
+      "text": "Hotel in Flushing",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        614.0,
+        269.0,
+        635.0,
+        819.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "4.66 (424)",
+      "text": "4.66 (424)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        640.0,
+        785.0,
+        660.0,
+        920.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "From ₫4,187,432 ₫3,768,821 for 1 night",
+      "text": "From ₫4,187,432 ₫3,768,821 for 1 night",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        269.0,
+        769.0,
+        463.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Plus, get ₫376,882 in Airbnb credit",
+      "text": "Plus, get ₫376,882 in Airbnb credit",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        268.0,
+        793.0,
+        372.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Free cancellation",
+      "text": "Free cancellation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        370.0,
+        793.0,
+        433.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Map of New York area",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        190.0,
+        478.0,
+        993.0,
+        977.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Map expand",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        190.0,
+        938.0,
+        231.0,
+        970.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Map zoom in",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        258.0,
+        940.0,
+        312.0,
+        980.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Map zoom out",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        312.0,
+        940.0,
+        365.0,
+        980.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Get up to 10% in Airbnb credit",
+      "text": "Get up to 10% in Airbnb credit",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        189.0,
+        356.0,
+        207.0,
+        548.0
+      ]
+    }
+  ]
+}

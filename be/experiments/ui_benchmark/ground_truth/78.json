@@ -1,0 +1,225 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "Skip to content, sitemap or skip to search.",
+      "text": "Skip to content, sitemap or skip to search.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        5.0,
+        7.0,
+        24.0,
+        191.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Personal tools",
+      "text": "Personal tools",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        49.0,
+        8.0,
+        65.0,
+        84.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        36.0,
+        114.0,
+        67.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Help!",
+      "text": "Help!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        118.0,
+        35.0,
+        137.0,
+        68.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Members forum",
+      "text": "Members forum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        138.0,
+        36.0,
+        160.0,
+        129.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        173.0,
+        37.0,
+        191.0,
+        68.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Campaigns",
+      "text": "Campaigns",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        36.0,
+        212.0,
+        109.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Licensing",
+      "text": "Licensing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        215.0,
+        36.0,
+        234.0,
+        99.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Membership",
+      "text": "Membership",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        237.0,
+        36.0,
+        255.0,
+        111.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Resources",
+      "text": "Resources",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        258.0,
+        37.0,
+        276.0,
+        112.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        280.0,
+        36.0,
+        299.0,
+        113.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "♥Donate♥",
+      "text": "♥Donate♥",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        301.0,
+        37.0,
+        320.0,
+        92.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Shop",
+      "text": "Shop",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        322.0,
+        36.0,
+        339.0,
+        69.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Free Software Foundation (FSF) is a nonprofit with a worldwide mission to promote computer user freedom.",
+      "text": "The Free Software Foundation (FSF) is a nonprofit with a worldwide mission to promote computer user freedom.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        428.0,
+        7.0,
+        447.0,
+        560.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Join now",
+      "text": "Join now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        946.0,
+        185.0,
+        991.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "FEATURED",
+      "text": "FEATURED",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        491.0,
+        898.0,
+        508.0,
+        929.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Licensing & Compliance Lab",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        652.0,
+        61.0,
+        955.0,
+        859.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Eclipse Foundation logo",
+      "text": "ECLIPSE FOUNDATION",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        21.0,
+        51.0,
+        73.0,
+        160.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Join us",
+      "text": "Join us",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        31.0,
+        212.0,
+        63.0,
+        282.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "What we do",
+      "text": "What we do",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        31.0,
+        304.0,
+        62.0,
+        417.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Resources",
+      "text": "Resources",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        31.0,
+        447.0,
+        62.0,
+        542.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About us",
+      "text": "About us",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        31.0,
+        567.0,
+        62.0,
+        657.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        33.0,
+        700.0,
+        64.0,
+        717.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "account",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        33.0,
+        740.0,
+        64.0,
+        757.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Download",
+      "text": "Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        25.0,
+        799.0,
+        73.0,
+        955.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "hero image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        203.0,
+        592.0,
+        549.0,
+        998.0
+      ]
+    }
+  ]
+}

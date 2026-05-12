@@ -1,0 +1,628 @@
+{
+  "ui_elements": [
+    {
+      "type": "button",
+      "label": "menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        21.0,
+        93.0,
+        54.0,
+        107.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wikipedia",
+      "text": "Wikipedia",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        143.0,
+        45.0,
+        219.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search Wikipedia",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        248.0,
+        50.0,
+        510.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        510.0,
+        50.0,
+        543.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        782.0,
+        44.0,
+        845.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        850.0,
+        43.0,
+        916.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        919.0,
+        43.0,
+        956.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Unix",
+      "text": "Unix",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        94.0,
+        248.0,
+        133.0,
+        320.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Article",
+      "text": "Article",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        247.0,
+        166.0,
+        284.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Talk",
+      "text": "Talk",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        289.0,
+        165.0,
+        314.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        651.0,
+        171.0,
+        681.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Edit",
+      "text": "Edit",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        689.0,
+        169.0,
+        713.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        725.0,
+        170.0,
+        804.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        809.0,
+        169.0,
+        857.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "110 languages",
+      "text": "110 languages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        95.0,
+        699.0,
+        122.0,
+        778.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Contents",
+      "text": "Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        98.0,
+        167.0,
+        213.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "hide",
+      "text": "hide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        214.0,
+        167.0,
+        238.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Overview",
+      "text": "Overview",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        211.0,
+        97.0,
+        230.0,
+        212.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "History",
+      "text": "History",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        242.0,
+        96.0,
+        262.0,
+        206.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Standards",
+      "text": "Standards",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        274.0,
+        96.0,
+        292.0,
+        215.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Components",
+      "text": "Components",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        307.0,
+        95.0,
+        327.0,
+        223.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Impact",
+      "text": "Impact",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        341.0,
+        96.0,
+        359.0,
+        212.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Free Unix and Unix-like variants",
+      "text": "Free Unix and Unix-like variants",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        371.0,
+        119.0,
+        389.0,
+        267.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "ARPANET",
+      "text": "ARPANET",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        403.0,
+        117.0,
+        421.0,
+        206.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Branding",
+      "text": "Branding",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        433.0,
+        118.0,
+        451.0,
+        207.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See also",
+      "text": "See also",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        466.0,
+        118.0,
+        483.0,
+        204.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "References",
+      "text": "References",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        498.0,
+        117.0,
+        515.0,
+        219.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Further reading",
+      "text": "Further reading",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        531.0,
+        117.0,
+        547.0,
+        250.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "External links",
+      "text": "External links",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        562.0,
+        117.0,
+        579.0,
+        240.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Unix",
+      "text": "Unix",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        226.0,
+        649.0,
+        959.0,
+        775.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Unix illustration",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        251.0,
+        613.0,
+        499.0,
+        762.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "UNIX System III running on a PDP-11 simulator",
+      "text": "UNIX System III running on a PDP-11 simulator",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        499.0,
+        614.0,
+        614.0,
+        779.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Developer",
+      "text": "Developer",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        624.0,
+        614.0,
+        644.0,
+        705.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Ken Thompson, Dennis Ritchie, Brian Kernighan, Douglas McIlroy, and Joe Ossanna at Bell Labs",
+      "text": "Ken Thompson, Dennis Ritchie, Brian Kernighan, Douglas McIlroy, and Joe Ossanna at Bell Labs",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        625.0,
+        704.0,
+        655.0,
+        781.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Written in",
+      "text": "Written in",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        613.0,
+        761.0,
+        705.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "C and assembly language",
+      "text": "C and assembly language",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        707.0,
+        761.0,
+        780.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "OS family",
+      "text": "OS family",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        779.0,
+        613.0,
+        798.0,
+        693.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Unix",
+      "text": "Unix",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        779.0,
+        704.0,
+        798.0,
+        776.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Source model",
+      "text": "Source model",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        813.0,
+        613.0,
+        834.0,
+        722.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Historically proprietary software, while some Unix projects (including BSD family and Illumos) are open-source",
+      "text": "Historically proprietary software, while some Unix projects (including BSD family and Illumos) are open-source",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        813.0,
+        725.0,
+        844.0,
+        776.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Small",
+      "text": "Small",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        226.0,
+        769.0,
+        247.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        261.0,
+        769.0,
+        279.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Large",
+      "text": "Large",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        292.0,
+        769.0,
+        312.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        383.0,
+        769.0,
+        401.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Wide",
+      "text": "Wide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        417.0,
+        769.0,
+        435.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Automatic",
+      "text": "Automatic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        528.0,
+        769.0,
+        546.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Light",
+      "text": "Light",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        561.0,
+        769.0,
+        579.0,
+        780.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Dark",
+      "text": "Dark",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        592.0,
+        769.0,
+        610.0,
+        780.0
+      ]
+    }
+  ]
+}

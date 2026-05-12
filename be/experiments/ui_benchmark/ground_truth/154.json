@@ -1,0 +1,342 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Elixir logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        20.0,
+        206.0,
+        132.0,
+        382.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "elixir",
+      "text": "elixir",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        45.0,
+        271.0,
+        134.0,
+        359.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "top navigation",
+      "text": "HOME INSTALL LEARNING DOCS GUIDES CASES BLOG",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        491.0,
+        65.0,
+        803.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HOME",
+      "text": "HOME",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        491.0,
+        59.0,
+        513.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "INSTALL",
+      "text": "INSTALL",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        520.0,
+        58.0,
+        573.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "LEARNING",
+      "text": "LEARNING",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        580.0,
+        58.0,
+        657.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "DOCS",
+      "text": "DOCS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        667.0,
+        58.0,
+        705.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GUIDES",
+      "text": "GUIDES",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        719.0,
+        58.0,
+        776.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "CASES",
+      "text": "CASES",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        787.0,
+        58.0,
+        839.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "BLOG",
+      "text": "BLOG",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        29.0,
+        849.0,
+        58.0,
+        891.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir introductory description",
+      "text": "Elixir is a dynamic, functional language for building scalable and maintainable applications.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        159.0,
+        205.0,
+        238.0,
+        686.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Elixir description paragraph",
+      "text": "Elixir runs on the Erlang VM, known for creating low-latency, distributed, and fault-tolerant systems. These capabilities and Elixir tooling allow developers to be productive in several domains, such as web development, embedded software, machine learning, data pipelines, and multimedia processing, across a wide range of industries.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        260.0,
+        206.0,
+        384.0,
+        689.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Here is a peek",
+      "text": "Here is a peek:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        391.0,
+        206.0,
+        409.0,
+        292.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "code snippet",
+      "text": "iex> \"Elixir\" |> String.graphemes() |> Enum.frequencies() %{ \"E\" => 1, \"i\" => 2, \"l\" => 1, \"r\" => 1, \"x\" => 1 }",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        432.0,
+        205.0,
+        510.0,
+        682.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "news link label",
+      "text": "News:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        160.0,
+        768.0,
+        186.0,
+        842.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Elixir v1.19.0 released",
+      "text": "Elixir v1.19.0 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        159.0,
+        842.0,
+        187.0,
+        970.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        250.0,
+        843.0,
+        287.0,
+        872.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "IMPORTANT LINKS",
+      "text": "IMPORTANT LINKS",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        321.0,
+        768.0,
+        339.0,
+        874.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Development & Team",
+      "text": "Development & Team",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        358.0,
+        781.0,
+        387.0,
+        893.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Source code & issues tracker",
+      "text": "Source code & issues tracker",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        402.0,
+        779.0,
+        432.0,
+        928.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Watch the Elixir mini-documentary!",
+      "text": "Watch the Elixir mini-documentary!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        449.0,
+        761.0,
+        551.0,
+        918.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "JOIN THE COMMUNITY",
+      "text": "JOIN THE COMMUNITY",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        595.0,
+        768.0,
+        613.0,
+        895.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Hex.pm package manager",
+      "text": "Hex.pm package manager",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        635.0,
+        781.0,
+        665.0,
+        881.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "@elixirlang on Twitter",
+      "text": "@elixirlang on Twitter",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        677.0,
+        781.0,
+        706.0,
+        873.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "#elixir on irc.libera.chat",
+      "text": "#elixir on irc.libera.chat",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        717.0,
+        781.0,
+        746.0,
+        909.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Elixir Forum",
+      "text": "Elixir Forum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        757.0,
+        781.0,
+        786.0,
+        845.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "MariaDB Foundation logo",
+      "text": "MariaDB Foundation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        400.0,
+        82.0,
+        579.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        34.0,
+        927.0,
+        76.0,
+        982.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "MariaDB Server: the innovative open source database",
+      "text": "MariaDB Server: the innovative open source database",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        206.0,
+        21.0,
+        283.0,
+        978.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Get Involved",
+      "text": "Get Involved",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        347.0,
+        286.0,
+        412.0,
+        471.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sponsor",
+      "text": "Sponsor",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        347.0,
+        514.0,
+        412.0,
+        699.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "MariaDB Foundation YouTube",
+      "text": "MariaDB Foundation YouTube",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        521.0,
+        326.0,
+        559.0,
+        673.0
+      ]
+    }
+  ]
+}

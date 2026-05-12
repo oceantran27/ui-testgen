@@ -1,0 +1,147 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "about",
+      "text": "about",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        113.0,
+        627.0,
+        140.0,
+        712.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "news",
+      "text": "news",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        151.0,
+        628.0,
+        181.0,
+        712.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "get started",
+      "text": "get started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        189.0,
+        627.0,
+        219.0,
+        770.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "download",
+      "text": "download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        225.0,
+        627.0,
+        257.0,
+        741.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "documentation",
+      "text": "documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        266.0,
+        627.0,
+        299.0,
+        807.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "community",
+      "text": "community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        303.0,
+        627.0,
+        334.0,
+        758.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "site map",
+      "text": "site map",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        345.0,
+        627.0,
+        375.0,
+        734.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "português",
+      "text": "português",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        382.0,
+        627.0,
+        414.0,
+        741.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "site logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        134.0,
+        234.0,
+        358.0,
+        475.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "designed and developed at",
+      "text": "designed and developed at",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        424.0,
+        627.0,
+        441.0,
+        748.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "PUC RIO",
+      "text": "PUC RIO",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        453.0,
+        628.0,
+        548.0,
+        760.0
+      ]
+    }
+  ]
+}

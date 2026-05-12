@@ -1,0 +1,888 @@
+{
+  "ui_elements": [
+    {
+      "type": "input",
+      "label": "Search in all columns...",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        48.0,
+        20.0,
+        83.0,
+        156.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        47.0,
+        684.0,
+        84.0,
+        841.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Export to Excel",
+      "text": "Export to Excel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        45.0,
+        844.0,
+        85.0,
+        921.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Export to PDF",
+      "text": "Export to PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        45.0,
+        923.0,
+        85.0,
+        989.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Drag a column header and drop it here to group by that column",
+      "text": "Drag a column header and drop it here to group by that column",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        105.0,
+        19.0,
+        139.0,
+        598.0
+      ]
+    },
+    {
+      "type": "table",
+      "label": "Employee / Performance / Contacts",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        192.0,
+        19.0,
+        821.0,
+        986.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Employee",
+      "text": "Employee",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        149.0,
+        53.0,
+        183.0,
+        156.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Performance",
+      "text": "Performance",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        492.0,
+        183.0,
+        709.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Contacts",
+      "text": "Contacts",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        728.0,
+        183.0,
+        951.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Contact Name",
+      "text": "Contact Name",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        195.0,
+        52.0,
+        221.0,
+        134.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        198.0,
+        194.0,
+        215.0,
+        202.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Job Title",
+      "text": "Job Title",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        195.0,
+        287.0,
+        220.0,
+        363.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "sort_ascending",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        365.0,
+        219.0,
+        370.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        195.0,
+        442.0,
+        215.0,
+        451.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Country",
+      "text": "Country",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        526.0,
+        220.0,
+        564.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        602.0,
+        214.0,
+        611.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Status",
+      "text": "Status",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        665.0,
+        219.0,
+        703.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        742.0,
+        214.0,
+        751.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Engagement",
+      "text": "Engagement",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        741.0,
+        220.0,
+        863.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        193.0,
+        898.0,
+        214.0,
+        907.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Budget",
+      "text": "Budget",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        893.0,
+        220.0,
+        943.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        979.0,
+        214.0,
+        988.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Phone",
+      "text": "Phone",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        981.0,
+        220.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        1000.0,
+        214.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Address",
+      "text": "Address",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        1000.0,
+        220.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "column_menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        194.0,
+        1000.0,
+        214.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "row select",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        291.0,
+        22.0,
+        317.0,
+        38.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Duky Hurring",
+      "text": "Duky Hurring",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        250.0,
+        54.0,
+        311.0,
+        155.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Account Executive",
+      "text": "Account Executive",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        288.0,
+        310.0,
+        423.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Offline",
+      "text": "Offline",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        524.0,
+        311.0,
+        570.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "61%",
+      "text": "61%",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        251.0,
+        742.0,
+        310.0,
+        834.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "-$1,266.0",
+      "text": "-$1,266.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        902.0,
+        311.0,
+        956.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Garey Malecy",
+      "text": "Garey Malecy",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        409.0,
+        55.0,
+        476.0,
+        153.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "row selected",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        409.0,
+        22.0,
+        433.0,
+        38.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Account Executive",
+      "text": "Account Executive",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        411.0,
+        289.0,
+        477.0,
+        421.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Offline",
+      "text": "Offline",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        411.0,
+        524.0,
+        476.0,
+        569.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "51%",
+      "text": "51%",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        410.0,
+        742.0,
+        477.0,
+        824.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$76,354.00",
+      "text": "$76,354.00",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        410.0,
+        900.0,
+        477.0,
+        970.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Sela Westmacott",
+      "text": "Sela Westmacott",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        568.0,
+        55.0,
+        629.0,
+        155.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "row select",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        567.0,
+        22.0,
+        591.0,
+        38.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Account Executive",
+      "text": "Account Executive",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        569.0,
+        289.0,
+        629.0,
+        421.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Offline",
+      "text": "Offline",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        569.0,
+        524.0,
+        629.0,
+        569.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "29%",
+      "text": "29%",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        567.0,
+        742.0,
+        629.0,
+        823.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$58,239.00",
+      "text": "$58,239.00",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        568.0,
+        900.0,
+        629.0,
+        970.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Kiri Espinal",
+      "text": "Kiri Espinal",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        726.0,
+        55.0,
+        786.0,
+        155.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "row selected",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        725.0,
+        22.0,
+        749.0,
+        38.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Accounting Assistant I",
+      "text": "Accounting Assistant I",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        727.0,
+        289.0,
+        786.0,
+        439.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Offline",
+      "text": "Offline",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        727.0,
+        524.0,
+        786.0,
+        569.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "47%",
+      "text": "47%",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        725.0,
+        742.0,
+        786.0,
+        820.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "$3,712.00",
+      "text": "$3,712.00",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        727.0,
+        900.0,
+        786.0,
+        970.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Coraly Steltjes",
+      "text": "Coraly Steltjes",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        884.0,
+        55.0,
+        946.0,
+        155.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "row select",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        883.0,
+        22.0,
+        907.0,
+        38.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Accounting Assistant III",
+      "text": "Accounting Assistant III",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        885.0,
+        289.0,
+        946.0,
+        447.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Offline",
+      "text": "Offline",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        885.0,
+        524.0,
+        946.0,
+        569.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "81%",
+      "text": "81%",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        883.0,
+        742.0,
+        946.0,
+        823.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "-$9,871.00",
+      "text": "-$9,871.00",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        884.0,
+        900.0,
+        946.0,
+        970.0
+      ]
+    },
+    {
+      "type": "modal",
+      "label": "column menu",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        236.0,
+        718.0,
+        349.0,
+        873.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Sort Ascending",
+      "text": "Sort Ascending",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        239.0,
+        723.0,
+        277.0,
+        877.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Sort Descending",
+      "text": "Sort Descending",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        278.0,
+        723.0,
+        313.0,
+        878.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Filter",
+      "text": "Filter",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        314.0,
+        723.0,
+        349.0,
+        877.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "page 1",
+      "text": "1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        888.0,
+        61.0,
+        936.0,
+        104.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "page 2",
+      "text": "2",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        889.0,
+        107.0,
+        936.0,
+        109.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "page 3",
+      "text": "3",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        890.0,
+        155.0,
+        937.0,
+        158.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "page 4",
+      "text": "4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        889.0,
+        205.0,
+        937.0,
+        209.0
+      ]
+    },
+    {
+      "type": "pagination",
+      "label": "page 5",
+      "text": "5",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        889.0,
+        250.0,
+        937.0,
+        256.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "10",
+      "text": "10",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        885.0,
+        337.0,
+        948.0,
+        389.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "items per page",
+      "text": "items per page",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        886.0,
+        392.0,
+        948.0,
+        442.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "1 - 10 of 100 items",
+      "text": "1 - 10 of 100 items",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        885.0,
+        875.0,
+        948.0,
+        980.0
+      ]
+    }
+  ]
+}

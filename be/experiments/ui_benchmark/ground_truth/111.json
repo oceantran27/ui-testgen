@@ -1,0 +1,784 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "HAProxy",
+      "text": "HAProxy",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        5.0,
+        41.0,
+        115.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Reliable, High Performance TCP/HTTP Load Balancer",
+      "text": "The Reliable, High Performance TCP/HTTP Load Balancer",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        50.0,
+        7.0,
+        76.0,
+        496.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "HAProxy Community Edition logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        609.0,
+        73.0,
+        857.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Master",
+      "text": "Master",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        24.0,
+        924.0,
+        39.0,
+        983.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        921.0,
+        61.0,
+        984.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Quick links",
+      "text": "Quick links",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        84.0,
+        8.0,
+        103.0,
+        176.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Quick News",
+      "text": "Quick News",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        105.0,
+        8.0,
+        122.0,
+        161.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Recent News",
+      "text": "Recent News",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        126.0,
+        8.0,
+        142.0,
+        163.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Description",
+      "text": "Description",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        148.0,
+        8.0,
+        164.0,
+        151.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Performance",
+      "text": "Performance",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        169.0,
+        8.0,
+        185.0,
+        158.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Reliability",
+      "text": "Reliability",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        189.0,
+        8.0,
+        206.0,
+        146.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        210.0,
+        8.0,
+        226.0,
+        124.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        231.0,
+        8.0,
+        248.0,
+        177.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Project on GitHub",
+      "text": "Project on GitHub",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        8.0,
+        268.0,
+        193.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Download sources / doc",
+      "text": "Download sources / doc",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        273.0,
+        8.0,
+        290.0,
+        222.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Packages / Images / Distros",
+      "text": "Packages / Images / Distros",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        294.0,
+        8.0,
+        312.0,
+        249.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Live demo",
+      "text": "Live demo",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        315.0,
+        8.0,
+        331.0,
+        145.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "They use it!",
+      "text": "They use it!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        336.0,
+        8.0,
+        353.0,
+        159.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Enterprise Features",
+      "text": "Enterprise Features",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        356.0,
+        8.0,
+        373.0,
+        215.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Third party extensions",
+      "text": "Third party extensions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        377.0,
+        8.0,
+        394.0,
+        244.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Commercial Support",
+      "text": "Commercial Support",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        398.0,
+        8.0,
+        414.0,
+        223.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Contacts",
+      "text": "Contacts",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        419.0,
+        8.0,
+        435.0,
+        127.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "External links",
+      "text": "External links",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        440.0,
+        8.0,
+        456.0,
+        160.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Discussions",
+      "text": "Discussions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        461.0,
+        8.0,
+        477.0,
+        148.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Slack channel",
+      "text": "Slack channel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        482.0,
+        8.0,
+        498.0,
+        173.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mailing list",
+      "text": "Mailing list",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        503.0,
+        8.0,
+        519.0,
+        147.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Coding style",
+      "text": "Coding style",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        524.0,
+        8.0,
+        540.0,
+        153.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Open issues",
+      "text": "Open issues",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        545.0,
+        8.0,
+        561.0,
+        145.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Known bugs",
+      "text": "Known bugs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        566.0,
+        8.0,
+        582.0,
+        137.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Signing keys",
+      "text": "Signing keys",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        587.0,
+        8.0,
+        603.0,
+        145.0
+      ]
+    },
+    {
+      "type": "section",
+      "label": "Latest versions",
+      "text": "Latest versions",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        182.0,
+        103.0,
+        246.0
+      ]
+    },
+    {
+      "type": "table",
+      "label": "Latest versions table",
+      "text": "Branch Release date End of life Latest version Changelog Links",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        107.0,
+        390.0,
+        410.0,
+        995.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.4-dev",
+      "text": "3.4-dev",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        390.0,
+        147.0,
+        447.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.4-dev9",
+      "text": "3.4-dev9",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        132.0,
+        662.0,
+        147.0,
+        731.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.3",
+      "text": "3.3",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        162.0,
+        389.0,
+        177.0,
+        421.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.3.7",
+      "text": "3.3.7",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        162.0,
+        661.0,
+        177.0,
+        712.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.2",
+      "text": "3.2",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        192.0,
+        389.0,
+        206.0,
+        420.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.2.16",
+      "text": "3.2.16",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        192.0,
+        662.0,
+        206.0,
+        716.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.0",
+      "text": "3.0",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        222.0,
+        389.0,
+        236.0,
+        421.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.0.20",
+      "text": "3.0.20",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        222.0,
+        662.0,
+        236.0,
+        716.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.8",
+      "text": "2.8",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        389.0,
+        266.0,
+        420.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.8.21",
+      "text": "2.8.21",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        252.0,
+        661.0,
+        266.0,
+        716.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.6",
+      "text": "2.6",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        282.0,
+        389.0,
+        296.0,
+        420.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.6.26",
+      "text": "2.6.26",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        282.0,
+        662.0,
+        296.0,
+        716.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.4",
+      "text": "2.4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        312.0,
+        389.0,
+        326.0,
+        420.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2.4.32",
+      "text": "2.4.32",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        312.0,
+        662.0,
+        326.0,
+        716.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "git",
+      "text": "git",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        857.0,
+        147.0,
+        881.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "web",
+      "text": "web",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        886.0,
+        147.0,
+        911.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "dir",
+      "text": "dir",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        915.0,
+        147.0,
+        938.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "announce",
+      "text": "announce",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        943.0,
+        147.0,
+        986.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Quick News",
+      "text": "Quick News",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        409.0,
+        8.0,
+        426.0,
+        182.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Feb, 12th, 2026 : CVE-2026-26080 and CVE-2026-26081",
+      "text": "Feb, 12th, 2026 : CVE-2026-26080 and CVE-2026-26081",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        432.0,
+        8.0,
+        451.0,
+        453.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "were emitted",
+      "text": "were emitted",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        479.0,
+        298.0,
+        493.0,
+        492.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "performance cost",
+      "text": "performance cost",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        579.0,
+        343.0,
+        594.0,
+        537.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HAProxy 3.3.0 release",
+      "text": "HAProxy 3.3.0 release",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        650.0,
+        554.0,
+        667.0,
+        791.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HAProxy 3.2.0 release",
+      "text": "HAProxy 3.2.0 release",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        818.0,
+        654.0,
+        836.0,
+        852.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Older news...",
+      "text": "Older news...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        964.0,
+        137.0,
+        980.0,
+        237.0
+      ]
+    },
+    {
+      "type": "section",
+      "label": "Description",
+      "text": "Description",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        963.0,
+        9.0,
+        980.0,
+        132.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Donate $",
+      "text": "Donate $",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        899.0,
+        11.0,
+        932.0,
+        164.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Donate €",
+      "text": "Donate €",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        899.0,
+        176.0,
+        932.0,
+        329.0
+      ]
+    }
+  ]
+}

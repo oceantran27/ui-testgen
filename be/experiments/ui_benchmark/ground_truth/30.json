@@ -1,0 +1,238 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Buggy Rating",
+      "text": "Buggy Rating",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        211.0,
+        43.0,
+        319.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Hi, a Profile Logout",
+      "text": "Hi, a Profile Logout",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        703.0,
+        49.0,
+        796.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Buggy Cars Rating",
+      "text": "Buggy Cars Rating",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        170.0,
+        214.0,
+        318.0,
+        352.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "car illustration",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        177.0,
+        434.0,
+        313.0,
+        675.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Popular Make",
+      "text": "Popular Make",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        403.0,
+        205.0,
+        752.0,
+        386.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Popular Model",
+      "text": "Popular Model",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        405.0,
+        403.0,
+        752.0,
+        777.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Overall Rating",
+      "text": "Overall Rating",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        404.0,
+        610.0,
+        753.0,
+        777.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Lamborghini logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        517.0,
+        617.0,
+        603.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Lamborghini",
+      "text": "Lamborghini",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        654.0,
+        496.0,
+        687.0,
+        646.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "(20967 votes)",
+      "text": "(20967 votes)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        694.0,
+        496.0,
+        725.0,
+        648.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Lamborghini Diablo image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        516.0,
+        408.0,
+        702.0,
+        600.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Lamborghini Diablo",
+      "text": "Lamborghini Diablo",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        734.0,
+        496.0,
+        773.0,
+        675.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "(8665 votes)",
+      "text": "(8665 votes)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        773.0,
+        496.0,
+        799.0,
+        635.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "group of cars image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        515.0,
+        657.0,
+        700.0,
+        815.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "List of all registered models.",
+      "text": "List of all registered models.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        734.0,
+        658.0,
+        801.0,
+        823.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "© 2016 Buggy Software, Inc.",
+      "text": "© 2016 Buggy Software, Inc.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        861.0,
+        219.0,
+        881.0,
+        343.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Facebook",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        870.0,
+        781.0,
+        896.0,
+        804.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Twitter",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        870.0,
+        805.0,
+        897.0,
+        825.0
+      ]
+    }
+  ]
+}

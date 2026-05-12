@@ -1,0 +1,212 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Python",
+      "text": "Python",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        13.0,
+        32.0,
+        34.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        81.0,
+        31.0,
+        246.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "3.14.4",
+      "text": "3.14.4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        256.0,
+        30.0,
+        301.0
+      ]
+    },
+    {
+      "type": "breadcrumb",
+      "label": "3.14.4 Documentation » The Python Tutorial",
+      "text": "3.14.4 Documentation » The Python Tutorial",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        313.0,
+        31.0,
+        553.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Auto",
+      "text": "Auto",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        687.0,
+        31.0,
+        716.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Quick search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        723.0,
+        33.0,
+        819.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go",
+      "text": "Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        825.0,
+        31.0,
+        852.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "previous",
+      "text": "previous",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        866.0,
+        31.0,
+        912.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "next",
+      "text": "next",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        917.0,
+        31.0,
+        950.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "modules",
+      "text": "modules",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        952.0,
+        31.0,
+        989.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "index",
+      "text": "index",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        992.0,
+        31.0,
+        1020.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Python Tutorial",
+      "text": "The Python Tutorial",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        247.0,
+        136.0,
+        514.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "Tip",
+      "text": "Tip: This tutorial is designed for programmers that are new to the Python language, not beginners who are new to programming.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        246.0,
+        209.0,
+        767.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Previous topic",
+      "text": "Previous topic\nChangelog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        71.0,
+        11.0,
+        177.0,
+        226.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Next topic",
+      "text": "Next topic\n1. Whetting Your Appetite",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        189.0,
+        12.0,
+        274.0,
+        226.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "This page",
+      "text": "This page\nReport a bug\nImprove this page\nShow source",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        277.0,
+        11.0,
+        372.0,
+        225.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Python",
+      "text": "Python",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        14.0,
+        38.0,
+        40.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        46.0,
+        38.0,
+        280.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "3.14.4",
+      "text": "3.14.4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        286.0,
+        38.0,
+        348.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "3.14.4 Documentation » The Python Tutorial",
+      "text": "3.14.4 Documentation » The Python Tutorial",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        357.0,
+        38.0,
+        563.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Auto",
+      "text": "Auto",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        618.0,
+        38.0,
+        665.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Quick search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        690.0,
+        42.0,
+        789.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go",
+      "text": "Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        794.0,
+        40.0,
+        823.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "previous",
+      "text": "previous",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        834.0,
+        39.0,
+        882.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "next",
+      "text": "next",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        887.0,
+        39.0,
+        922.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "modules",
+      "text": "modules",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        926.0,
+        39.0,
+        968.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "index",
+      "text": "index",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        971.0,
+        39.0,
+        996.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Python Tutorial",
+      "text": "The Python Tutorial",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        272.0,
+        144.0,
+        557.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "Tip",
+      "text": "Tip: This tutorial is designed for programmers that are new to the Python language, not beginners who are new to programming.",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        150.0,
+        272.0,
+        211.0,
+        860.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "https://www.python.org/",
+      "text": "https://www.python.org/",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        375.0,
+        613.0,
+        392.0,
+        694.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Python Standard Library",
+      "text": "The Python Standard Library",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        592.0,
+        562.0,
+        613.0,
+        758.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Python Language Reference",
+      "text": "The Python Language Reference",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        592.0,
+        742.0,
+        614.0,
+        918.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Extending and Embedding the Python Interpreter",
+      "text": "Extending and Embedding the Python Interpreter",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        661.0,
+        775.0,
+        682.0,
+        987.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Python/C API reference manual",
+      "text": "Python/C API reference manual",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        661.0,
+        986.0,
+        683.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Python Standard Library",
+      "text": "The Python Standard Library",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        789.0,
+        659.0,
+        822.0,
+        893.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Glossary",
+      "text": "The Glossary",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        932.0,
+        271.0,
+        955.0,
+        333.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "1. Whetting Your Appetite",
+      "text": "1. Whetting Your Appetite",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        972.0,
+        292.0,
+        999.0,
+        515.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Previous topic",
+      "text": "Previous topic",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        81.0,
+        14.0,
+        210.0,
+        262.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Next topic",
+      "text": "Next topic",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        184.0,
+        14.0,
+        272.0,
+        262.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "This page",
+      "text": "This page",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        241.0,
+        14.0,
+        327.0,
+        262.0
+      ]
+    }
+  ]
+}

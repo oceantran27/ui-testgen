@@ -1,0 +1,498 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Alpine Linux logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        6.0,
+        91.0,
+        147.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        172.0,
+        94.0,
+        214.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Downloads",
+      "text": "Downloads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        219.0,
+        94.0,
+        282.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Releases",
+      "text": "Releases",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        287.0,
+        94.0,
+        332.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        340.0,
+        94.0,
+        399.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Sponsors",
+      "text": "Sponsors",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        407.0,
+        94.0,
+        454.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        466.0,
+        94.0,
+        506.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "docs",
+      "text": "docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        777.0,
+        28.0,
+        803.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "wiki",
+      "text": "wiki",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        804.0,
+        27.0,
+        829.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "git",
+      "text": "git",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        7.0,
+        838.0,
+        28.0,
+        856.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "issues",
+      "text": "issues",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        867.0,
+        29.0,
+        898.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "packages",
+      "text": "packages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        7.0,
+        905.0,
+        31.0,
+        957.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "mirrors",
+      "text": "mirrors",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        965.0,
+        28.0,
+        997.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "security",
+      "text": "security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        7.0,
+        1000.0,
+        28.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Small. Simple. Secure.",
+      "text": "Small. Simple. Secure.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        264.0,
+        365.0,
+        332.0,
+        630.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and busybox.",
+      "text": "Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and busybox.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        322.0,
+        319.0,
+        356.0,
+        690.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "ALPINE NEWS",
+      "text": "ALPINE NEWS",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        532.0,
+        245.0,
+        559.0,
+        360.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "LATEST DEVELOPMENT",
+      "text": "LATEST DEVELOPMENT",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        530.0,
+        499.0,
+        556.0,
+        662.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-15 Alpine Linux stable releases 3.20.10, 3.21.7, 3.22.4,...",
+      "text": "2026-04-15 Alpine Linux stable releases 3.20.10, 3.21.7, 3.22.4,...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        573.0,
+        246.0,
+        594.0,
+        507.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-01-27 Alpine 3.20.9, 3.21.6, 3.22.3 and 3.23.3 released",
+      "text": "2026-01-27 Alpine 3.20.9, 3.21.6, 3.22.3 and 3.23.3 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        611.0,
+        248.0,
+        633.0,
+        511.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-01-18 Follow-Up: New Sponsors Strengthen Alpine Linux's...",
+      "text": "2026-01-18 Follow-Up: New Sponsors Strengthen Alpine Linux's...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        651.0,
+        250.0,
+        673.0,
+        514.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-12-17 Alpine 3.23.2 released",
+      "text": "2025-12-17 Alpine 3.23.2 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        688.0,
+        249.0,
+        708.0,
+        469.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-12-03 Alpine 3.23.0 released",
+      "text": "2025-12-03 Alpine 3.23.0 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        725.0,
+        248.0,
+        748.0,
+        464.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-10-08 Alpine 3.19.9, 3.20.8, 3.21.5 and 3.22.2 released",
+      "text": "2025-10-08 Alpine 3.19.9, 3.20.8, 3.21.5 and 3.22.2 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        761.0,
+        248.0,
+        780.0,
+        504.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-10-01 Implementing /usr merge in Alpine",
+      "text": "2025-10-01 Implementing /usr merge in Alpine",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        801.0,
+        248.0,
+        820.0,
+        492.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-08-30 New Alpine Developers onboarding process",
+      "text": "2025-08-30 New Alpine Developers onboarding process",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        839.0,
+        248.0,
+        858.0,
+        534.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-07-15 Alpine 3.19.8, 3.20.7, 3.21.4 and 3.22.1 released",
+      "text": "2025-07-15 Alpine 3.19.8, 3.20.7, 3.21.4 and 3.22.1 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        875.0,
+        248.0,
+        894.0,
+        509.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2025-05-30 Alpine 3.22.0 released",
+      "text": "2025-05-30 Alpine 3.22.0 released",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        915.0,
+        248.0,
+        935.0,
+        466.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/rclone: upgrade to 1.73.5",
+      "text": "2026-04-26 community/rclone: upgrade to 1.73.5",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        573.0,
+        499.0,
+        592.0,
+        818.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/salt: fix compatibility with python 3.14",
+      "text": "2026-04-26 community/salt: fix compatibility with python 3.14",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        611.0,
+        499.0,
+        631.0,
+        848.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/azorius: switch source to dev.a.o",
+      "text": "2026-04-26 community/azorius: switch source to dev.a.o",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        648.0,
+        500.0,
+        668.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 main/limine: upgrade to 12.0.2",
+      "text": "2026-04-26 main/limine: upgrade to 12.0.2",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        686.0,
+        499.0,
+        706.0,
+        791.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/vertigo: switch to dev.a.o",
+      "text": "2026-04-26 community/vertigo: switch to dev.a.o",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        723.0,
+        500.0,
+        744.0,
+        818.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 main/iproute2: fix source url",
+      "text": "2026-04-26 main/iproute2: fix source url",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        761.0,
+        500.0,
+        780.0,
+        787.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/cassandra-cpp-driver: fix checksum",
+      "text": "2026-04-26 community/cassandra-cpp-driver: fix checksum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        799.0,
+        499.0,
+        819.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 testing/oniri: upgrade to 1.1.1",
+      "text": "2026-04-26 testing/oniri: upgrade to 1.1.1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        838.0,
+        500.0,
+        857.0,
+        789.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/liferea: upgrade to 1.16.8",
+      "text": "2026-04-26 community/liferea: upgrade to 1.16.8",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        876.0,
+        500.0,
+        895.0,
+        821.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "2026-04-26 community/wireguard-go: fix checksum",
+      "text": "2026-04-26 community/wireguard-go: fix checksum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        914.0,
+        500.0,
+        934.0,
+        821.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "Skip to content, sitemap or skip to search.",
+      "text": "Skip to content, sitemap or skip to search.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        10.0,
+        8.0,
+        32.0,
+        180.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Personal tools",
+      "text": "Personal tools",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        52.0,
+        7.0,
+        73.0,
+        111.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        110.0,
+        31.0,
+        140.0,
+        67.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Help!",
+      "text": "Help!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        133.0,
+        31.0,
+        161.0,
+        69.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Members forum",
+      "text": "Members forum",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        160.0,
+        31.0,
+        190.0,
+        104.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        200.0,
+        31.0,
+        231.0,
+        72.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Campaigns",
+      "text": "Campaigns",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        31.0,
+        255.0,
+        110.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Licensing",
+      "text": "Licensing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        244.0,
+        31.0,
+        277.0,
+        109.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Membership",
+      "text": "Membership",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        271.0,
+        31.0,
+        304.0,
+        116.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Resources",
+      "text": "Resources",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        295.0,
+        31.0,
+        325.0,
+        110.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        31.0,
+        348.0,
+        110.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "♥Donate♥",
+      "text": "♥Donate♥",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        341.0,
+        31.0,
+        373.0,
+        111.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Shop",
+      "text": "Shop",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        364.0,
+        31.0,
+        391.0,
+        73.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Free Software Foundation (FSF) is a nonprofit with a worldwide mission to promote computer user freedom.",
+      "text": "The Free Software Foundation (FSF) is a nonprofit with a worldwide mission to promote computer user freedom.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        447.0,
+        9.0,
+        491.0,
+        591.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Join now",
+      "text": "Join now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        162.0,
+        947.0,
+        218.0,
+        998.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "FEATURED",
+      "text": "FEATURED",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        402.0,
+        893.0,
+        423.0,
+        945.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Zig logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        176.0,
+        99.0,
+        358.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "top navigation",
+      "text": "Download Learn News Zig Software Foundation Devlog Source Join a Community",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        110.0,
+        0.0,
+        148.0,
+        999.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Zig is a general-purpose programming language and toolchain for maintaining robust, optimal and reusable software.",
+      "text": "Zig is a general-purpose programming language and toolchain for maintaining robust, optimal and reusable software.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        150.0,
+        181.0,
+        287.0,
+        612.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "GET STARTED",
+      "text": "GET STARTED",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        151.0,
+        671.0,
+        230.0,
+        821.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Latest Release: 0.16.0",
+      "text": "Latest Release: 0.16.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        230.0,
+        689.0,
+        253.0,
+        820.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        247.0,
+        672.0,
+        287.0,
+        742.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Changes",
+      "text": "Changes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        248.0,
+        747.0,
+        288.0,
+        810.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A Simple Language",
+      "text": "A Simple Language",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        335.0,
+        214.0,
+        362.0,
+        491.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Focus on debugging your application rather than debugging your programming language knowledge.",
+      "text": "Focus on debugging your application rather than debugging your programming language knowledge.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        392.0,
+        176.0,
+        455.0,
+        489.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "No hidden control flow.",
+      "text": "No hidden control flow.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        504.0,
+        211.0,
+        527.0,
+        494.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "No hidden memory allocations.",
+      "text": "No hidden memory allocations.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        535.0,
+        211.0,
+        557.0,
+        490.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "No preprocessor, no macros.",
+      "text": "No preprocessor, no macros.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        566.0,
+        211.0,
+        589.0,
+        489.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Comptime",
+      "text": "Comptime",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        626.0,
+        213.0,
+        653.0,
+        490.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A fresh approach to metaprogramming based on compile-time code execution and lazy evaluation.",
+      "text": "A fresh approach to metaprogramming based on compile-time code execution and lazy evaluation.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        678.0,
+        173.0,
+        732.0,
+        491.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Call any function at compile-time.",
+      "text": "Call any function at compile-time.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        211.0,
+        761.0,
+        494.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Manipulate types as values without runtime overhead.",
+      "text": "Manipulate types as values without runtime overhead.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        772.0,
+        211.0,
+        793.0,
+        495.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Comptime emulates the target architecture.",
+      "text": "Comptime emulates the target architecture.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        802.0,
+        211.0,
+        825.0,
+        492.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Maintain it with Zig",
+      "text": "Maintain it with Zig",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        847.0,
+        213.0,
+        878.0,
+        491.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Incrementally improve your C/C++/Zig codebase.",
+      "text": "Incrementally improve your C/C++/Zig codebase.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        901.0,
+        174.0,
+        928.0,
+        491.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Use Zig as a zero-dependency, drop-in C/C++ compiler that supports cross-compilation out-of-the-box.",
+      "text": "Use Zig as a zero-dependency, drop-in C/C++ compiler that supports cross-compilation out-of-the-box.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        958.0,
+        211.0,
+        999.0,
+        491.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "index.zig",
+      "text": "index.zig",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        343.0,
+        526.0,
+        806.0,
+        854.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Shell",
+      "text": "Shell",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        844.0,
+        525.0,
+        998.0,
+        853.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,537 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "Skip to main text",
+      "text": "Skip to main text",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        5.0,
+        2.0,
+        20.0,
+        112.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Free Software Supporter:",
+      "text": "Free Software Supporter:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        28.0,
+        4.0,
+        47.0,
+        98.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "email address",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        105.0,
+        47.0,
+        210.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sign up",
+      "text": "Sign up",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        215.0,
+        48.0,
+        255.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "JOIN THE FSF",
+      "text": "JOIN THE FSF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        51.0,
+        4.0,
+        71.0,
+        108.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GNU Operating System",
+      "text": "GNU Operating System",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        33.0,
+        113.0,
+        174.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Supported by the Free Software Foundation",
+      "text": "Supported by the Free Software Foundation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        111.0,
+        37.0,
+        129.0,
+        191.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Search www.gnu.org",
+      "text": "[Search www.gnu.org]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        172.0,
+        5.0,
+        199.0,
+        126.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Other languages",
+      "text": "[Other languages]",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        202.0,
+        4.0,
+        225.0,
+        107.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Site navigation Skip",
+      "text": "Site navigation Skip",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        4.0,
+        248.0,
+        133.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Main site navigation",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        266.0,
+        6.0,
+        493.0,
+        215.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "ABOUT GNU",
+      "text": "ABOUT GNU",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        270.0,
+        33.0,
+        285.0,
+        107.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "PHILOSOPHY",
+      "text": "PHILOSOPHY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        297.0,
+        31.0,
+        312.0,
+        114.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "LICENSES",
+      "text": "LICENSES",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        324.0,
+        31.0,
+        338.0,
+        105.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "EDUCATION",
+      "text": "EDUCATION",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        350.0,
+        31.0,
+        366.0,
+        110.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SOFTWARE",
+      "text": "SOFTWARE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        377.0,
+        31.0,
+        392.0,
+        109.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "DISTROS",
+      "text": "DISTROS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        403.0,
+        31.0,
+        417.0,
+        102.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "DOCS",
+      "text": "DOCS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        430.0,
+        30.0,
+        443.0,
+        89.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "MALWARE",
+      "text": "MALWARE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        456.0,
+        31.0,
+        471.0,
+        108.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HELP GNU",
+      "text": "HELP GNU",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        483.0,
+        31.0,
+        498.0,
+        117.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "AUDIO & VIDEO",
+      "text": "AUDIO & VIDEO",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        509.0,
+        31.0,
+        524.0,
+        143.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GNU ART",
+      "text": "GNU ART",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        536.0,
+        31.0,
+        550.0,
+        109.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "FUN",
+      "text": "FUN",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        563.0,
+        31.0,
+        576.0,
+        84.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GNU'S WHO?",
+      "text": "GNU'S WHO?",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        589.0,
+        31.0,
+        603.0,
+        121.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SOFTWARE DIRECTORY",
+      "text": "SOFTWARE DIRECTORY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        616.0,
+        31.0,
+        630.0,
+        172.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "HARDWARE",
+      "text": "HARDWARE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        643.0,
+        31.0,
+        657.0,
+        108.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SITEMAP",
+      "text": "SITEMAP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        670.0,
+        31.0,
+        684.0,
+        102.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "GNU is the only operating system developed specifically to give its users freedom.",
+      "text": "GNU is the only operating system developed specifically to give its users freedom. What is GNU, and what freedom is at stake?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        715.0,
+        4.0,
+        758.0,
+        502.0
+      ]
+    },
+    {
+      "type": "loading_indicator",
+      "label": "loading indicator",
+      "text": null,
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        808.0,
+        306.0,
+        923.0,
+        513.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Escape to Freedom: A video from the FSF",
+      "text": "Escape to Freedom: A video from the FSF",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        923.0,
+        251.0,
+        945.0,
+        483.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Escape to Freedom: A video from the FSF",
+      "text": "Escape to Freedom: A video from the FSF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        924.0,
+        251.0,
+        946.0,
+        484.0
+      ]
+    },
+    {
+      "type": "heading",
+      "label": "What is GNU?",
+      "text": "What is GNU?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        974.0,
+        5.0,
+        996.0,
+        150.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "GNU is an operating system that is free software—that is, it respects users' freedom.",
+      "text": "GNU is an operating system that is free software—that is, it respects users' freedom. The GNU operating system consists of GNU packages (programs specifically",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        998.0,
+        3.0,
+        999.0,
+        999.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Help people bypass censorship. Run Snowflake!",
+      "text": "Help people bypass censorship. Run Snowflake!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        613.0,
+        760.0,
+        649.0,
+        995.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The GNU Project strongly urges the community to communicate in ways that are friendly, welcoming and kind.",
+      "text": "The GNU Project strongly urges the community to communicate in ways that are friendly, welcoming and kind. See the GNU Kind Communications Guidelines.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        703.0,
+        731.0,
+        999.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GNU Kind Communications Guidelines",
+      "text": "GNU Kind Communications Guidelines",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        685.0,
+        871.0,
+        709.0,
+        965.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "As we enjoy great advantages from the inventions of others, we should be glad of an opportunity to serve others by any invention of ours, and this we should do freely and generously.",
+      "text": "As we enjoy great advantages from the inventions of others, we should be glad of an opportunity to serve others by any invention of ours, and this we should do freely and generously. — Benjamin Franklin, Autobiography",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        738.0,
+        702.0,
+        803.0,
+        968.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Planet GNU",
+      "text": "Planet GNU",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        833.0,
+        700.0,
+        867.0,
+        836.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "RSS Feed",
+      "text": "RSS Feed",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        833.0,
+        840.0,
+        864.0,
+        932.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "RAIL: Nonfree and unethical",
+      "text": "RAIL: Nonfree and unethical",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        879.0,
+        701.0,
+        903.0,
+        995.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Free Software Directory meeting on IRC: Friday, April 24, starting at 12:00 EDT (16:00 UTC)",
+      "text": "Free Software Directory meeting on IRC: Friday, April 24, starting at 12:00 EDT (16:00 UTC): Join the FSF and friends on Friday, April 24 from 12:00 to 15:00 EDT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        916.0,
+        701.0,
+        972.0,
+        996.0
+      ]
+    }
+  ]
+}

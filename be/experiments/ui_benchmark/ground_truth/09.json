@@ -1,0 +1,251 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Calendar",
+      "text": "Calendar",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        14.0,
+        53.0,
+        112.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Events",
+      "text": "Events",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        778.0,
+        61.0,
+        850.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sync now",
+      "text": "Sync now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        856.0,
+        61.0,
+        939.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Create",
+      "text": "Create",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        945.0,
+        61.0,
+        993.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Events",
+      "text": "Events",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        105.0,
+        20.0,
+        147.0,
+        124.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Ocean Tran",
+      "text": "Ocean Tran",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        303.0,
+        22.0,
+        343.0,
+        36.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Manage Calendars",
+      "text": "Manage Calendars",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        438.0,
+        22.0,
+        468.0,
+        179.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Today",
+      "text": "Today",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        109.0,
+        223.0,
+        153.0,
+        248.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Previous period",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        107.0,
+        257.0,
+        153.0,
+        284.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Next period",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        107.0,
+        290.0,
+        153.0,
+        317.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "February 2026",
+      "text": "February 2026",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        114.0,
+        553.0,
+        152.0,
+        641.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Month",
+      "text": "Month",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        112.0,
+        808.0,
+        154.0,
+        849.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Week",
+      "text": "Week",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        111.0,
+        852.0,
+        154.0,
+        888.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Day",
+      "text": "Day",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        111.0,
+        891.0,
+        153.0,
+        922.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Agenda",
+      "text": "Agenda",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        111.0,
+        924.0,
+        154.0,
+        991.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "15:00 Check issue",
+      "text": "15:00 Check issue",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        417.0,
+        389.0,
+        503.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Event details",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        489.0,
+        389.0,
+        503.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "15:00 Meeting with cus...",
+      "text": "15:00 Meeting with cus...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        491.0,
+        674.0,
+        584.0,
+        766.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Event details",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        521.0,
+        747.0,
+        554.0,
+        766.0
+      ]
+    }
+  ]
+}

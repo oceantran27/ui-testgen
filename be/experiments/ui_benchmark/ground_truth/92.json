@@ -1,0 +1,407 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Python",
+      "text": "Python",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        40.0,
+        173.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "PSF",
+      "text": "PSF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        173.0,
+        40.0,
+        342.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        342.0,
+        40.0,
+        511.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "PyPI",
+      "text": "PyPI",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        511.0,
+        40.0,
+        680.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Jobs",
+      "text": "Jobs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        680.0,
+        40.0,
+        844.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        844.0,
+        40.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Python logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        26.0,
+        169.0,
+        234.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        87.0,
+        548.0,
+        129.0,
+        603.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        87.0,
+        644.0,
+        124.0,
+        829.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "GO",
+      "text": "GO",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        834.0,
+        129.0,
+        878.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Socialize",
+      "text": "Socialize",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        85.0,
+        881.0,
+        129.0,
+        965.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        148.0,
+        227.0,
+        220.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Downloads",
+      "text": "Downloads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        220.0,
+        227.0,
+        323.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        323.0,
+        227.0,
+        456.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        456.0,
+        227.0,
+        561.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Success Stories",
+      "text": "Success Stories",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        561.0,
+        227.0,
+        696.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "News",
+      "text": "News",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        696.0,
+        227.0,
+        781.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Events",
+      "text": "Events",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        781.0,
+        227.0,
+        840.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Python is powerful... and fast; plays well with others; runs everywhere; is friendly & easy to learn; is Open.",
+      "text": "Python is powerful... and fast; plays well with others; runs everywhere; is friendly & easy to learn; is Open.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        251.0,
+        116.0,
+        490.0,
+        494.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "These are some of the reasons people who use Python would rather not use anything else.",
+      "text": "These are some of the reasons people who use Python would rather not use anything else.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        474.0,
+        115.0,
+        523.0,
+        507.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Python mascot illustration",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        228.0,
+        485.0,
+        522.0,
+        884.0
+      ]
+    },
+    {
+      "type": "section_title",
+      "label": "Getting Started",
+      "text": "Getting Started",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        523.0,
+        43.0,
+        611.0,
+        487.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Beginner's Guide, Programmers",
+      "text": "Beginner's Guide, Programmers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        730.0,
+        80.0,
+        763.0,
+        488.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Beginner's Guide, Non-Programmers",
+      "text": "Beginner's Guide, Non-Programmers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        764.0,
+        81.0,
+        800.0,
+        489.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Beginner's Guide, Download & Installation",
+      "text": "Beginner's Guide, Download & Installation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        800.0,
+        81.0,
+        836.0,
+        490.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Code sample and snippets for Beginners",
+      "text": "Code sample and snippets for Beginners",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        837.0,
+        81.0,
+        873.0,
+        490.0
+      ]
+    },
+    {
+      "type": "section_title",
+      "label": "Friendly & Easy to Learn",
+      "text": "Friendly & Easy to Learn",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        524.0,
+        512.0,
+        613.0,
+        906.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The community hosts conferences and meetups, collaborates on code, and much more. Python's documentation will help you along the way, and the mailing lists will keep you in touch.",
+      "text": "The community hosts conferences and meetups, collaborates on code, and much more. Python's documentation will help you along the way, and the mailing lists will keep you in touch.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        603.0,
+        512.0,
+        712.0,
+        907.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Conferences and Workshops",
+      "text": "Conferences and Workshops",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        708.0,
+        574.0,
+        741.0,
+        917.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Python Documentation",
+      "text": "Python Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        742.0,
+        574.0,
+        776.0,
+        917.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mailing Lists and IRC channels",
+      "text": "Mailing Lists and IRC channels",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        776.0,
+        574.0,
+        808.0,
+        917.0
+      ]
+    }
+  ]
+}

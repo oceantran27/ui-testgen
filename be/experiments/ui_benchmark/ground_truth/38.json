@@ -1,0 +1,303 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Duolingo sidebar navigation",
+      "text": "duolingo",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        999.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Study",
+      "text": "STUDY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        93.0,
+        10.0,
+        150.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Letters",
+      "text": "LETTERS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        10.0,
+        221.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Practice",
+      "text": "PRACTICE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        232.0,
+        10.0,
+        287.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Rankings",
+      "text": "RANKINGS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        10.0,
+        354.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Mission",
+      "text": "MISSION",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        10.0,
+        418.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Shop",
+      "text": "SHOP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        429.0,
+        10.0,
+        481.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Profile",
+      "text": "PROFILE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        492.0,
+        10.0,
+        547.0,
+        124.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "See more",
+      "text": "SEE MORE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        559.0,
+        10.0,
+        625.0,
+        124.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "PART 2, DOOR 1",
+      "text": "PART 2, DOOR 1",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        36.0,
+        452.0,
+        57.0,
+        127.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Shopping for clothes",
+      "text": "Shopping for clothes",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        64.0,
+        454.0,
+        88.0,
+        233.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Guide",
+      "text": "GUIDE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        42.0,
+        894.0,
+        108.0,
+        986.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Take guests around to see the house",
+      "text": "Take guests around to see the house",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        228.0,
+        298.0,
+        255.0,
+        754.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Learn beyond",
+      "text": "LEARN BEYOND?",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        315.0,
+        417.0,
+        372.0,
+        410.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Continue lesson",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        404.0,
+        420.0,
+        519.0,
+        473.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Upgrade to Super Duolingo",
+      "text": "TRY 1 WEEK FOR FREE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        654.0,
+        169.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Unlock the Leaderboard",
+      "text": "Unlock the Leaderboard! Complete 8 more lessons to start competing",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        173.0,
+        663.0,
+        325.0,
+        997.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Daily tasks",
+      "text": "Daily tasks SEE ALL Earn 10 KN 0 / 10",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        333.0,
+        664.0,
+        517.0,
+        998.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See all",
+      "text": "SEE ALL",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        466.0,
+        840.0,
+        504.0,
+        895.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Super Duolingo promo",
+      "text": "Are you using an ad blocker? Use Super Duolingo to help support education and remove all in-app ads TRY SUPER FOR FREE TURN OFF AD BLOCKERS",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        522.0,
+        517.0,
+        792.0,
+        995.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Try Super for free",
+      "text": "TRY SUPER FOR FREE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        642.0,
+        610.0,
+        770.0,
+        699.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Turn off ad blockers",
+      "text": "TURN OFF AD BLOCKERS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        720.0,
+        611.0,
+        789.0,
+        735.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Scroll to top",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        901.0,
+        814.0,
+        927.0,
+        860.0
+      ]
+    }
+  ]
+}

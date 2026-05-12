@@ -1,0 +1,446 @@
+{
+  "ui_elements": [
+    {
+      "type": "input",
+      "label": "Search RJ - Tài Liệu Tổng hợp",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        49.0,
+        55.0,
+        488.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Save to MEGA",
+      "text": "Save to MEGA",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        79.0,
+        56.0,
+        117.0,
+        153.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Download",
+      "text": "Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        159.0,
+        118.0,
+        251.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "RJ - Tài Liệu Tổng hợp",
+      "text": "RJ - Tài Liệu Tổng hợp",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        49.0,
+        164.0,
+        167.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Type",
+      "text": "Type",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        180.0,
+        50.0,
+        203.0,
+        95.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Last modified",
+      "text": "Last modified",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        180.0,
+        100.0,
+        203.0,
+        185.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Date added",
+      "text": "Date added",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        180.0,
+        191.0,
+        203.0,
+        275.0
+      ]
+    },
+    {
+      "type": "table",
+      "label": "File list",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        225.0,
+        68.0,
+        901.0,
+        979.0
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Select all",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        230.0,
+        48.0,
+        248.0,
+        61.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sort by name",
+      "text": "Name",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        71.0,
+        267.0,
+        132.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Date added",
+      "text": "Date added",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        749.0,
+        262.0,
+        790.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Type",
+      "text": "Type",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        855.0,
+        261.0,
+        882.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Size",
+      "text": "Size",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        926.0,
+        261.0,
+        958.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ] Coding blocks collection",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        280.0,
+        74.0,
+        313.0,
+        494.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ] [GATE] ALL MATERIALS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        321.0,
+        74.0,
+        352.0,
+        497.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ] JavaScript Simplified - Beginner Course 2020-11",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        360.0,
+        74.0,
+        392.0,
+        573.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ if Muối cute] Wordpress theme 2020 update",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        74.0,
+        430.0,
+        585.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ] - Liam James Kay - Master Native Ads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        438.0,
+        74.0,
+        469.0,
+        570.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "[RJ] - Ultimatercourses - Javascript masterclass",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        477.0,
+        74.0,
+        509.0,
+        595.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "{hackingworld.best}Burp Suite Hacking course, Bug Bounty and Web Hacking",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        517.0,
+        74.0,
+        548.0,
+        672.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "Andy Hafell - Tube Takeoff 2.0",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        555.0,
+        74.0,
+        586.0,
+        491.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "CSS Friday Learn Up-to-Date CSS Styling Techniques (Weekly)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        596.0,
+        74.0,
+        626.0,
+        606.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "Frontend30 - Master 30 Front-end Skills",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        635.0,
+        74.0,
+        664.0,
+        580.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "knowledgepower",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        674.0,
+        74.0,
+        706.0,
+        483.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "MERN Stack Front To Back Full Stack React, Redux & Node.js",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        713.0,
+        74.0,
+        744.0,
+        606.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "Pluralsight - Python course collection (45+ courses) [AhLaN] PyClinic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        752.0,
+        74.0,
+        782.0,
+        678.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "RJ - 50TB PHIM",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        792.0,
+        74.0,
+        822.0,
+        511.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "RJ - Themes, icon, template premium",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        831.0,
+        74.0,
+        861.0,
+        581.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "RJ - UDEMY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        870.0,
+        74.0,
+        900.0,
+        481.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Folder list item",
+      "text": "RJ - UDEMY - Laravel E-commerce Website From A to Z",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        909.0,
+        74.0,
+        940.0,
+        602.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Help",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        26.0,
+        807.0,
+        46.0,
+        819.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "EN",
+      "text": "EN",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        853.0,
+        45.0,
+        876.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        28.0,
+        901.0,
+        44.0,
+        935.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sign up",
+      "text": "Sign up",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        938.0,
+        54.0,
+        989.0
+      ]
+    }
+  ]
+}

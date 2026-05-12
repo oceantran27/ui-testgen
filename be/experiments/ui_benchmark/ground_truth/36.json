@@ -1,0 +1,303 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Photos Rooms Amenities Reviews Location",
+      "text": "Photos Rooms Amenities Reviews Location",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        206.0,
+        58.0,
+        792.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Choose your room",
+      "text": "Choose your room",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        117.0,
+        208.0,
+        145.0,
+        367.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Queen room",
+      "text": "Queen room 1 queen bed · 2 guests · 210 sq ft ₫4,187,432 ₫3,768,821 for 1 night",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        164.0,
+        209.0,
+        313.0,
+        591.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Queen room photo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        178.0,
+        212.0,
+        312.0,
+        315.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Reserve",
+      "text": "Reserve",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        506.0,
+        269.0,
+        582.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Double full room",
+      "text": "Double full room 2 double beds · 4 guests · 260 sq ft ₫5,431,148 ₫4,887,928 for 1 night",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        317.0,
+        208.0,
+        473.0,
+        593.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Double full room photo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        330.0,
+        214.0,
+        469.0,
+        315.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Double queen room",
+      "text": "Double queen room 2 queen beds · 4 guests · 275 sq ft ₫5,704,075 ₫5,133,720 for 1 night",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        470.0,
+        208.0,
+        628.0,
+        591.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Double queen room photo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        485.0,
+        214.0,
+        626.0,
+        314.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Double queen studio",
+      "text": "Double queen studio 2 queen beds · 4 guests · 350 sq ft ₫7,068,711 ₫6,361,893 for 1 night",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        630.0,
+        208.0,
+        788.0,
+        593.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Double queen studio photo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        214.0,
+        785.0,
+        315.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Show all 5 rooms",
+      "text": "Show all 5 rooms",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        850.0,
+        209.0,
+        894.0,
+        591.0
+      ]
+    },
+    {
+      "type": "toast",
+      "label": "Airbnb is offering a discount at this hotel",
+      "text": "Airbnb is offering a discount at this hotel",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        124.0,
+        619.0,
+        177.0,
+        816.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Booking summary",
+      "text": "From ₫4,187,432 ₫3,768,821 for 1 night CHECK-IN 4/17/2026 CHECKOUT 4/18/2026 GUESTS 1 guest Free cancellation Choose room You won't be charged yet",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        206.0,
+        617.0,
+        583.0,
+        818.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "From ₫4,187,432 ₫3,768,821",
+      "text": "From ₫4,187,432 ₫3,768,821",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        227.0,
+        627.0,
+        282.0,
+        470.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "for 1 night",
+      "text": "for 1 night",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        274.0,
+        628.0,
+        299.0,
+        366.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Check-in",
+      "text": "4/17/2026",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        629.0,
+        374.0,
+        446.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Checkout",
+      "text": "4/18/2026",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        447.0,
+        374.0,
+        581.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Guests",
+      "text": "1 guest",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        374.0,
+        446.0,
+        452.0,
+        580.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Free cancellation",
+      "text": "Free cancellation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        454.0,
+        631.0,
+        482.0,
+        595.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Choose room",
+      "text": "Choose room",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        504.0,
+        629.0,
+        550.0,
+        590.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "You won't be charged yet",
+      "text": "You won't be charged yet",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        554.0,
+        630.0,
+        577.0,
+        624.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Report this listing",
+      "text": "Report this listing",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        632.0,
+        683.0,
+        647.0,
+        755.0
+      ]
+    }
+  ]
+}

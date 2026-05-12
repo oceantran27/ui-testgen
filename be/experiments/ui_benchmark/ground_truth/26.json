@@ -1,0 +1,225 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "I ❤️ PDF",
+      "text": "I ❤️ PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        16.0,
+        56.0,
+        118.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "MERGE PDF",
+      "text": "MERGE PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        121.0,
+        52.0,
+        217.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SPLIT PDF",
+      "text": "SPLIT PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        229.0,
+        53.0,
+        318.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "COMPRESS PDF",
+      "text": "COMPRESS PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        323.0,
+        52.0,
+        437.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "CONVERT PDF",
+      "text": "CONVERT PDF",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        447.0,
+        52.0,
+        584.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "ALL PDF TOOLS",
+      "text": "ALL PDF TOOLS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        27.0,
+        601.0,
+        52.0,
+        724.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Login",
+      "text": "Login",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        24.0,
+        845.0,
+        52.0,
+        876.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sign up",
+      "text": "Sign up",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        883.0,
+        64.0,
+        945.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "apps menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        20.0,
+        957.0,
+        63.0,
+        985.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "JPG to PDF",
+      "text": "JPG to PDF",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        423.0,
+        196.0,
+        608.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Convert JPG images to PDF in seconds. Easily adjust orientation and margins.",
+      "text": "Convert JPG images to PDF in seconds. Easily adjust orientation and margins.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        220.0,
+        228.0,
+        269.0,
+        771.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Select JPG images",
+      "text": "Select JPG images",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        304.0,
+        389.0,
+        411.0,
+        638.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Google Drive",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        304.0,
+        641.0,
+        355.0,
+        667.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Dropbox",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        364.0,
+        641.0,
+        405.0,
+        667.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "or drop JPG images here",
+      "text": "or drop JPG images here",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        432.0,
+        444.0,
+        456.0,
+        570.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "Fly on the world's top 3 best airlines*",
+      "text": "Fly on the world's top 3 best airlines*",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        851.0,
+        249.0,
+        943.0,
+        772.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "© iLovePDF 2026 ® - Your PDF Editor",
+      "text": "© iLovePDF 2026 ® - Your PDF Editor",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        962.0,
+        10.0,
+        987.0,
+        260.0
+      ]
+    }
+  ]
+}

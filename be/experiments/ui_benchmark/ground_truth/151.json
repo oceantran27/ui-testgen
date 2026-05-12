@@ -1,0 +1,303 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "cppreference.com",
+      "text": "cppreference.com",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        277.0,
+        20.0,
+        621.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        4.0,
+        592.0,
+        22.0,
+        643.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search cppreference.com",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        5.0,
+        709.0,
+        28.0,
+        853.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Page",
+      "text": "Page",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        50.0,
+        277.0,
+        72.0,
+        297.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Discussion",
+      "text": "Discussion",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        51.0,
+        300.0,
+        73.0,
+        338.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        52.0,
+        637.0,
+        71.0,
+        660.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View source",
+      "text": "View source",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        51.0,
+        665.0,
+        72.0,
+        722.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        52.0,
+        728.0,
+        73.0,
+        791.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "C language",
+      "text": "C language",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        86.0,
+        278.0,
+        125.0,
+        348.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "C language",
+      "text": "C language",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        121.0,
+        278.0,
+        156.0,
+        373.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "This is a reference of the core C language constructs.",
+      "text": "This is a reference of the core C language constructs.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        159.0,
+        278.0,
+        178.0,
+        573.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Basic concepts",
+      "text": "Basic concepts",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        205.0,
+        282.0,
+        219.0,
+        360.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Expressions",
+      "text": "Expressions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        204.0,
+        425.0,
+        219.0,
+        484.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Declarations",
+      "text": "Declarations",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        205.0,
+        540.0,
+        220.0,
+        608.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Keywords",
+      "text": "Keywords",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        439.0,
+        277.0,
+        455.0,
+        324.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Preprocessor",
+      "text": "Preprocessor",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        460.0,
+        277.0,
+        475.0,
+        349.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Statements",
+      "text": "Statements",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        620.0,
+        278.0,
+        635.0,
+        386.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Initialisation",
+      "text": "Initialisation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        788.0,
+        277.0,
+        803.0,
+        379.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Functions",
+      "text": "Functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        368.0,
+        540.0,
+        382.0,
+        469.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Miscellaneous",
+      "text": "Miscellaneous",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        523.0,
+        540.0,
+        537.0,
+        628.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "See also",
+      "text": "See also",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        723.0,
+        278.0,
+        746.0,
+        356.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "C++ documentation for C++ language constructs",
+      "text": "C++ documentation for C++ language constructs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        777.0,
+        279.0,
+        802.0,
+        553.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "footer links",
+      "text": "Support us  Recent changes  FAQ  Offline version  What links here  Related changes  Upload file  Special pages  Printable version  Permanent link  Page information",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        846.0,
+        278.0,
+        916.0,
+        787.0
+      ]
+    }
+  ]
+}

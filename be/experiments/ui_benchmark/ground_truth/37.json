@@ -1,0 +1,446 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Study",
+      "text": "STUDY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        97.0,
+        18.0,
+        137.0,
+        110.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Letters",
+      "text": "LETTERS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        152.0,
+        18.0,
+        198.0,
+        112.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Practice",
+      "text": "PRACTICE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        210.0,
+        18.0,
+        257.0,
+        120.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Rankings",
+      "text": "RANKINGS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        266.0,
+        18.0,
+        317.0,
+        120.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Mission",
+      "text": "MISSION",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        324.0,
+        18.0,
+        372.0,
+        120.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Shop",
+      "text": "SHOP",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        382.0,
+        18.0,
+        426.0,
+        120.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Profile",
+      "text": "PROFILE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        437.0,
+        18.0,
+        487.0,
+        120.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "See more",
+      "text": "SEE MORE",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        496.0,
+        18.0,
+        553.0,
+        120.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Profile avatar placeholder",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        224.0,
+        302.0,
+        521.0,
+        665.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Edit profile",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        586.0,
+        52.0,
+        609.0,
+        106.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Dai Duong",
+      "text": "Dai Duong",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        304.0,
+        564.0,
+        329.0,
+        416.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "heydayne",
+      "text": "heydayne",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        340.0,
+        564.0,
+        359.0,
+        404.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Joined May 2016",
+      "text": "Joined May 2016",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        366.0,
+        564.0,
+        388.0,
+        427.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Following 0 0 Followers",
+      "text": "Following 0   0 Followers",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        398.0,
+        564.0,
+        418.0,
+        479.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Statistics",
+      "text": "Statistics",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        484.0,
+        302.0,
+        508.0,
+        407.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Streak day",
+      "text": "0\nStreak day",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        517.0,
+        301.0,
+        597.0,
+        490.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Total score KN",
+      "text": "50\nTotal score KN",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        499.0,
+        595.0,
+        702.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Current tournament",
+      "text": "No ratings yet\nCurrent tournament",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        603.0,
+        301.0,
+        685.0,
+        491.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Number of times reaching the top",
+      "text": "0\nNumber of times reaching the top",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        603.0,
+        498.0,
+        684.0,
+        703.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Achievements",
+      "text": "Achievements",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        720.0,
+        300.0,
+        744.0,
+        407.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "See all achievements",
+      "text": "SEE ALL",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        721.0,
+        603.0,
+        742.0,
+        699.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Forest fire",
+      "text": "Forest fire\nReached a 3-day streak",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        749.0,
+        301.0,
+        898.0,
+        701.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Noble people",
+      "text": "Noble people",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        907.0,
+        300.0,
+        1000.0,
+        700.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Following",
+      "text": "FOLLOWING",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        97.0,
+        670.0,
+        130.0,
+        724.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Followers",
+      "text": "FOLLOWERS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        97.0,
+        728.0,
+        130.0,
+        807.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Connecting friends makes learning more fun and effective.",
+      "text": "Connecting friends makes learning more fun and effective.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        94.0,
+        721.0,
+        385.0,
+        947.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Add friends",
+      "text": "Add friends",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        407.0,
+        723.0,
+        556.0,
+        949.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Find friends",
+      "text": "Find friends",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        527.0,
+        761.0,
+        569.0,
+        945.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Invite friends",
+      "text": "Invite friends",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        591.0,
+        761.0,
+        639.0,
+        945.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introducing Shop Efficiency Job Investors Terms Security",
+      "text": "INTRODUCING  SHOP  EFFICIENCY  JOB  INVESTORS  TERMS  SECURITY",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        695.0,
+        738.0,
+        798.0,
+        943.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "US flag icon",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        31.0,
+        25.0,
+        59.0,
+        57.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Streak count",
+      "text": "0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        27.0,
+        63.0,
+        57.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Gems count",
+      "text": "1305",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        27.0,
+        63.0,
+        57.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Hearts count",
+      "text": "5",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        30.0,
+        27.0,
+        63.0,
+        57.0
+      ]
+    }
+  ]
+}

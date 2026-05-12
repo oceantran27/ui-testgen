@@ -1,0 +1,186 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Zig logo",
+      "text": "ZIG",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        231.0,
+        98.0,
+        378.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "top navigation",
+      "text": "Download Learn News Zig Software Foundation Devlog Source Join a Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        110.0,
+        0.0,
+        181.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "hero description",
+      "text": "Zig is a general-purpose programming language and toolchain for maintaining robust, optimal and reusable software.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        154.0,
+        238.0,
+        308.0,
+        607.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "GET STARTED",
+      "text": "GET STARTED",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        157.0,
+        647.0,
+        255.0,
+        786.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Latest Release: 0.16.0",
+      "text": "Latest Release: 0.16.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        267.0,
+        677.0,
+        332.0,
+        763.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        336.0,
+        647.0,
+        391.0,
+        732.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Changes",
+      "text": "Changes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        335.0,
+        734.0,
+        389.0,
+        788.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A Simple Language",
+      "text": "A Simple Language",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        412.0,
+        242.0,
+        470.0,
+        435.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "section description",
+      "text": "Focus on debugging your application rather than debugging your programming language knowledge.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        465.0,
+        241.0,
+        530.0,
+        434.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "feature bullets",
+      "text": "No hidden control flow. No hidden memory allocations. No preprocessor, no macros.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        557.0,
+        241.0,
+        650.0,
+        438.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Comptime",
+      "text": "Comptime",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        658.0,
+        241.0,
+        717.0,
+        437.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "section description",
+      "text": "A fresh approach to metaprogramming based on compile-time code execution and lazy evaluation.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        706.0,
+        241.0,
+        768.0,
+        440.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "feature bullets",
+      "text": "Call any function at compile-time. Manipulate types as values without runtime overhead. Comptime emulates the target architecture.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        805.0,
+        241.0,
+        936.0,
+        438.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "code sample",
+      "text": "index.zig const std = @import(\"std\"); ...",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        342.0,
+        528.0,
+        941.0,
+        999.0
+      ]
+    }
+  ]
+}

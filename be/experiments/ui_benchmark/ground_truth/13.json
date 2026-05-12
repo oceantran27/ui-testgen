@@ -1,0 +1,407 @@
+{
+  "ui_elements": [
+    {
+      "type": "tab",
+      "label": "Product reviews (0)",
+      "text": "Product reviews (0)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        59.0,
+        66.0,
+        183.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Store reviews (10)",
+      "text": "Store reviews (10)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        193.0,
+        68.0,
+        338.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "5.0",
+      "text": "5.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        53.0,
+        243.0,
+        103.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Very satisfied",
+      "text": "Very satisfied",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        146.0,
+        242.0,
+        204.0,
+        339.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Based on 10 reviews for verified purchases",
+      "text": "Based on 10 reviews for verified purchases",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        203.0,
+        243.0,
+        227.0,
+        454.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Supplier service",
+      "text": "Supplier service",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        117.0,
+        328.0,
+        138.0,
+        500.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "On-time shipping",
+      "text": "On-time shipping",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        169.0,
+        326.0,
+        189.0,
+        488.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Product quality",
+      "text": "Product quality",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        223.0,
+        329.0,
+        243.0,
+        474.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "All",
+      "text": "All",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        297.0,
+        55.0,
+        336.0,
+        94.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "With photos/videos (4)",
+      "text": "With photos/videos (4)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        297.0,
+        99.0,
+        336.0,
+        208.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Rating",
+      "text": "Rating",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        298.0,
+        218.0,
+        336.0,
+        289.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Repeat Buy (3)",
+      "text": "Repeat Buy (3)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        297.0,
+        302.0,
+        336.0,
+        387.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Sort by: Most relevant",
+      "text": "Sort by: Most relevant",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        483.0,
+        336.0,
+        622.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "United States (5)",
+      "text": "United States (5)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        360.0,
+        57.0,
+        394.0,
+        193.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Show original",
+      "text": "Show original",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        463.0,
+        267.0,
+        478.0,
+        549.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "L***i",
+      "text": "L***i",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        535.0,
+        56.0,
+        556.0,
+        121.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "France",
+      "text": "France",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        562.0,
+        55.0,
+        586.0,
+        125.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Verified purchase",
+      "text": "Verified purchase",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        608.0,
+        56.0,
+        627.0,
+        157.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Repeat buyer",
+      "text": "Repeat buyer",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        55.0,
+        668.0,
+        133.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Aug 1, 2024",
+      "text": "Aug 1, 2024",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        526.0,
+        578.0,
+        543.0,
+        634.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Really great knowing in term of craft and effect. Cooperative and fast understanding of the needs. Definitely recommend.",
+      "text": "Really great knowing in term of craft and effect. Cooperative and fast understanding of the needs. Definitely recommend.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        554.0,
+        65.0,
+        638.0,
+        483.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "This product is no longer available",
+      "text": "This product is no longer available",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        660.0,
+        66.0,
+        736.0,
+        485.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Helpful (0)",
+      "text": "Helpful (0)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        755.0,
+        65.0,
+        784.0,
+        195.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "L***i",
+      "text": "L***i",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        791.0,
+        54.0,
+        812.0,
+        119.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "France",
+      "text": "France",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        817.0,
+        54.0,
+        842.0,
+        126.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Verified purchase",
+      "text": "Verified purchase",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        863.0,
+        55.0,
+        880.0,
+        160.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Repeat buyer",
+      "text": "Repeat buyer",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        900.0,
+        55.0,
+        924.0,
+        131.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Apr 5, 2024",
+      "text": "Apr 5, 2024",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        789.0,
+        581.0,
+        808.0,
+        636.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Really great manufacturer, trustworthy, and with who you can communicate. Amazing relationship built so far and I'll definitely work again with jason in the future. You can trust them blindfolded even if your project is complex. You can feel the experience either in the quality and in ...Show all",
+      "text": "Really great manufacturer, trustworthy, and with who you can communicate. Amazing relationship built so far and I'll definitely work again with jason in the future. You can trust them blindfolded even if your project is complex. You can feel the experience either in the quality and in ...Show all",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        834.0,
+        63.0,
+        919.0,
+        548.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "This product is no longer available",
+      "text": "This product is no longer available",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        932.0,
+        67.0,
+        1000.0,
+        485.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Helpful (0)",
+      "text": "Helpful (0)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        999.0,
+        63.0,
+        1000.0,
+        194.0
+      ]
+    }
+  ]
+}

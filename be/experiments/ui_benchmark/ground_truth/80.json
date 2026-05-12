@@ -1,0 +1,212 @@
+{
+  "ui_elements": [
+    {
+      "type": "banner",
+      "label": "Introducing The ASF's New Logo Read Now",
+      "text": "Introducing The ASF's New Logo Read Now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        80.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "The ASF logo",
+      "text": "THE ASF",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        70.0,
+        426.0,
+        230.0,
+        576.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Community",
+      "text": "COMMUNITY",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        220.0,
+        356.0,
+        290.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Projects",
+      "text": "PROJECTS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        299.0,
+        356.0,
+        370.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Downloads",
+      "text": "DOWNLOADS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        381.0,
+        356.0,
+        472.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Learn",
+      "text": "LEARN",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        480.0,
+        356.0,
+        523.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Resources & Tools",
+      "text": "RESOURCES & TOOLS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        543.0,
+        356.0,
+        655.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "About",
+      "text": "ABOUT",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        318.0,
+        672.0,
+        356.0,
+        714.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Sponsor",
+      "text": "SPONSOR",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        309.0,
+        721.0,
+        374.0,
+        782.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        326.0,
+        780.0,
+        363.0,
+        804.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Software For The Public Good",
+      "text": "Software For The Public Good",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        594.0,
+        188.0,
+        815.0,
+        550.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "The Apache Software Foundation provides software for the public good, guided by community over code.",
+      "text": "The Apache® Software Foundation (ASF) provides software for the public good, guided by community over code. Like the enduring oak tree, our projects thrive through the contributions of thousands worldwide.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        866.0,
+        189.0,
+        999.0,
+        583.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Featured project card image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        388.0,
+        664.0,
+        618.0,
+        781.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Featured project card image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        623.0,
+        660.0,
+        776.0,
+        860.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Featured project card image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        530.0,
+        759.0,
+        646.0,
+        890.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Featured project card image",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        291.0,
+        753.0,
+        586.0,
+        856.0
+      ]
+    }
+  ]
+}

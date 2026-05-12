@@ -1,0 +1,134 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "NETFLIX",
+      "text": "NETFLIX",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        202.0,
+        447.0,
+        258.0,
+        548.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Pick a movie:",
+      "text": "Pick a movie:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        323.0,
+        398.0,
+        350.0,
+        508.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Jurassic Park ($10)",
+      "text": "Jurassic Park ($10)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        326.0,
+        478.0,
+        356.0,
+        616.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "N/A",
+      "text": "N/A",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        419.0,
+        426.0,
+        446.0,
+        469.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Selected",
+      "text": "Selected",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        419.0,
+        493.0,
+        447.0,
+        554.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Occupied",
+      "text": "Occupied",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        420.0,
+        560.0,
+        447.0,
+        625.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "screening room display",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        499.0,
+        428.0,
+        581.0,
+        580.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "seat map",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        624.0,
+        430.0,
+        786.0,
+        572.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "You have selected 0 seats for a price of $0",
+      "text": "You have selected 0 seats for a price of $0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        805.0,
+        394.0,
+        835.0,
+        624.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Home",
+      "text": "Home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        849.0,
+        464.0,
+        916.0,
+        543.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Click on a City",
+      "text": "Click on a City",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        446.0,
+        53.0,
+        556.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Bangalore",
+      "text": "Bangalore",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        93.0,
+        218.0,
+        311.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Delhi",
+      "text": "Delhi",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        311.0,
+        218.0,
+        500.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Mumbai",
+      "text": "Mumbai",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        500.0,
+        218.0,
+        690.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Chennai",
+      "text": "Chennai",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        82.0,
+        690.0,
+        218.0,
+        909.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Weather Forecast - Chennai",
+      "text": "Weather Forecast - Chennai",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        247.0,
+        355.0,
+        311.0,
+        673.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "menu",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        301.0,
+        887.0,
+        351.0,
+        910.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Print",
+      "text": "Print",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        338.0,
+        822.0,
+        385.0,
+        893.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Save as JPEG",
+      "text": "Save as JPEG",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        385.0,
+        820.0,
+        440.0,
+        920.0
+      ]
+    },
+    {
+      "type": "menu_item",
+      "label": "Save as PNG",
+      "text": "Save as PNG",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        431.0,
+        820.0,
+        487.0,
+        920.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Temperature in *C",
+      "text": "Temperature in *C",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        312.0,
+        109.0,
+        655.0,
+        126.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Day of the Week",
+      "text": "Day of the Week",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        757.0,
+        456.0,
+        799.0,
+        565.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Trial Version",
+      "text": "Trial Version",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        885.0,
+        84.0,
+        904.0,
+        125.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "CanvasJS.com",
+      "text": "CanvasJS.com",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        884.0,
+        886.0,
+        908.0,
+        940.0
+      ]
+    }
+  ]
+}

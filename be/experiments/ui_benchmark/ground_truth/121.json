@@ -1,0 +1,420 @@
+{
+  "ui_elements": [
+    {
+      "type": "button",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        536.0,
+        47.0,
+        607.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search Wikipedia",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        225.0,
+        47.0,
+        535.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Contents",
+      "text": "Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        132.0,
+        43.0,
+        186.0,
+        186.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "History",
+      "text": "History",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        326.0,
+        43.0,
+        345.0,
+        163.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Hardware",
+      "text": "Hardware",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        363.0,
+        43.0,
+        383.0,
+        171.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Communication",
+      "text": "Communication",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        401.0,
+        43.0,
+        421.0,
+        193.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Architecture",
+      "text": "Architecture",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        439.0,
+        43.0,
+        459.0,
+        178.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Services",
+      "text": "Services",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        478.0,
+        41.0,
+        497.0,
+        148.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Performance",
+      "text": "Performance",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        516.0,
+        43.0,
+        536.0,
+        175.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        554.0,
+        43.0,
+        573.0,
+        150.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "See also",
+      "text": "See also",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        593.0,
+        43.0,
+        612.0,
+        155.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "References",
+      "text": "References",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        631.0,
+        43.0,
+        651.0,
+        173.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Further reading",
+      "text": "Further reading",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        669.0,
+        43.0,
+        689.0,
+        198.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Computer network",
+      "text": "Computer network",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        89.0,
+        205.0,
+        146.0,
+        421.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Article",
+      "text": "Article",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        154.0,
+        207.0,
+        187.0,
+        245.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Talk",
+      "text": "Talk",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        155.0,
+        249.0,
+        187.0,
+        284.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        155.0,
+        634.0,
+        187.0,
+        671.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Edit",
+      "text": "Edit",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        156.0,
+        677.0,
+        186.0,
+        709.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        156.0,
+        721.0,
+        187.0,
+        807.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tools",
+      "text": "Tools",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        155.0,
+        820.0,
+        187.0,
+        871.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "This article needs additional citations for verification.",
+      "text": "This article needs additional citations for verification. Please help improve this article by adding citations to reliable sources.",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        268.0,
+        262.0,
+        417.0,
+        733.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Network science",
+      "text": "Part of a series on Network science",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        423.0,
+        536.0,
+        919.0,
+        780.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Network science illustration",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        505.0,
+        562.0,
+        813.0,
+        756.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Appearance",
+      "text": "Appearance",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        817.0,
+        185.0,
+        968.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Standard",
+      "text": "Standard",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        249.0,
+        817.0,
+        274.0,
+        286.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Wide",
+      "text": "Wide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        385.0,
+        817.0,
+        411.0,
+        286.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Automatic",
+      "text": "Automatic",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        494.0,
+        817.0,
+        519.0,
+        286.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Light",
+      "text": "Light",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        629.0,
+        817.0,
+        654.0,
+        286.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Dark",
+      "text": "Dark",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        727.0,
+        817.0,
+        752.0,
+        286.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        776.0,
+        44.0,
+        846.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        857.0,
+        44.0,
+        950.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        953.0,
+        44.0,
+        997.0
+      ]
+    }
+  ]
+}

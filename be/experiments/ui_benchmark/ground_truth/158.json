@@ -1,0 +1,680 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "SQLite logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        8.0,
+        103.0,
+        121.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Small. Fast. Reliable. Choose any three.",
+      "text": "Small. Fast. Reliable. Choose any three.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        892.0,
+        114.0,
+        991.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "top navigation",
+      "text": "Home About Documentation Download License Support Purchase",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        134.0,
+        8.0,
+        166.0,
+        993.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Home",
+      "text": "Home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        12.0,
+        164.0,
+        49.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        63.0,
+        164.0,
+        114.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        123.0,
+        164.0,
+        220.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Download",
+      "text": "Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        229.0,
+        164.0,
+        286.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "License",
+      "text": "License",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        294.0,
+        164.0,
+        348.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Support",
+      "text": "Support",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        359.0,
+        164.0,
+        419.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Purchase",
+      "text": "Purchase",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        137.0,
+        429.0,
+        164.0,
+        495.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        139.0,
+        939.0,
+        165.0,
+        982.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.",
+      "text": "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        195.0,
+        4.0,
+        281.0,
+        825.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "More Information...",
+      "text": "More Information...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        254.0,
+        333.0,
+        280.0,
+        448.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "SQLite source code is in the public-domain and is free to everyone to use for any purpose.",
+      "text": "SQLite source code is in the public-domain and is free to everyone to use for any purpose.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        316.0,
+        3.0,
+        349.0,
+        555.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "source code",
+      "text": "source code",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        321.0,
+        74.0,
+        347.0,
+        230.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "public-domain",
+      "text": "public-domain",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        320.0,
+        390.0,
+        346.0,
+        569.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Latest Release",
+      "text": "Latest Release",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        418.0,
+        5.0,
+        451.0,
+        161.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Version 3.53.0",
+      "text": "Version 3.53.0 (2026-04-09).",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        478.0,
+        3.0,
+        510.0,
+        181.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Download",
+      "text": "Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        482.0,
+        160.0,
+        511.0,
+        218.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Prior Releases",
+      "text": "Prior Releases",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        482.0,
+        228.0,
+        511.0,
+        321.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Sponsors",
+      "text": "Sponsors",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        532.0,
+        5.0,
+        563.0,
+        105.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "SQLite is made possible in part by sponsors and SQLite Consortium members, including:",
+      "text": "SQLite is made possible in part by sponsors and SQLite Consortium members, including:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        589.0,
+        6.0,
+        633.0,
+        816.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Bentley logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        688.0,
+        102.0,
+        726.0,
+        170.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Expensify logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        691.0,
+        246.0,
+        728.0,
+        371.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Bloomberg logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        739.0,
+        102.0,
+        790.0,
+        283.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Visual DB logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        743.0,
+        260.0,
+        791.0,
+        472.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Free web GUI for SQLite",
+      "text": "Free web GUI for SQLite",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        776.0,
+        266.0,
+        810.0,
+        468.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Navigation Data Standard logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        816.0,
+        95.0,
+        856.0,
+        264.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Common Links",
+      "text": "Common Links",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        175.0,
+        821.0,
+        211.0,
+        965.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Features",
+      "text": "Features",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        221.0,
+        835.0,
+        239.0,
+        893.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "When to use SQLite",
+      "text": "When to use SQLite",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        250.0,
+        833.0,
+        270.0,
+        927.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Getting Started",
+      "text": "Getting Started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        280.0,
+        833.0,
+        298.0,
+        927.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Try it live!",
+      "text": "Try it live!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        310.0,
+        833.0,
+        327.0,
+        892.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SQL Syntax",
+      "text": "SQL Syntax",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        339.0,
+        833.0,
+        357.0,
+        896.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Pragmas",
+      "text": "Pragmas",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        372.0,
+        850.0,
+        389.0,
+        923.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "SQL functions",
+      "text": "SQL functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        398.0,
+        850.0,
+        416.0,
+        923.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Date & time functions",
+      "text": "Date & time functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        425.0,
+        850.0,
+        444.0,
+        942.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Aggregate functions",
+      "text": "Aggregate functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        451.0,
+        850.0,
+        470.0,
+        942.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Window functions",
+      "text": "Window functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        479.0,
+        850.0,
+        497.0,
+        927.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Math functions",
+      "text": "Math functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        504.0,
+        850.0,
+        523.0,
+        918.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "JSON functions",
+      "text": "JSON functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        531.0,
+        850.0,
+        549.0,
+        917.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "C/C++ Interface Spec",
+      "text": "C/C++ Interface Spec",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        559.0,
+        833.0,
+        577.0,
+        956.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Introduction",
+      "text": "Introduction",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        588.0,
+        850.0,
+        606.0,
+        918.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "List of C-language APIs",
+      "text": "List of C-language APIs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        612.0,
+        850.0,
+        629.0,
+        958.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The TCL Interface Spec",
+      "text": "The TCL Interface Spec",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        833.0,
+        662.0,
+        943.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Quirks and Gotchas",
+      "text": "Quirks and Gotchas",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        674.0,
+        833.0,
+        690.0,
+        928.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Frequently Asked Questions",
+      "text": "Frequently Asked Questions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        702.0,
+        833.0,
+        721.0,
+        969.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Commit History",
+      "text": "Commit History",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        731.0,
+        833.0,
+        747.0,
+        918.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Prior Releases",
+      "text": "Prior Releases",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        758.0,
+        833.0,
+        776.0,
+        925.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Bugs",
+      "text": "Bugs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        784.0,
+        833.0,
+        801.0,
+        871.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "News",
+      "text": "News",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        810.0,
+        833.0,
+        829.0,
+        875.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "This page was last updated on 2026-04-15 15:27:32Z",
+      "text": "This page was last updated on 2026-04-15 15:27:32Z",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        852.0,
+        382.0,
+        874.0,
+        618.0
+      ]
+    }
+  ]
+}

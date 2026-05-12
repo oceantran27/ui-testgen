@@ -1,0 +1,355 @@
+{
+  "ui_elements": [
+    {
+      "type": "link",
+      "label": "BACK TO MAP | US / UTAH / MOAB",
+      "text": "BACK TO MAP | US / UTAH / MOAB",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        80.0,
+        206.0,
+        109.0,
+        296.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Arches National Park",
+      "text": "Arches National Park",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        143.0,
+        204.0,
+        214.0,
+        522.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "5.0",
+      "text": "5.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        215.0,
+        205.0,
+        242.0,
+        216.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "99 reviews",
+      "text": "99 reviews",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        215.0,
+        222.0,
+        242.0,
+        287.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Write a review",
+      "text": "Write a review",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        215.0,
+        294.0,
+        242.0,
+        353.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "447 people are viewing this place",
+      "text": "447 people are viewing this place",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        250.0,
+        203.0,
+        270.0,
+        378.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "New trip",
+      "text": "New trip",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        201.0,
+        631.0,
+        262.0,
+        742.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "save",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        205.0,
+        750.0,
+        263.0,
+        779.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "share",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        205.0,
+        785.0,
+        263.0,
+        815.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Arches National Park photo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        301.0,
+        202.0,
+        517.0,
+        797.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Arches National Park photo thumbnail",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        522.0,
+        203.0,
+        736.0,
+        405.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Arches National Park photo thumbnail",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        524.0,
+        203.0,
+        738.0,
+        405.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "View Gallery",
+      "text": "View Gallery",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        701.0,
+        658.0,
+        732.0,
+        769.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Add Photo",
+      "text": "Add Photo",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        701.0,
+        770.0,
+        733.0,
+        833.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Listen to stories nearby",
+      "text": "Listen to stories nearby",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        746.0,
+        647.0,
+        784.0,
+        836.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "In partnership with autio",
+      "text": "In partnership with autio",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        789.0,
+        648.0,
+        816.0,
+        799.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Moab: Early History",
+      "text": "Moab: Early History",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        830.0,
+        649.0,
+        911.0,
+        839.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "play",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        827.0,
+        787.0,
+        909.0,
+        846.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Remove ads",
+      "text": "Remove ads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        770.0,
+        556.0,
+        807.0,
+        623.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Remove ads",
+      "text": "Remove ads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        889.0,
+        556.0,
+        925.0,
+        623.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "chat/help",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        793.0,
+        953.0,
+        868.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Membership",
+      "text": "Membership",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        724.0,
+        38.0,
+        743.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "For RVers",
+      "text": "For RVers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        780.0,
+        37.0,
+        813.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Trip Ideas",
+      "text": "Trip Ideas",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        827.0,
+        37.0,
+        862.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Trip Planner",
+      "text": "Trip Planner",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        873.0,
+        37.0,
+        916.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        14.0,
+        934.0,
+        50.0,
+        985.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search and Explore",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        5.0,
+        108.0,
+        58.0,
+        393.0
+      ]
+    }
+  ]
+}

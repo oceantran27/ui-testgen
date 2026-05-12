@@ -1,0 +1,17 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "Too Many Requests",
+      "text": "Too Many Requests",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        3.0,
+        5.0,
+        24.0,
+        111.0
+      ]
+    }
+  ]
+}

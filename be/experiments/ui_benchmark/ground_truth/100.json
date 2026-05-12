@@ -1,0 +1,407 @@
+{
+  "ui_elements": [
+    {
+      "type": "text",
+      "label": "cppreference.com",
+      "text": "cppreference.com",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        134.0,
+        17.0,
+        290.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Create account",
+      "text": "Create account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        1.0,
+        659.0,
+        20.0,
+        742.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search cppreference.com",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        754.0,
+        24.0,
+        884.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Page",
+      "text": "Page",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        135.0,
+        67.0,
+        164.0
+      ]
+    },
+    {
+      "type": "tab",
+      "label": "Discussion",
+      "text": "Discussion",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        167.0,
+        67.0,
+        230.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Read",
+      "text": "Read",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        688.0,
+        67.0,
+        720.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View source",
+      "text": "View source",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        728.0,
+        67.0,
+        804.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "View history",
+      "text": "View history",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        46.0,
+        810.0,
+        67.0,
+        895.0
+      ]
+    },
+    {
+      "type": "breadcrumb",
+      "label": "C",
+      "text": "C",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        72.0,
+        135.0,
+        91.0,
+        146.0
+      ]
+    },
+    {
+      "type": "breadcrumb",
+      "label": "C language",
+      "text": "C language",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        73.0,
+        150.0,
+        93.0,
+        215.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "C language",
+      "text": "C language",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        100.0,
+        132.0,
+        163.0,
+        232.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "This is a reference of the core C language constructs.",
+      "text": "This is a reference of the core C language constructs.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        131.0,
+        132.0,
+        145.0,
+        482.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Basic concepts",
+      "text": "Basic concepts",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        167.0,
+        138.0,
+        183.0,
+        246.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Basic concepts links",
+      "text": "Comments, ASCII chart, Character sets and encodings, Translation phases, Punctuation, Identifier - Scope - Lifetime, Lookup and Name Spaces, Type - Arithmetic types, Objects and Alignment, The main function, As-if rule, Undefined behavior, Memory model and Data races",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        189.0,
+        138.0,
+        423.0,
+        332.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Expressions",
+      "text": "Expressions",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        355.0,
+        183.0,
+        449.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Expressions links",
+      "text": "Value categories, Evaluation order and sequencing, Constants and literals, Integer constants, Floating constants, Character constants, true / false (C23), nullptr (C23), String literals, Compound literals (C99), Constant expressions, Implicit conversions, Operators, Member access and indirection, Logical - Comparison, Arithmetic - Assignment, Increment and Decrement, Call, Comma, Ternary, sizeof - alignof (C11), Cast operators, Operator precedence, Generic selection (C11)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        191.0,
+        355.0,
+        515.0,
+        594.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Declarations",
+      "text": "Declarations",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        555.0,
+        183.0,
+        640.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Declarations links",
+      "text": "Pointers - Arrays, Enumerations, Storage duration and Linkage, const - volatile - restrict (C99), struct - union - Bit-fields, alignas (C11) - typedef, static_assert (C11), Atomic types (C11), External and tentative definitions, Attributes (C23)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        188.0,
+        555.0,
+        429.0,
+        729.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Keywords",
+      "text": "Keywords",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        372.0,
+        139.0,
+        383.0,
+        216.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Preprocessor keywords",
+      "text": "#if - #ifdef - #ifndef - #elif, #elifdef - #elifndef (C23), #define - #, ##, #include - #pragma, #line - #error, #warning (C23) - #embed (C23)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        395.0,
+        140.0,
+        551.0,
+        318.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Statements",
+      "text": "Statements",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        551.0,
+        134.0,
+        563.0,
+        208.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Statements links",
+      "text": "if - switch, for, while - do - while, continue - break, goto - return",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        572.0,
+        141.0,
+        649.0,
+        307.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Initialization",
+      "text": "Initialization",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        358.0,
+        389.0,
+        467.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Initialization links",
+      "text": "Scalar, Array, Structure/Union",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        395.0,
+        358.0,
+        457.0,
+        501.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Functions",
+      "text": "Functions",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        320.0,
+        555.0,
+        333.0,
+        407.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Functions links",
+      "text": "Function declaration, Function definition, inline (C99), _Noreturn (C11) (deprecated in C23), Variadic arguments",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        343.0,
+        555.0,
+        450.0,
+        671.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Miscellaneous",
+      "text": "Miscellaneous",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        425.0,
+        555.0,
+        439.0,
+        630.0
+      ]
+    },
+    {
+      "type": "list",
+      "label": "Miscellaneous links",
+      "text": "History of C, Conformance, Inline assembly, Signal handling, Analyzability (C11)",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        450.0,
+        555.0,
+        541.0,
+        649.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "See also",
+      "text": "See also",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        684.0,
+        132.0,
+        705.0,
+        218.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "C++ documentation for C++ language constructs",
+      "text": "C++ documentation for C++ language constructs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        716.0,
+        134.0,
+        734.0,
+        470.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "footer links",
+      "text": "Support us, Recent changes, FAQ, Offline version, What links here, Related changes, Upload file, Special pages, Printable version, Permanent link, Page information, In other languages, Deutsch, Español, Français, Italiano, 日本語, 한국어, Português, Русский, Türkçe, 中文",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        775.0,
+        132.0,
+        850.0,
+        905.0
+      ]
+    }
+  ]
+}

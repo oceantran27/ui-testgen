@@ -1,0 +1,186 @@
+{
+  "ui_elements": [
+    {
+      "type": "banner",
+      "label": "Introducing The ASF's New Logo Read Now",
+      "text": "Introducing The ASF's New Logo Read Now",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        45.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "The ASF logo",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        58.0,
+        433.0,
+        165.0,
+        557.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Main navigation",
+      "text": "COMMUNITY PROJECTS DOWNLOADS LEARN RESOURCES & TOOLS ABOUT",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        190.0,
+        227.0,
+        232.0,
+        705.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "SPONSOR",
+      "text": "SPONSOR",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        180.0,
+        690.0,
+        223.0,
+        745.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        191.0,
+        770.0,
+        221.0,
+        784.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Software For The Public Good",
+      "text": "Software For The Public Good",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        365.0,
+        199.0,
+        491.0,
+        579.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "ASF mission description",
+      "text": "The Apache® Software Foundation (ASF) provides software for the public good, guided by community over code. Like the enduring oak tree, our projects thrive through the contributions of thousands worldwide.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        533.0,
+        198.0,
+        616.0,
+        590.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "SEE PROJECTS",
+      "text": "SEE PROJECTS",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        632.0,
+        199.0,
+        671.0,
+        274.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Project collage",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        193.0,
+        616.0,
+        796.0,
+        856.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Our Impact",
+      "text": "Our Impact",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        815.0,
+        410.0,
+        877.0,
+        588.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "290+",
+      "text": "290+",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        941.0,
+        229.0,
+        999.0,
+        300.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "1300+",
+      "text": "1300+",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        941.0,
+        373.0,
+        999.0,
+        462.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "9900+",
+      "text": "9900+",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        941.0,
+        528.0,
+        999.0,
+        623.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "1190+",
+      "text": "1190+",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        941.0,
+        711.0,
+        999.0,
+        795.0
+      ]
+    }
+  ]
+}

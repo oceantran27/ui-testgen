@@ -1,0 +1,407 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Edit profile",
+      "text": "Edit profile",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        125.0,
+        49.0,
+        149.0,
+        126.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Account management",
+      "text": "Account management",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        183.0,
+        50.0,
+        209.0,
+        202.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Profile display mode",
+      "text": "Profile display mode",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        239.0,
+        49.0,
+        264.0,
+        201.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Refine your suggestions",
+      "text": "Refine your suggestions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        49.0,
+        324.0,
+        222.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Link to Pinterest",
+      "text": "Link to Pinterest",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        359.0,
+        49.0,
+        384.0,
+        185.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Social network rights",
+      "text": "Social network rights",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        419.0,
+        49.0,
+        444.0,
+        204.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Notification",
+      "text": "Notification",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        480.0,
+        49.0,
+        505.0,
+        149.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Privacy and data",
+      "text": "Privacy and data",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        539.0,
+        49.0,
+        564.0,
+        179.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        600.0,
+        50.0,
+        625.0,
+        126.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Branded content",
+      "text": "Branded content",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        659.0,
+        49.0,
+        684.0,
+        195.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Account management",
+      "text": "Account management",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        123.0,
+        559.0,
+        152.0,
+        461.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Make changes to your personal information or account type.",
+      "text": "Make changes to your personal information or account type.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        159.0,
+        560.0,
+        187.0,
+        832.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Your account",
+      "text": "Your account",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        260.0,
+        559.0,
+        286.0,
+        675.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Email - Private",
+      "text": "Email - Private\ndaiduong3a1@gmail.com",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        335.0,
+        288.0,
+        411.0,
+        558.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "Confirmed",
+      "text": "Confirmed",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        417.0,
+        285.0,
+        441.0,
+        458.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Password",
+      "text": "Password",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        507.0,
+        287.0,
+        531.0,
+        345.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Changes",
+      "text": "Changes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        465.0,
+        498.0,
+        542.0,
+        549.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Convert to business account",
+      "text": "Convert to business account",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        583.0,
+        287.0,
+        607.0,
+        565.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "With a business account, you'll have access to tools like advertising and analytics to grow your business on Pinterest.",
+      "text": "With a business account, you'll have access to tools like advertising and analytics to grow your business on Pinterest.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        630.0,
+        286.0,
+        706.0,
+        543.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Convert account",
+      "text": "Convert account",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        628.0,
+        441.0,
+        698.0,
+        551.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Personal information",
+      "text": "Personal information",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        756.0,
+        286.0,
+        780.0,
+        513.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Date of birth",
+      "text": "27/01/1996",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        822.0,
+        287.0,
+        874.0,
+        558.0
+      ]
+    },
+    {
+      "type": "icon_button",
+      "label": "Date picker",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        832.0,
+        542.0,
+        871.0,
+        553.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Gender",
+      "text": "Gender",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        897.0,
+        286.0,
+        918.0,
+        334.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "South",
+      "text": "South",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        930.0,
+        287.0,
+        952.0,
+        371.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Female",
+      "text": "Female",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        929.0,
+        381.0,
+        952.0,
+        475.0
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Other",
+      "text": "Other",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        930.0,
+        477.0,
+        953.0,
+        562.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Country/Region",
+      "text": "Country/Region",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        989.0,
+        286.0,
+        1000.0,
+        565.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Reset",
+      "text": "Reset",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        930.0,
+        419.0,
+        970.0,
+        447.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Save",
+      "text": "Save",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        929.0,
+        459.0,
+        971.0,
+        487.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        45.0,
+        58.0,
+        964.0
+      ]
+    }
+  ]
+}

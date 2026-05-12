@@ -1,0 +1,329 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Top navigation",
+      "text": "Blog Micronews Planet Wiki",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        55.0,
+        199.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Blog",
+      "text": "Blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        31.0,
+        43.0,
+        58.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Micronews",
+      "text": "Micronews",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        63.0,
+        44.0,
+        117.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Planet",
+      "text": "Planet",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        119.0,
+        43.0,
+        159.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wiki",
+      "text": "Wiki",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        22.0,
+        160.0,
+        43.0,
+        192.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "debian /",
+      "text": "debian /",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        58.0,
+        1.0,
+        84.0,
+        53.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        2.0,
+        884.0,
+        23.0,
+        953.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Search",
+      "text": "Search",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        2.0,
+        957.0,
+        24.0,
+        991.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Reasons to use Debian",
+      "text": "Reasons to use Debian",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        106.0,
+        31.0,
+        153.0,
+        367.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Debian for Users",
+      "text": "Debian for Users",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        171.0,
+        31.0,
+        185.0,
+        149.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Debian for Developers",
+      "text": "Debian for Developers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        201.0,
+        31.0,
+        215.0,
+        185.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Debian for Enterprise Environments",
+      "text": "Debian for Enterprise Environments",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        229.0,
+        31.0,
+        244.0,
+        311.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian for Users",
+      "text": "Debian for Users",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        373.0,
+        31.0,
+        397.0,
+        146.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian is Free Software.",
+      "text": "Debian is Free Software.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        418.0,
+        30.0,
+        437.0,
+        193.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "free",
+      "text": "free",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        465.0,
+        283.0,
+        480.0,
+        316.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "our users",
+      "text": "our users",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        495.0,
+        52.0,
+        510.0,
+        94.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian is stable and secure.",
+      "text": "Debian is stable and secure.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        515.0,
+        30.0,
+        534.0,
+        227.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian has extensive Hardware Support.",
+      "text": "Debian has extensive Hardware Support.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        646.0,
+        30.0,
+        665.0,
+        343.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Linux kernel",
+      "text": "Linux kernel",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        688.0,
+        292.0,
+        703.0,
+        469.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian offers a flexible Installer.",
+      "text": "Debian offers a flexible Installer.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        724.0,
+        30.0,
+        742.0,
+        266.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Live CD",
+      "text": "Live CD",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        768.0,
+        51.0,
+        783.0,
+        121.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian provides smooth Upgrades.",
+      "text": "Debian provides smooth Upgrades.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        837.0,
+        30.0,
+        855.0,
+        282.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Debian is the Base for many other Distributions.",
+      "text": "Debian is the Base for many other Distributions.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        905.0,
+        30.0,
+        924.0,
+        433.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Quote callout 1",
+      "text": "For me it's the perfect level of ease of use and stability. I've used various different distributions over the years but Debian is the only one that just works. NorhamsFinest on Reddit",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        394.0,
+        695.0,
+        540.0,
+        979.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Quote callout 2",
+      "text": "Windows 10 support ends in October 2025. Your computer may not run Windows 11, but it will run Debian for many more years without buying new hardware. Debian supports the End of 10 campaign.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        706.0,
+        694.0,
+        859.0,
+        978.0
+      ]
+    }
+  ]
+}

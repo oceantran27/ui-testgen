@@ -1,0 +1,446 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Roadtrippers",
+      "text": "Roadtrippers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        8.0,
+        10.0,
+        39.0,
+        123.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Search and Explore",
+      "text": "Search and Explore",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        9.0,
+        108.0,
+        58.0,
+        404.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Membership",
+      "text": "Membership",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        700.0,
+        38.0,
+        783.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "For RVers",
+      "text": "For RVers",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        788.0,
+        37.0,
+        851.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Trip Ideas",
+      "text": "Trip Ideas",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        855.0,
+        37.0,
+        915.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Trip Planner",
+      "text": "Trip Planner",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        13.0,
+        919.0,
+        39.0,
+        985.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Log in",
+      "text": "Log in",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        12.0,
+        947.0,
+        54.0,
+        997.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Reviews",
+      "text": "Reviews",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        81.0,
+        205.0,
+        118.0,
+        294.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Leave a rating",
+      "text": "Leave a rating",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        151.0,
+        204.0,
+        293.0,
+        428.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "rating_star",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        212.0,
+        235.0,
+        260.0,
+        251.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "rating_star",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        214.0,
+        271.0,
+        260.0,
+        285.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "rating_star",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        213.0,
+        309.0,
+        261.0,
+        323.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "rating_star",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        214.0,
+        347.0,
+        261.0,
+        361.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "rating_star",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        214.0,
+        385.0,
+        261.0,
+        399.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Review listing",
+      "text": "Review listing",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        151.0,
+        436.0,
+        293.0,
+        620.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Write a review",
+      "text": "Write a review",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        209.0,
+        456.0,
+        263.0,
+        614.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Sort by: Most Helpful",
+      "text": "Sort by: Most Helpful",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        323.0,
+        205.0,
+        379.0,
+        388.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Einatyuval review",
+      "text": "Einatyuval",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        427.0,
+        206.0,
+        580.0,
+        643.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "5.0",
+      "text": "5.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        461.0,
+        210.0,
+        482.0,
+        480.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "September 29, 2014",
+      "text": "September 29, 2014",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        463.0,
+        500.0,
+        484.0,
+        572.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "review_body",
+      "text": "A great place to see. you can spend between 3 hours to a full day. If you are hoking then you need at least half a day. don't miss the balanced rock, tunnel arch, and many more. We highly recommend to spend between half an hour to an hour more, and get to the arches park thru road 128 (from road 70, take exit 204 to Cisco), instead of the high way. It takes more time but the scenery is breath taking. A ranger in colorado national monument recommended us and it was a great tip.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        526.0,
+        425.0,
+        648.0,
+        578.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Yes",
+      "text": "Yes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        614.0,
+        394.0,
+        643.0,
+        460.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "63",
+      "text": "63",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        612.0,
+        463.0,
+        644.0,
+        503.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "hnimani1 review",
+      "text": "hnimani1",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        660.0,
+        207.0,
+        948.0,
+        651.0
+      ]
+    },
+    {
+      "type": "badge",
+      "label": "5.0",
+      "text": "5.0",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        702.0,
+        209.0,
+        720.0,
+        476.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "October 05, 2015",
+      "text": "October 05, 2015",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        703.0,
+        500.0,
+        724.0,
+        581.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "review_body",
+      "text": "Absolutely Amazing! The things people have written are true, and the word epic is appropriate here, not for sandwiches and youtube videos. My wife and I wanted to do a couple hikes a day, with driving in between as neither of us are professional canyoneers! If you're like us, I recommend the scenic drive, stopping at every viewpoint, hiking the shorter trails to things like the balancing rock (0.3 miles but worth every second), the windows/turret arch (0.3 miles but probably the best short hike) and the skyline arch (0.4 miles but also simply stunning). There used to be an enormous boulder in this arch but it collapsed in 1976 and you can see the rockfall if you hike this flat and easy trail. Sand Dune Arch is supposed to be the easiest at 0.3 miles, and is great for kids we skipped that one. We did all this in about 6 to 7 hours, but I know there's a lot of harder more rewarding trails and arches.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        757.0,
+        426.0,
+        916.0,
+        571.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Yes",
+      "text": "Yes",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        860.0,
+        394.0,
+        888.0,
+        460.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "18",
+      "text": "18",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        860.0,
+        463.0,
+        892.0,
+        503.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Remove ads",
+      "text": "Remove ads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        563.0,
+        721.0,
+        592.0,
+        756.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Remove ads",
+      "text": "Remove ads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        604.0,
+        848.0,
+        648.0,
+        889.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "The ultimate road trip guide to Canyonlands National Park",
+      "text": "The ultimate road trip guide to Canyonlands National Park",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        67.0,
+        638.0,
+        293.0,
+        933.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "ad placeholder",
+      "text": null,
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        331.0,
+        330.0,
+        577.0,
+        856.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "chat widget",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        765.0,
+        953.0,
+        867.0,
+        996.0
+      ]
+    }
+  ]
+}

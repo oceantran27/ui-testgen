@@ -1,0 +1,342 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Python",
+      "text": "Python",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        15.0,
+        39.0,
+        44.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "English",
+      "text": "English",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        108.0,
+        42.0,
+        263.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "3.14.4",
+      "text": "3.14.4",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        273.0,
+        42.0,
+        340.0
+      ]
+    },
+    {
+      "type": "breadcrumb",
+      "label": "3.14.4 Documentation » The Python Standard Library » Introduction",
+      "text": "3.14.4 Documentation » The Python Standard Library » Introduction",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        348.0,
+        40.0,
+        637.0
+      ]
+    },
+    {
+      "type": "dropdown",
+      "label": "Auto",
+      "text": "Auto",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        687.0,
+        40.0,
+        717.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Quick search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        16.0,
+        726.0,
+        42.0,
+        832.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Go",
+      "text": "Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        15.0,
+        840.0,
+        41.0,
+        865.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "previous",
+      "text": "previous",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        874.0,
+        39.0,
+        911.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "next",
+      "text": "next",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        916.0,
+        39.0,
+        942.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "modules",
+      "text": "modules",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        942.0,
+        39.0,
+        983.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "index",
+      "text": "index",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        17.0,
+        985.0,
+        39.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Table of Contents",
+      "text": "Table of Contents",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        113.0,
+        16.0,
+        153.0,
+        186.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Introduction",
+      "text": "Introduction",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        153.0,
+        38.0,
+        168.0,
+        117.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Notes on availability",
+      "text": "Notes on availability",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        166.0,
+        59.0,
+        180.0,
+        234.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "WebAssembly platforms",
+      "text": "WebAssembly platforms",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        190.0,
+        81.0,
+        202.0,
+        328.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mobile platforms",
+      "text": "Mobile platforms",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        213.0,
+        81.0,
+        226.0,
+        250.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "The Python Standard Library",
+      "text": "The Python Standard Library",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        272.0,
+        27.0,
+        288.0,
+        435.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Built-in Functions",
+      "text": "Built-in Functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        832.0,
+        282.0,
+        850.0,
+        508.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduction",
+      "text": "Introduction",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        90.0,
+        246.0,
+        132.0,
+        354.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Python library contents description",
+      "text": "The “Python library” contains several different kinds of components.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        155.0,
+        247.0,
+        189.0,
+        614.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Python library description paragraph",
+      "text": "It contains data types that would normally be considered part of the “core” of a language...",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        198.0,
+        247.0,
+        392.0,
+        855.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "import statement",
+      "text": "import",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        349.0,
+        522.0,
+        368.0,
+        555.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "module random link",
+      "text": "random",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        728.0,
+        623.0,
+        745.0,
+        777.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Built-in Functions reference link",
+      "text": "Built-in Functions",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        817.0,
+        242.0,
+        837.0,
+        454.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Let the show begin!",
+      "text": "Let the show begin!",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        887.0,
+        248.0,
+        907.0,
+        343.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Notes on availability section heading",
+      "text": "Notes on availability",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        937.0,
+        248.0,
+        998.0,
+        461.0
+      ]
+    }
+  ]
+}

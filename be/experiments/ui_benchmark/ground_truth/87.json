@@ -1,0 +1,849 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "Top navigation",
+      "text": "Home Packages Forums Wiki GitLab Security AUR Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        63.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Home",
+      "text": "Home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        417.0,
+        57.0,
+        469.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Packages",
+      "text": "Packages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        491.0,
+        57.0,
+        563.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Forums",
+      "text": "Forums",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        574.0,
+        57.0,
+        628.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wiki",
+      "text": "Wiki",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        641.0,
+        57.0,
+        682.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "GitLab",
+      "text": "GitLab",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        708.0,
+        57.0,
+        764.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Security",
+      "text": "Security",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        789.0,
+        57.0,
+        856.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "AUR",
+      "text": "AUR",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        881.0,
+        57.0,
+        913.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Download",
+      "text": "Download",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        930.0,
+        57.0,
+        996.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A simple, lightweight distribution",
+      "text": "A simple, lightweight distribution",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        88.0,
+        34.0,
+        121.0,
+        409.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduction text",
+      "text": "You've reached the website for Arch Linux, a lightweight and flexible Linux® distribution that tries to Keep It Simple.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        123.0,
+        31.0,
+        204.0,
+        679.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduction text",
+      "text": "Currently we have official packages optimized for the x86-64 architecture. We complement our official package sets with a community-operated package repository that grows in size and quality each and every day.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        209.0,
+        32.0,
+        273.0,
+        699.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduction text",
+      "text": "Our strong community is diverse and helpful, and we pride ourselves on the range of skillsets and uses for Arch that stem from it. Please check out our forums and mailing lists to get your feet wet. Also glance through our wiki if you want to learn more about Arch.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        277.0,
+        32.0,
+        382.0,
+        701.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Learn more...",
+      "text": "Learn more...",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        386.0,
+        573.0,
+        408.0,
+        681.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Package Search:",
+      "text": "Package Search:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        85.0,
+        698.0,
+        134.0,
+        791.0
+      ]
+    },
+    {
+      "type": "input",
+      "label": "Package Search",
+      "text": null,
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        84.0,
+        846.0,
+        125.0,
+        975.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Recent Updates",
+      "text": "Recent Updates (more) gurk 0.9.2-1 iana-etc 20260425-1 git-cliff 2.13.1-1 tombi 0.9.24-1 rumdl 0.1.82-1 cargo-zigbuild 0.22.3-1 limine 12.0.2-1 nix-busybox 1.37.0-1 python-icecream 2.2.0-1 perl-business-isbn-data 20260424.001-1 brat 0.10.1-1 usd 26.05-1 f3d 3.5.0-3 blender 17:5.1.1-5 libjuice 1.7.1-1",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        691.0,
+        473.0,
+        979.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Recent Updates (more)",
+      "text": "Recent Updates (more)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        145.0,
+        697.0,
+        199.0,
+        972.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "gurk 0.9.2-1",
+      "text": "gurk 0.9.2-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        208.0,
+        702.0,
+        229.0,
+        803.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "iana-etc 20260425-1",
+      "text": "iana-etc 20260425-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        231.0,
+        702.0,
+        253.0,
+        835.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "git-cliff 2.13.1-1",
+      "text": "git-cliff 2.13.1-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        256.0,
+        703.0,
+        276.0,
+        854.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "tombi 0.9.24-1",
+      "text": "tombi 0.9.24-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        280.0,
+        702.0,
+        298.0,
+        803.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "rumdl 0.1.82-1",
+      "text": "rumdl 0.1.82-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        304.0,
+        702.0,
+        325.0,
+        801.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "cargo-zigbuild 0.22.3-1",
+      "text": "cargo-zigbuild 0.22.3-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        328.0,
+        702.0,
+        349.0,
+        872.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "limine 12.0.2-1",
+      "text": "limine 12.0.2-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        352.0,
+        702.0,
+        374.0,
+        816.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "nix-busybox 1.37.0-1",
+      "text": "nix-busybox 1.37.0-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        376.0,
+        702.0,
+        397.0,
+        844.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "python-icecream 2.2.0-1",
+      "text": "python-icecream 2.2.0-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        702.0,
+        420.0,
+        874.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "perl-business-isbn-data 20260424.001-1",
+      "text": "perl-business-isbn-data 20260424.001-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        423.0,
+        702.0,
+        444.0,
+        983.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "brat 0.10.1-1",
+      "text": "brat 0.10.1-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        447.0,
+        702.0,
+        468.0,
+        804.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "usd 26.05-1",
+      "text": "usd 26.05-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        471.0,
+        702.0,
+        491.0,
+        789.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "f3d 3.5.0-3",
+      "text": "f3d 3.5.0-3",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        495.0,
+        702.0,
+        514.0,
+        776.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "blender 17:5.1.1-5",
+      "text": "blender 17:5.1.1-5",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        519.0,
+        702.0,
+        540.0,
+        836.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "libjuice 1.7.1-1",
+      "text": "libjuice 1.7.1-1",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        542.0,
+        702.0,
+        563.0,
+        820.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Latest News",
+      "text": "Latest News",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        594.0,
+        18.0,
+        620.0,
+        116.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "kea >= 1:3.0.3-6 update requires manual intervention",
+      "text": "kea >= 1:3.0.3-6 update requires manual intervention",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        631.0,
+        18.0,
+        664.0,
+        431.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-07",
+      "text": "2026-04-07",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        632.0,
+        645.0,
+        649.0,
+        685.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "The kea package has moved all services to run as a dedicated kea user (instead of root) for improved security. This change requires permission updates to the runtime files created by the kea services.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        653.0,
+        20.0,
+        720.0,
+        683.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "Users upgrading from an existing kea installation should therefore run the following commands after the upgrade:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        721.0,
+        21.0,
+        757.0,
+        676.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "command snippet",
+      "text": "chown kea: /var/lib/kea/* /var/log/kea/* /run/lock/kea/logger_lockfile",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        757.0,
+        27.0,
+        784.0,
+        670.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "command snippet",
+      "text": "systemctl try-restart kea-ctrl-agent.service kea-dhcp{4,6}-ddns}.service",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        787.0,
+        27.0,
+        815.0,
+        678.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "Accounts that need to interact with kea services files (e.g. lease files under /var/lib/kea, log files under /var/log/kea or configuration files under /etc/kea) should be added to the kea group.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        816.0,
+        23.0,
+        860.0,
+        681.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "iptables now defaults to the nft backend",
+      "text": "iptables now defaults to the nft backend",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        860.0,
+        19.0,
+        883.0,
+        374.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2026-04-05",
+      "text": "2026-04-05",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        861.0,
+        645.0,
+        878.0,
+        685.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "The old iptables-nft package name is replaced by iptables, and the legacy backend is available as iptables-legacy.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        884.0,
+        20.0,
+        925.0,
+        684.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "When switching packages (among iptables-nft, iptables, iptables-legacy), check for .pacsave files in /etc/iptables/ and restore your rules if needed:",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        927.0,
+        21.0,
+        968.0,
+        680.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "command list item",
+      "text": "/etc/iptables/iptables.rules.pacsave",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        969.0,
+        37.0,
+        979.0,
+        247.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "command list item",
+      "text": "/etc/iptables/ip6tables.rules.pacsave",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        969.0,
+        36.0,
+        979.0,
+        247.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "Most setups should work unchanged, but users relying on uncommon xtables extensions or legacy-only behavior should test carefully and use iptables-legacy if required.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        970.0,
+        20.0,
+        1000.0,
+        684.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "NVIDIA 590 driver drops Pascal and lower support; main packages switch to Open Kernel Modules",
+      "text": "NVIDIA 590 driver drops Pascal and lower support; main packages switch to Open Kernel Modules",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        971.0,
+        20.0,
+        1000.0,
+        845.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "2025-12-20",
+      "text": "2025-12-20",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        971.0,
+        645.0,
+        999.0,
+        686.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "News article text",
+      "text": "With the update to driver version 590, the NVIDIA driver no longer supports Pascal (GTX 10xx) GPUs or older. We will replace the package with nvidia-open, nvidia-dkms with nvidia-open-dkms, and nvidia-lts with nvidia-lts-open.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        999.0,
+        21.0,
+        1000.0,
+        857.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "more",
+      "text": "more",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        144.0,
+        238.0,
+        166.0,
+        288.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Wiki",
+      "text": "Wiki",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        684.0,
+        702.0,
+        702.0,
+        742.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Manual Pages",
+      "text": "Manual Pages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        714.0,
+        703.0,
+        730.0,
+        820.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Installation Guide",
+      "text": "Installation Guide",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        741.0,
+        702.0,
+        757.0,
+        851.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mailing Lists",
+      "text": "Mailing Lists",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        836.0,
+        702.0,
+        851.0,
+        812.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "IRC Channels",
+      "text": "IRC Channels",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        863.0,
+        702.0,
+        878.0,
+        811.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Planet Arch",
+      "text": "Planet Arch",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        892.0,
+        702.0,
+        907.0,
+        796.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "International Communities",
+      "text": "International Communities",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        919.0,
+        702.0,
+        936.0,
+        986.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Donate",
+      "text": "Donate",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        973.0,
+        702.0,
+        988.0,
+        763.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "T-shirts via Freewear",
+      "text": "T-shirts via Freewear",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        973.0,
+        702.0,
+        988.0,
+        879.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "T-shirts via HELLOTUX",
+      "text": "T-shirts via HELLOTUX",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        973.0,
+        702.0,
+        988.0,
+        882.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mirrorlist Updater",
+      "text": "Mirrorlist Updater",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        993.0,
+        702.0,
+        1000.0,
+        865.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mirror List",
+      "text": "Mirror List",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        993.0,
+        702.0,
+        1000.0,
+        792.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mirror Status",
+      "text": "Mirror Status",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        993.0,
+        702.0,
+        1000.0,
+        820.0
+      ]
+    }
+  ]
+}

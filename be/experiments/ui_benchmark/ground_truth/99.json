@@ -1,0 +1,472 @@
+{
+  "ui_elements": [
+    {
+      "type": "navigation",
+      "label": "top_navigation",
+      "text": "Why Go Learn Docs Packages Community",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        0.0,
+        0.0,
+        58.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Why Go",
+      "text": "Why Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        656.0,
+        50.0,
+        701.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Learn",
+      "text": "Learn",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        740.0,
+        50.0,
+        772.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        778.0,
+        52.0,
+        816.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Packages",
+      "text": "Packages",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        844.0,
+        50.0,
+        892.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Community",
+      "text": "Community",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        11.0,
+        908.0,
+        50.0,
+        966.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Documentation",
+      "text": "Documentation",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        80.0,
+        175.0,
+        123.0,
+        334.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "introductory_description",
+      "text": "The Go programming language is an open source project to make programmers more productive.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        135.0,
+        176.0,
+        159.0,
+        779.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "go_overview_paragraph",
+      "text": "Go is expressive, concise, clean, and efficient. Its concurrency mechanisms make it easy to write programs that get the most out of multicore and networked machines, while its novel type system enables flexible and modular program construction. Go compiles quickly to machine code yet has the convenience of garbage collection and the power of run-time reflection. It's a fast, statically typed, compiled language that feels like a dynamically typed, interpreted language.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        175.0,
+        176.0,
+        235.0,
+        781.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Getting Started",
+      "text": "Getting Started",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        273.0,
+        175.0,
+        998.0,
+        492.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Installing Go",
+      "text": "Installing Go",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        358.0,
+        178.0,
+        384.0,
+        284.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Instructions for downloading and installing Go.",
+      "text": "Instructions for downloading and installing Go.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        177.0,
+        430.0,
+        431.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial: Getting started",
+      "text": "Tutorial: Getting started",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        450.0,
+        176.0,
+        477.0,
+        468.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A brief Hello, World tutorial to get started. Learn a bit about Go code, tools, packages, and modules.",
+      "text": "A brief Hello, World tutorial to get started. Learn a bit about Go code, tools, packages, and modules.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        494.0,
+        176.0,
+        541.0,
+        491.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial: Create a module",
+      "text": "Tutorial: Create a module",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        558.0,
+        177.0,
+        586.0,
+        440.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A tutorial of short topics introducing functions, error handling, arrays, maps, unit testing, and compiling.",
+      "text": "A tutorial of short topics introducing functions, error handling, arrays, maps, unit testing, and compiling.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        605.0,
+        176.0,
+        654.0,
+        489.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial: Getting started with multi-module workspaces",
+      "text": "Tutorial: Getting started with multi-module workspaces",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        657.0,
+        176.0,
+        684.0,
+        706.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduces the basics of creating and using multi-module workspaces in Go. Multi-module workspaces are useful for making changes across multiple modules.",
+      "text": "Introduces the basics of creating and using multi-module workspaces in Go. Multi-module workspaces are useful for making changes across multiple modules.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        701.0,
+        177.0,
+        758.0,
+        580.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial: Developing a RESTful API with Go and Gin",
+      "text": "Tutorial: Developing a RESTful API with Go and Gin",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        767.0,
+        176.0,
+        793.0,
+        642.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Introduces the basics of writing a RESTful web service API with Go and the Gin Web Framework.",
+      "text": "Introduces the basics of writing a RESTful web service API with Go and the Gin Web Framework.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        814.0,
+        176.0,
+        865.0,
+        457.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Tutorial: Getting started with generics",
+      "text": "Tutorial: Getting started with generics",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        876.0,
+        176.0,
+        903.0,
+        562.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "With generics, you can declare and use functions or types that are written to work with any of a set of types provided by calling code.",
+      "text": "With generics, you can declare and use functions or types that are written to work with any of a set of types provided by calling code.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        922.0,
+        176.0,
+        1000.0,
+        570.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Developing modules",
+      "text": "Developing modules",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        273.0,
+        550.0,
+        999.0,
+        824.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Developing and publishing modules",
+      "text": "Developing and publishing modules",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        358.0,
+        551.0,
+        386.0,
+        648.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "You can collect related packages into modules, then publish the modules for other developers to use. This topic gives an overview of developing and publishing modules.",
+      "text": "You can collect related packages into modules, then publish the modules for other developers to use. This topic gives an overview of developing and publishing modules.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        399.0,
+        550.0,
+        464.0,
+        654.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Module release and versioning workflow",
+      "text": "Module release and versioning workflow",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        500.0,
+        550.0,
+        528.0,
+        733.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "When you develop modules for use by other developers, you can follow a workflow that helps ensure a reliable, consistent experience for developers using the module. This topic describes the high-level steps in that workflow.",
+      "text": "When you develop modules for use by other developers, you can follow a workflow that helps ensure a reliable, consistent experience for developers using the module. This topic describes the high-level steps in that workflow.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        545.0,
+        551.0,
+        621.0,
+        727.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Managing module source",
+      "text": "Managing module source",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        648.0,
+        551.0,
+        675.0,
+        620.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "When you're developing modules to publish for others to use, you can help ensure that your modules are easier for other developers to use by following the repository conventions described in this topic.",
+      "text": "When you're developing modules to publish for others to use, you can help ensure that your modules are easier for other developers to use by following the repository conventions described in this topic.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        692.0,
+        550.0,
+        766.0,
+        692.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Organizing a Go module",
+      "text": "Organizing a Go module",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        783.0,
+        551.0,
+        811.0,
+        646.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "What is the right way to organize the files and directories in a typical Go project? This topic discusses some common layouts depending on the kind of module you have.",
+      "text": "What is the right way to organize the files and directories in a typical Go project? This topic discusses some common layouts depending on the kind of module you have.",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        826.0,
+        551.0,
+        880.0,
+        646.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Developing a major version update",
+      "text": "Developing a major version update",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        914.0,
+        550.0,
+        940.0,
+        756.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "A major version update can be very disruptive to your module's users",
+      "text": "A major version update can be very disruptive to your module's users",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        957.0,
+        550.0,
+        999.0,
+        743.0
+      ]
+    },
+    {
+      "type": "banner",
+      "label": "cookie_consent_banner",
+      "text": "go.dev uses cookies from Google to deliver and enhance the quality of its services and to analyze traffic. Learn more. Okay",
+      "actionable": false,
+      "is_feedback": true,
+      "bbox": [
+        954.0,
+        0.0,
+        1000.0,
+        1000.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Learn more",
+      "text": "Learn more.",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        973.0,
+        649.0,
+        992.0,
+        797.0
+      ]
+    },
+    {
+      "type": "button",
+      "label": "Okay",
+      "text": "Okay",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        970.0,
+        732.0,
+        1000.0,
+        763.0
+      ]
+    }
+  ]
+}

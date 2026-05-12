@@ -1,0 +1,264 @@
+{
+  "ui_elements": [
+    {
+      "type": "image",
+      "label": "Memcached banner logo",
+      "text": "MEMCACHED",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        18.0,
+        294.0,
+        170.0,
+        730.0
+      ]
+    },
+    {
+      "type": "navigation",
+      "label": "Main navigation",
+      "text": "Home About Downloads Blog Mailing List Docs Bugs Sponsor Us",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        174.0,
+        293.0,
+        241.0,
+        732.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Home",
+      "text": "Home",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        188.0,
+        339.0,
+        214.0,
+        377.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "About",
+      "text": "About",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        392.0,
+        214.0,
+        428.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Downloads",
+      "text": "Downloads",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        451.0,
+        216.0,
+        519.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Blog",
+      "text": "Blog",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        541.0,
+        215.0,
+        577.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Mailing List",
+      "text": "Mailing List",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        600.0,
+        216.0,
+        684.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Docs",
+      "text": "Docs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        711.0,
+        215.0,
+        752.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Bugs",
+      "text": "Bugs",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        777.0,
+        215.0,
+        815.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Sponsor Us!",
+      "text": "Sponsor Us!",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        186.0,
+        834.0,
+        215.0,
+        921.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "What is Memcached?",
+      "text": "What is Memcached?",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        247.0,
+        293.0,
+        280.0,
+        504.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Supported by",
+      "text": "Supported by",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        243.0,
+        509.0,
+        275.0,
+        592.0
+      ]
+    },
+    {
+      "type": "image",
+      "label": "Netflix logo",
+      "text": "NETFLIX",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        299.0,
+        485.0,
+        353.0,
+        542.0
+      ]
+    },
+    {
+      "type": "card",
+      "label": "Download Memcached",
+      "text": "Download Memcached The latest stable memcached release is v1.6.41 release notes (2020-3-6) tar.gz Source and Development",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        243.0,
+        601.0,
+        513.0,
+        774.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "release notes",
+      "text": "release notes (2020-3-6)",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        327.0,
+        658.0,
+        344.0,
+        605.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "tar.gz",
+      "text": "tar.gz",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        401.0,
+        647.0,
+        438.0,
+        607.0
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Source and Development",
+      "text": "Source and Development",
+      "actionable": true,
+      "is_feedback": false,
+      "bbox": [
+        458.0,
+        649.0,
+        478.0,
+        642.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Quick Example",
+      "text": "Quick Example",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        560.0,
+        294.0,
+        595.0,
+        772.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Cache Results",
+      "text": "Cache Results",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        621.0,
+        295.0,
+        650.0,
+        423.0
+      ]
+    },
+    {
+      "type": "text",
+      "label": "Play with telnet",
+      "text": "Play with telnet",
+      "actionable": false,
+      "is_feedback": false,
+      "bbox": [
+        623.0,
+        427.0,
+        650.0,
+        774.0
+      ]
+    }
+  ]
+}
