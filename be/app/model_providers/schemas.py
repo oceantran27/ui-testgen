@@ -1,112 +1,69 @@
-"""
-Schema Registry — Pydantic v2 output schemas aligned with be/app/prompts/*.txt §4 Output Format.
-
-Envelope fields (schema_version, agent_name) may appear in model JSON; extra keys are ignored.
-Inter-agent payloads:
-  A1 → single UIStateExtractionResult per image; wrap into UIStatePackage (extracted_states[]) for A2.
-  A2 → SemanticCanonicalizationResult → A3 input (canonical_states subset).
-  A3 → UIFlowDiscoveryResult → A4 with canonical_state_image_lookup.
-"""
 from __future__ import annotations
-
-from typing import Any, Dict, List, Optional, Type
-
-from pydantic import BaseModel, ConfigDict, Field
+from typing import List, Optional, Dict, Any, Union, Type
+from pydantic import BaseModel, Field
 
 
 class _PromptOutputBase(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    """Base class for all structured prompt outputs."""
+    pass
 
 
 # ──────────────────────────────────────────────
-# Common
+# Shared / Common
 # ──────────────────────────────────────────────
 
+class SourceElementRefA2(_PromptOutputBase):
+    state_id: str
+    element_id: str
 
-class VisualDeltaRef(BaseModel):
-    """Reference to a field on transition visual_delta (used in A5, A6, A7)."""
 
-    model_config = ConfigDict(extra="ignore")
+class VisualDeltaRef(_PromptOutputBase):
     transition_id: str
-    delta_field: str
+    delta_description: str
 
 
 # ──────────────────────────────────────────────
-# A1: UI State Extraction Agent (ui_state_extraction.txt)
+# A1: UI State Extraction (ui_state_extraction.txt)
 # ──────────────────────────────────────────────
-
-
-class VisibleTextA1(_PromptOutputBase):
-    text_id: str
-    text: str
-    bbox: List[int] = Field(min_length=4, max_length=4)
-    readability: str  # clear|partial|illegible
-
 
 class UIElementA1(_PromptOutputBase):
     element_id: str
     type: str
     label: Optional[str] = None
     text: Optional[str] = None
-    bbox: List[int] = Field(min_length=4, max_length=4)
-    actionable: bool
-    is_feedback: bool
+    placeholder: Optional[str] = None
+    bbox: List[float] = Field(min_length=4, max_length=4)
+    actionable: bool = False
+    is_feedback: bool = False
     semantic_role: Optional[str] = None
     visibility: str = "fully_visible"
 
 
-class FeedbackElementA1(_PromptOutputBase):
-    """Per prompt: no bbox on feedback row (references ui_elements by element_id)."""
-
-    element_id: str
-    feedback_type: str
-    text: Optional[str] = None
-
-
-class PrimaryActionCandidateA1(_PromptOutputBase):
-    element_id: str
-    action_type: str
-    action_label: str
-
-
-class StateQualityA1(_PromptOutputBase):
-    visual_readability: str  # high|medium|low
-    extraction_completeness: str  # complete|partial|poor
-    warnings: List[str] = Field(default_factory=list)
+class UIStateA1(_PromptOutputBase):
+    state_id: str
+    image_id: str
+    page_type: str
+    state_summary: str
+    state_signature: str
+    ui_elements: List[UIElementA1] = Field(default_factory=list)
+    has_form: bool = False
+    has_table: bool = False
+    has_modal: bool = False
+    has_feedback: bool = False
 
 
 class UIStateExtractionResult(_PromptOutputBase):
     schema_version: Optional[str] = None
     agent_name: Optional[str] = None
-    extraction_status: str = "success"  # success|partial|failed
-    state_id: str
-    source_image_id: str
-    page_type: str
-    state_summary: str
-    visible_texts: List[VisibleTextA1] = Field(default_factory=list)
-    ui_elements: List[UIElementA1] = Field(default_factory=list)
-    feedback_elements: List[FeedbackElementA1] = Field(default_factory=list)
-    primary_action_candidates: List[PrimaryActionCandidateA1] = Field(default_factory=list)
-    state_quality: StateQualityA1
-
-
-# Built in code for semantic_duplicate input (not an LLM output schema).
-class UIStatePackage(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
     ui_state_package_id: str
-    extracted_states: List[Dict[str, Any]]  # loose: mirrors prompt examples + DB ids
+    run_id: str
+    extracted_states: List[UIStateA1] = Field(default_factory=list)
+    extraction_warnings: List[str] = Field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
-# A2: Semantic Canonicalization (semantic_duplicate.txt)
+# A2: Semantic Canonicalization (semantic_canonicalization.txt)
 # ──────────────────────────────────────────────
-
-
-class SourceElementRefA2(_PromptOutputBase):
-    state_id: str
-    element_id: str
-
 
 class CanonicalElementA2(_PromptOutputBase):
     canonical_element_id: str
@@ -181,42 +138,73 @@ class SemanticCanonicalizationResult(_PromptOutputBase):
 # A3: UI Flow Discovery (llm_flow_discovery.txt)
 # ──────────────────────────────────────────────
 
+class FlowTransitionTriggerA3(_PromptOutputBase):
+    trigger_element_id: str
+    action_type: str
+    action_label: str
+    trigger_text: Optional[str] = None
+    trigger_semantic_role: Optional[str] = None
 
-class TransitionEvidenceRefA3(_PromptOutputBase):
-    canonical_state_id: str
-    canonical_element_id: str
-    evidence_role: str
+
+class TargetStateEvidenceA3(_PromptOutputBase):
+    target_page_type: str
+    supporting_element_ids: List[str] = Field(default_factory=list)
+    supporting_feedback_element_ids: List[str] = Field(default_factory=list)
+    reason: str
 
 
 class FlowTransitionA3(_PromptOutputBase):
     transition_id: str
     from_state_id: str
     to_state_id: str
-    trigger_element_id: Optional[str] = None
-    action_type: str
-    transition_basis: str
-    ordering_strength: str
-    supporting_evidence_refs: List[TransitionEvidenceRefA3] = Field(default_factory=list)
+    trigger: FlowTransitionTriggerA3
+    target_state_evidence: TargetStateEvidenceA3
+    transition_basis: List[str] = Field(default_factory=list)
+    ordering_strength: str  # strong, medium, weak, none
+    transition_certainty: str  # likely, plausible, uncertain, unsupported
     uncertainty_reason: Optional[str] = None
+
+
+class FlowStateInSequenceA3(_PromptOutputBase):
+    sequence_index: int
+    canonical_state_id: str
+    state_role_in_flow: str  # entry, intermediate, terminal_candidate, standalone, cluster_member
+    page_type: str
+    state_summary: str
+    evidence_element_ids: List[str] = Field(default_factory=list)
 
 
 class FlowCompletenessA3(_PromptOutputBase):
     has_entry_state: bool
-    has_terminal_state: bool
+    has_action_transition: bool
+    has_observable_terminal_state: bool
     missing_intermediate_state: bool
     missing_final_verification: bool
-    has_supported_transitions: bool = False
+
+
+class IntentReadinessA3(_PromptOutputBase):
+    readiness_level: str  # ready_for_intent, partial_intent_only, capability_only, not_ready
+    reason: str
+    usable_for_primary_scenario: bool
+
+
+class FlowEvidencePackageA3(_PromptOutputBase):
+    state_ids: List[str] = Field(default_factory=list)
+    transition_ids: List[str] = Field(default_factory=list)
+    element_ids: List[str] = Field(default_factory=list)
+    feedback_element_ids: List[str] = Field(default_factory=list)
 
 
 class FlowDiscoveryA3(_PromptOutputBase):
     flow_id: str
-    flow_type: str
     flow_label: str
-    entry_state_id: Optional[str] = None
-    state_ids: List[str] = Field(default_factory=list)
-    terminal_state_ids: List[str] = Field(default_factory=list)
+    flow_type: str  # ordered_sequence, semantic_cluster, single_state_inferred_flow
+    flow_summary: str
+    state_sequence: List[FlowStateInSequenceA3] = Field(default_factory=list)
     transitions: List[FlowTransitionA3] = Field(default_factory=list)
     flow_completeness: FlowCompletenessA3
+    intent_readiness: IntentReadinessA3
+    flow_evidence_package: FlowEvidencePackageA3
     flow_warnings: List[str] = Field(default_factory=list)
 
 
@@ -231,113 +219,41 @@ class UIFlowDiscoveryResult(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A4: Transition Visual Validation (transition_visual_validation.txt)
-# ──────────────────────────────────────────────
-
-
-class VisualDeltaItemA4(_PromptOutputBase):
-    description: str
-    visual_region: List[int] = Field(min_length=4, max_length=4)
-    evidence_type: str
-
-
-class VisualDeltaDetailA4(_PromptOutputBase):
-    page_identity_change: Optional[str] = None
-    added_elements: List[VisualDeltaItemA4] = Field(default_factory=list)
-    removed_elements: List[VisualDeltaItemA4] = Field(default_factory=list)
-    changed_elements: List[VisualDeltaItemA4] = Field(default_factory=list)
-    feedback_added: List[VisualDeltaItemA4] = Field(default_factory=list)
-    status_changes: List[VisualDeltaItemA4] = Field(default_factory=list)
-    unchanged_key_regions: List[VisualDeltaItemA4] = Field(default_factory=list)
-
-
-class ValidationInputRefsA4(_PromptOutputBase):
-    from_image_ids: List[str] = Field(default_factory=list)
-    to_image_ids: List[str] = Field(default_factory=list)
-
-
-class ValidatedTransitionA4(_PromptOutputBase):
-    transition_id: str
-    from_state_id: str
-    to_state_id: str
-    trigger_element_id: Optional[str] = None
-    action_type: str
-    transition_basis: str = ""
-    ordering_strength: str = ""
-    validation_input_refs: ValidationInputRefsA4 = Field(default_factory=ValidationInputRefsA4)
-    image_usability: str = "usable"
-    visual_delta: VisualDeltaDetailA4
-    transition_support: str
-    visual_support_score: Optional[float] = None
-    support_reason: str = ""
-    validation_flags: List[str] = Field(default_factory=list)
-
-
-class ValidatedFlowA4(_PromptOutputBase):
-    flow_id: str
-    flow_type: str
-    flow_label: str = ""
-    entry_state_id: Optional[str] = None
-    state_ids: List[str] = Field(default_factory=list)
-    terminal_state_ids: List[str] = Field(default_factory=list)
-    transitions: List[ValidatedTransitionA4] = Field(default_factory=list)
-    flow_validation_status: str
-    flow_visual_support_score: Optional[float] = None
-    flow_validation_warnings: List[str] = Field(default_factory=list)
-
-
-class TransitionVisualValidationResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    validated_flow_package_id: str
-    source_flow_discovery_result_id: str
-    validated_flows: List[ValidatedFlowA4] = Field(default_factory=list)
-    package_warnings: List[str] = Field(default_factory=list)
-
-
-# ──────────────────────────────────────────────
 # A5: Behaviour Intent (behaviour_intent.txt)
 # ──────────────────────────────────────────────
 
-
-class IntentEvidenceRefA5(_PromptOutputBase):
-    ref_type: str
-    state_id: Optional[str] = None
-    transition_id: Optional[str] = None
-    element_id: Optional[str] = None
-    description: str = ""
-
-
 class ObservablePreconditionA5(_PromptOutputBase):
-    state_ids: List[str] = Field(default_factory=list)
     description: str = ""
-    evidence_refs: List[IntentEvidenceRefA5] = Field(default_factory=list)
+    state_ids: List[str] = Field(default_factory=list)
+    element_ids: List[str] = Field(default_factory=list)
+    source_flow_fields: List[str] = Field(default_factory=list)
 
 
 class MainUserActionA5(_PromptOutputBase):
+    description: str = ""
     transition_ids: List[str] = Field(default_factory=list)
+    state_ids: List[str] = Field(default_factory=list)
     element_ids: List[str] = Field(default_factory=list)
     action_type: str
-    description: str = ""
-    evidence_refs: List[IntentEvidenceRefA5] = Field(default_factory=list)
+    source_flow_fields: List[str] = Field(default_factory=list)
 
 
 class ObservableResultA5(_PromptOutputBase):
-    state_ids: List[str] = Field(default_factory=list)
-    transition_ids: List[str] = Field(default_factory=list)
     description: str = ""
-    result_evidence_type: str
-    evidence_refs: List[IntentEvidenceRefA5] = Field(default_factory=list)
+    state_ids: List[str] = Field(default_factory=list)
+    element_ids: List[str] = Field(default_factory=list)
+    feedback_element_ids: List[str] = Field(default_factory=list)
+    source_flow_fields: List[str] = Field(default_factory=list)
 
 
 class IntentGroundingEvidenceA5(_PromptOutputBase):
+    flow_id: str
     state_ids: List[str] = Field(default_factory=list)
     transition_ids: List[str] = Field(default_factory=list)
     element_ids: List[str] = Field(default_factory=list)
-    visual_delta_refs: List[VisualDeltaRef] = Field(default_factory=list)
-    validation_flags: List[str] = Field(default_factory=list)
-    flow_validation_status: str = ""
-    flow_visual_support_score: Optional[float] = None
+    feedback_element_ids: List[str] = Field(default_factory=list)
+    ordering_strength_used: List[str] = Field(default_factory=list)
+    flow_completeness_used: Dict[str, bool] = Field(default_factory=dict)
 
 
 class IntentAmbiguityA5(_PromptOutputBase):
@@ -349,9 +265,10 @@ class BehaviourIntentPrimaryA5(_PromptOutputBase):
     intent_id: str
     intent_name: str
     domain: str
-    intent_scope: str
+    intent_scope: str  # end_to_end, partial_flow, single_state_capability, alternative_path, validation_error, unknown_behaviour
     user_goal: str
-    behaviour_outcome: str
+    behaviour_outcome: str  # success_observed, failure_observed, validation_error_observed, no_result_observed, in_progress, capability_only, unknown
+    outcome_certainty: str  # grounded, partially_inferred, inferred_only, unknown
     observable_precondition: ObservablePreconditionA5
     main_user_action: MainUserActionA5
     observable_result: ObservableResultA5
@@ -368,6 +285,7 @@ class BehaviourIntentAlternativeA5(_PromptOutputBase):
     intent_scope: str
     user_goal: str
     behaviour_outcome: str
+    outcome_certainty: str
     grounding_evidence: IntentGroundingEvidenceA5
     grounding_level: str
     ambiguity: IntentAmbiguityA5
@@ -376,6 +294,7 @@ class BehaviourIntentAlternativeA5(_PromptOutputBase):
 
 class FlowIntentA5(_PromptOutputBase):
     flow_id: str
+    source_flow_type: str
     primary_intent: BehaviourIntentPrimaryA5
     alternative_intents: List[BehaviourIntentAlternativeA5] = Field(default_factory=list)
 
@@ -384,7 +303,7 @@ class BehaviourIntentInferenceResult(_PromptOutputBase):
     schema_version: Optional[str] = None
     agent_name: Optional[str] = None
     intent_package_id: str
-    source_validated_flow_package_id: str
+    source_flow_discovery_result_id: str
     flow_intents: List[FlowIntentA5] = Field(default_factory=list)
     package_warnings: List[str] = Field(default_factory=list)
 
@@ -393,7 +312,6 @@ class BehaviourIntentInferenceResult(_PromptOutputBase):
 # A6: BDD Scenario Generation (scenario_generation.txt)
 # ──────────────────────────────────────────────
 
-
 class BDDStepA6(_PromptOutputBase):
     step_id: str
     keyword: str
@@ -401,7 +319,6 @@ class BDDStepA6(_PromptOutputBase):
     evidence_state_ids: List[str] = Field(default_factory=list)
     evidence_transition_ids: List[str] = Field(default_factory=list)
     evidence_element_ids: List[str] = Field(default_factory=list)
-    evidence_visual_delta_refs: List[VisualDeltaRef] = Field(default_factory=list)
     source_intent_field: str
     inference_level: str
 
@@ -444,85 +361,67 @@ class BDDScenarioGenerationResult(_PromptOutputBase):
 # A7: Scenario Validation (scenario_validation.txt)
 # ──────────────────────────────────────────────
 
-
 class StepAuditSupportingEvidenceA7(_PromptOutputBase):
     state_ids: List[str] = Field(default_factory=list)
     transition_ids: List[str] = Field(default_factory=list)
     element_ids: List[str] = Field(default_factory=list)
-    visual_delta_refs: List[VisualDeltaRef] = Field(default_factory=list)
-
-
-class StepAuditIssueA7(_PromptOutputBase):
-    issue_type: str
-    description: str
 
 
 class StepAuditA7(_PromptOutputBase):
     step_id: str
-    keyword: str
-    step_text: str = ""
-    source_intent_field: str = ""
-    declared_inference_level: str = ""
-    step_support_status: str
-    grounding_level: str
-    step_grounding_value: float = 0.0
-    supporting_evidence: StepAuditSupportingEvidenceA7 = Field(
-        default_factory=StepAuditSupportingEvidenceA7
-    )
-    audit_reason: str = ""
-    issues: List[StepAuditIssueA7] = Field(default_factory=list)
+    is_grounded: bool
+    grounding_score: float
+    hallucination_detected: bool
+    hallucination_reason: Optional[str] = None
+    supporting_evidence: StepAuditSupportingEvidenceA7
 
 
-class HallucinationFlagsA7(_PromptOutputBase):
-    element_hallucination: bool = False
-    business_rule_hallucination: bool = False
-    data_hallucination: bool = False
-    outcome_hallucination: bool = False
-    transition_hallucination: bool = False
-    bdd_structure_issue: bool = False
+class ScenarioAcceptanceDecisionA7(_PromptOutputBase):
+    include_in_final_output: bool
+    reason: str
+    suggested_priority: str
+
+
+class ValidationScoresA7(_PromptOutputBase):
+    grounding_score: float
+    evidence_coverage_score: float
+    logic_consistency_score: float
+    overall_reliability: float
 
 
 class RevisionSuggestionA7(_PromptOutputBase):
-    target: str
-    issue_type: str
-    suggestion: str
-
-
-class AcceptanceDecisionA7(_PromptOutputBase):
-    include_in_final_output: bool
+    step_id: Optional[str] = None
+    original_text: str
+    suggested_text: str
     reason: str
 
 
-class ScenarioValidationScoresA7(_PromptOutputBase):
-    """Explicit score fields — OpenAI json_schema strict mode rejects Dict[str, Any]."""
-
-    grounding_score: float = 0.0
-    evidence_coverage_score: float = 0.0
-    transition_support_score: Optional[float] = None
-    bdd_structure_score: float = 0.0
-    hallucination_penalty: float = 0.0
+class HallucinationFlagsA7(_PromptOutputBase):
+    has_hallucination: bool = False
+    hallucination_types: List[str] = Field(default_factory=list)
+    affected_step_ids: List[str] = Field(default_factory=list)
+    reason: str = ""
 
 
 class ValidatedScenarioA7(_PromptOutputBase):
     scenario_id: str
-    linked_flow_id: str = ""
-    linked_intent_ids: List[str] = Field(default_factory=list)
-    scenario_title: str = ""
-    scenario_type: str = ""
-    validation_status: str
+    validation_status: str  # validated, rejected, needs_revision
+    grounding_score: float
+    evidence_coverage_score: float
     final_reliability: float
-    scores: ScenarioValidationScoresA7 = Field(default_factory=ScenarioValidationScoresA7)
     step_audits: List[StepAuditA7] = Field(default_factory=list)
+    scores: ValidationScoresA7
     hallucination_flags: HallucinationFlagsA7
     revision_suggestions: List[RevisionSuggestionA7] = Field(default_factory=list)
-    acceptance_decision: AcceptanceDecisionA7
+    acceptance_decision: ScenarioAcceptanceDecisionA7
+    validation_warnings: List[str] = Field(default_factory=list)
 
 
 class FinalOutputSummaryA7(_PromptOutputBase):
     validated_count: int = 0
+    rejected_count: int = 0
     low_confidence_count: int = 0
     needs_revision_count: int = 0
-    rejected_count: int = 0
     total_count: int = 0
 
 
@@ -537,21 +436,21 @@ class ScenarioValidationResult(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# Registry
+# Registry & Helper
 # ──────────────────────────────────────────────
 
 SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
-    "UIStateExtractionResult": UIStateExtractionResult,
-    "SemanticCanonicalizationResult": SemanticCanonicalizationResult,
-    "UIFlowDiscoveryResult": UIFlowDiscoveryResult,
-    "TransitionVisualValidationResult": TransitionVisualValidationResult,
-    "BehaviourIntentInferenceResult": BehaviourIntentInferenceResult,
-    "BDDScenarioGenerationResult": BDDScenarioGenerationResult,
-    "ScenarioValidationResult": ScenarioValidationResult,
+    "ui_state_extraction": UIStateExtractionResult,
+    "semantic_canonicalization": SemanticCanonicalizationResult,
+    "ui_flow_discovery": UIFlowDiscoveryResult,
+    "behaviour_intent_inference": BehaviourIntentInferenceResult,
+    "behaviour_scenario_generation": BDDScenarioGenerationResult,
+    "scenario_validation": ScenarioValidationResult,
 }
 
 
 def get_schema(name: str) -> Type[BaseModel]:
+    """Look up a schema class by name."""
     if name not in SCHEMA_REGISTRY:
-        raise KeyError(f"Schema '{name}' not found. Available: {list(SCHEMA_REGISTRY.keys())}")
+        raise ValueError(f"Schema '{name}' not found in SCHEMA_REGISTRY.")
     return SCHEMA_REGISTRY[name]

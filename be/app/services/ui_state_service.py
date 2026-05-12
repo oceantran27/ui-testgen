@@ -3,6 +3,7 @@ UI State Service — extracts UI states from canonical images (Agent 1).
 
 Builds a UIStatePackage (extracted_states) for semantic canonicalization per prompts.
 """
+import asyncio
 import json
 import time
 import uuid
@@ -117,7 +118,39 @@ async def run_ui_state_extraction(
     result = await db.execute(
         select(Image).where(Image.id.in_(canonical_images), Image.run_id == run_id)
     )
-    images = list(result.scalars().all())
+    by_id = {row.id: row for row in result.scalars().all()}
+    ordered_images = [by_id[cid] for cid in canonical_images if cid in by_id]
+
+    images_for_vision = [img for img in ordered_images if img.normalized_uri]
+    system_instruction = prompt_manager.get_prompt("ui_state_extraction")
+
+    semaphore = asyncio.Semaphore(settings.UI_STATE_EXTRACTION_MAX_CONCURRENCY)
+
+    async def _vision_one(img: Image):
+        async with semaphore:
+            user_instruction = (
+                "Analyze this screenshot and extract the UI state per your contract "
+                "(state_id may use image id; use source_image_id exactly as provided in JSON metadata)."
+            )
+            user_instruction += f'\nMetadata JSON: {{"image_id": "{img.id}", "image_uri": "{img.normalized_uri}"}}'
+            image_input = ImageInput(image_id=img.id, storage_uri=img.normalized_uri)
+            return await model_adapter.call_vision_structured(
+                task_name="ui_state_extraction",
+                run_id=run_id,
+                node_name="ui_state_extraction_node",
+                system_instruction=system_instruction,
+                user_instruction=user_instruction,
+                image_inputs=[image_input],
+                output_schema=UIStateExtractionResult,
+                prompt_name="ui_state_extraction_prompt",
+                prompt_version="v1",
+            )
+
+    vision_outcomes = await asyncio.gather(
+        *(_vision_one(img) for img in images_for_vision),
+        return_exceptions=True,
+    )
+    vision_iter = iter(vision_outcomes)
 
     extracted_states: List[Dict[str, Any]] = []
     extracted_states_count = 0
@@ -131,33 +164,33 @@ async def run_ui_state_extraction(
 
     ui_pkg_id = f"ui_pkg_{uuid.uuid4().hex[:12]}"
 
-    for img in images:
+    for img in ordered_images:
         if not img.normalized_uri:
             warnings.append(f"Image {img.id} missing normalized_uri. Skipped.")
             failed_extractions_count += 1
             failed_items.append(img.id)
             continue
 
-        system_instruction = prompt_manager.get_prompt("ui_state_extraction")
-        user_instruction = (
-            "Analyze this screenshot and extract the UI state per your contract "
-            "(state_id may use image id; use source_image_id exactly as provided in JSON metadata)."
-        )
-        user_instruction += f'\nMetadata JSON: {{"image_id": "{img.id}", "image_uri": "{img.normalized_uri}"}}'
-
-        image_input = ImageInput(image_id=img.id, storage_uri=img.normalized_uri)
-
-        response = await model_adapter.call_vision_structured(
-            task_name="ui_state_extraction",
-            run_id=run_id,
-            node_name="ui_state_extraction_node",
-            system_instruction=system_instruction,
-            user_instruction=user_instruction,
-            image_inputs=[image_input],
-            output_schema=UIStateExtractionResult,
-            prompt_name="ui_state_extraction_prompt",
-            prompt_version="v1",
-        )
+        response = next(vision_iter)
+        if isinstance(response, Exception):
+            logger.error(
+                "UI Extraction failed for image %s: %s",
+                img.id,
+                response,
+                exc_info=response,
+            )
+            failed_extractions_count += 1
+            failed_items.append(img.id)
+            failed_state = UIState(
+                id=_generate_state_id(),
+                run_id=run_id,
+                image_id=img.id,
+                page_type="unknown_page",
+                extraction_status="failed",
+                extraction_error=str(response),
+            )
+            db.add(failed_state)
+            continue
 
         if response.status.value != "success" or not response.parsed_output:
             logger.error(f"UI Extraction failed for image {img.id}: {response.error}")
@@ -258,7 +291,7 @@ async def run_ui_state_extraction(
     report = {
         "run_id": run_id,
         "ui_state_package_id": ui_pkg_id,
-        "canonical_images_count": len(images),
+        "canonical_images_count": len(ordered_images),
         "extracted_states_count": extracted_states_count,
         "failed_extractions_count": failed_extractions_count,
         "state_ids": [s["state_id"] for s in extracted_states],

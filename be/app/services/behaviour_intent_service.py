@@ -26,14 +26,15 @@ def _persist_intent_row(
     intent: BehaviourIntentPrimaryA5 | BehaviourIntentAlternativeA5,
 ) -> BehaviourIntent:
     is_alt = isinstance(intent, BehaviourIntentAlternativeA5)
-    pre = None
-    main_act = None
-    obs_res = None
+    pre = {}
+    main_act = {}
+    obs_res = {}
     if not is_alt:
         p = intent  # type: BehaviourIntentPrimaryA5
         pre = p.observable_precondition.model_dump()
         main_act = p.main_user_action.model_dump()
         obs_res = p.observable_result.model_dump()
+        
     return BehaviourIntent(
         id=intent.intent_id,
         run_id=run_id,
@@ -41,11 +42,12 @@ def _persist_intent_row(
         intent_name=intent.intent_name,
         behaviour_domain=intent.domain,
         behaviour_outcome=intent.behaviour_outcome,
+        outcome_certainty=intent.outcome_certainty,
         user_goal=intent.user_goal,
         intent_scope=intent.intent_scope,
-        observable_precondition_json=pre or {},
-        main_user_action_json=main_act or {},
-        observable_result_json=obs_res or {},
+        observable_precondition_json=pre,
+        main_user_action_json=main_act,
+        observable_result_json=obs_res,
         grounding_evidence_json=intent.grounding_evidence.model_dump(),
         grounding_level=intent.grounding_level,
         ambiguity_json=intent.ambiguity.model_dump(),
@@ -59,27 +61,27 @@ def _persist_intent_row(
 async def run_behaviour_intent_inference(
     db: AsyncSession,
     run_id: str,
-    validated_flow_package: Dict[str, Any],
+    flow_discovery_result: Dict[str, Any],
 ) -> Dict[str, Any]:
     start_time = time.time()
     log_event("behaviour_intent_inference_started", run_id=run_id)
 
-    validated_flows = validated_flow_package.get("validated_flows", [])
-    if not validated_flows:
+    flows = flow_discovery_result.get("flows", [])
+    if not flows:
         return BehaviourIntentInferenceResult(
             intent_package_id="",
-            source_validated_flow_package_id=validated_flow_package.get(
-                "validated_flow_package_id", ""
+            source_flow_discovery_result_id=flow_discovery_result.get(
+                "flow_discovery_result_id", ""
             ),
             flow_intents=[],
-            package_warnings=["NO_VALIDATED_FLOWS"],
+            package_warnings=["NO_FLOWS_DISCOVERED"],
         ).model_dump()
 
     system_instruction = prompt_manager.get_prompt("behaviour_intent")
 
     user_instruction = (
-        "Analyze the following validated UI flows and infer behaviour intents:\n"
-        f"{json.dumps(validated_flow_package, indent=2)}"
+        "Infer behaviour intents from the following UI flow package:\n"
+        f"{json.dumps(flow_discovery_result, indent=2)}"
     )
 
     response = await model_adapter.call_text_structured(
@@ -99,8 +101,8 @@ async def run_behaviour_intent_inference(
         logger.error(f"Behaviour Intent Inference failed: {response.error}")
         err = BehaviourIntentInferenceResult(
             intent_package_id="",
-            source_validated_flow_package_id=validated_flow_package.get(
-                "validated_flow_package_id", ""
+            source_flow_discovery_result_id=flow_discovery_result.get(
+                "flow_discovery_result_id", ""
             ),
             flow_intents=[],
             package_warnings=[str(response.error or "LLM_FAILED")],

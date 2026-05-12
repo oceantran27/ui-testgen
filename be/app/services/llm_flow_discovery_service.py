@@ -91,10 +91,12 @@ async def run_ui_flow_discovery(
             flow_type=flow_data.flow_type,
             flow_label=flow_data.flow_label,
             input_level="AGENT_3_FLOW_DISCOVERY",
-            entry_state_id=flow_data.entry_state_id,
-            ordered_state_ids_json={"ids": flow_data.state_ids},
-            terminal_state_ids_json={"ids": flow_data.terminal_state_ids},
+            entry_state_id=flow_data.state_sequence[0].canonical_state_id if flow_data.state_sequence else None,
+            ordered_state_ids_json={"ids": [s.canonical_state_id for s in flow_data.state_sequence]},
+            state_sequence_json={"sequence": [s.model_dump() for s in flow_data.state_sequence]},
             flow_completeness_json=flow_data.flow_completeness.model_dump(),
+            intent_readiness_json=flow_data.intent_readiness.model_dump(),
+            flow_evidence_package_json=flow_data.flow_evidence_package.model_dump(),
             confidence=0.0, # Placeholder
         )
         db.add(flow_row)
@@ -108,10 +110,12 @@ async def run_ui_flow_discovery(
                 from_state_id=tr_data.from_state_id,
                 to_state_id=tr_data.to_state_id,
                 transition_type="llm_inferred",
-                trigger_element_id=tr_data.trigger_element_id,
-                transition_basis=tr_data.transition_basis,
+                trigger_element_id=tr_data.trigger.trigger_element_id,
+                trigger_json=tr_data.trigger.model_dump(),
+                target_state_evidence_json=tr_data.target_state_evidence.model_dump(),
+                transition_basis=",".join(tr_data.transition_basis),
                 ordering_strength=tr_data.ordering_strength,
-                supporting_evidence_refs_json={"refs": [r.model_dump() for r in tr_data.supporting_evidence_refs]},
+                transition_certainty=tr_data.transition_certainty,
                 uncertainty_reason=tr_data.uncertainty_reason,
             )
             db.add(tr_row)

@@ -62,9 +62,6 @@ class PipelineState(TypedDict, total=False):
     # A3: UI Flow Discovery
     flow_discovery_result: Dict[str, Any]
     
-    # A4: Transition Visual Validation
-    validated_flow_package: Dict[str, Any]
-    
     # A5: Behaviour Intent Inference
     intent_package: Dict[str, Any]
     

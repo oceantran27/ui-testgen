@@ -15,7 +15,6 @@ from app.graph.nodes.exact_duplicate_node import exact_duplicate_node
 from app.graph.nodes.ui_state_node import ui_state_extraction_node
 from app.graph.nodes.semantic_duplicate_node import semantic_duplicate_adjudication_node
 from app.graph.nodes.llm_flow_discovery_node import llm_flow_discovery_node
-from app.graph.nodes.transition_visual_validation_node import transition_visual_validation_node
 from app.graph.nodes.behaviour_intent_node import behaviour_intent_inference_node
 from app.graph.nodes.scenario_generation_node import behaviour_scenario_generation_node
 from app.graph.nodes.scenario_validation_node import scenario_validation_node
@@ -50,13 +49,7 @@ def _route_after_semantic_duplicate(state: PipelineState) -> Literal["graph_fina
     return "llm_flow_discovery_node"
 
 
-def _route_after_llm_flow_discovery(state: PipelineState) -> Literal["graph_finalizer_node", "transition_visual_validation_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "transition_visual_validation_node"
-
-
-def _route_after_transition_visual_validation(state: PipelineState) -> Literal["graph_finalizer_node", "behaviour_intent_inference_node"]:
+def _route_after_llm_flow_discovery(state: PipelineState) -> Literal["graph_finalizer_node", "behaviour_intent_inference_node"]:
     if state.get("should_stop"):
         return "graph_finalizer_node"
     return "behaviour_intent_inference_node"
@@ -99,7 +92,6 @@ def build_graph(db) -> StateGraph:
     ui_state_node = functools.partial(ui_state_extraction_node, db=db)
     semantic_dup_node = functools.partial(semantic_duplicate_adjudication_node, db=db)
     llm_flow_node = functools.partial(llm_flow_discovery_node, db=db)
-    visual_validation_node = functools.partial(transition_visual_validation_node, db=db)
     intent_node = functools.partial(behaviour_intent_inference_node, db=db)
     generation_node = functools.partial(behaviour_scenario_generation_node, db=db)
     validation_node = functools.partial(scenario_validation_node, db=db)
@@ -112,7 +104,6 @@ def build_graph(db) -> StateGraph:
     graph.add_node("ui_state_extraction_node", ui_state_node)
     graph.add_node("semantic_duplicate_adjudication_node", semantic_dup_node)
     graph.add_node("llm_flow_discovery_node", llm_flow_node)
-    graph.add_node("transition_visual_validation_node", visual_validation_node)
     graph.add_node("behaviour_intent_inference_node", intent_node)
     graph.add_node("behaviour_scenario_generation_node", generation_node)
     graph.add_node("scenario_validation_node", validation_node)
@@ -162,15 +153,6 @@ def build_graph(db) -> StateGraph:
     graph.add_conditional_edges(
         "llm_flow_discovery_node",
         _route_after_llm_flow_discovery,
-        {
-            "graph_finalizer_node": "graph_finalizer_node",
-            "transition_visual_validation_node": "transition_visual_validation_node"
-        },
-    )
-
-    graph.add_conditional_edges(
-        "transition_visual_validation_node",
-        _route_after_transition_visual_validation,
         {
             "graph_finalizer_node": "graph_finalizer_node",
             "behaviour_intent_inference_node": "behaviour_intent_inference_node"

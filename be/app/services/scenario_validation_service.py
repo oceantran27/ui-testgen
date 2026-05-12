@@ -101,6 +101,8 @@ async def run_scenario_validation(
         bs = result_db.scalar_one_or_none()
         if bs:
             bs.validation_status = vscn.validation_status
+            bs.grounding_score = vscn.grounding_score
+            bs.evidence_coverage_score = vscn.evidence_coverage_score
             bs.final_reliability = vscn.final_reliability
             bs.scores_json = vscn.scores.model_dump()
             bs.step_audits_json = {"audits": [a.model_dump() for a in vscn.step_audits]}
