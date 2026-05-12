@@ -25,14 +25,16 @@ class FlowTransition(Base):
     hypothesized_action: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     trigger_element_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    trigger_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
+    target_state_evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
     transition_basis: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     ordering_strength: Mapped[str] = mapped_column(String, default="medium")
+    transition_certainty: Mapped[str] = mapped_column(String, default="plausible")
+    
     supporting_evidence_refs_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     uncertainty_reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    
-    visual_delta_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
-    transition_support: Mapped[str] = mapped_column(String, default="not_verifiable")
-    validation_flags_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     
     score: Mapped[float] = mapped_column(Float, default=0.0)
     confidence_label: Mapped[str] = mapped_column(String, default="low")

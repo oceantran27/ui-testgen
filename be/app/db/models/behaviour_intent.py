@@ -20,6 +20,7 @@ class BehaviourIntent(Base):
     intent_name: Mapped[str] = mapped_column(String, index=True) # e.g. "login_success"
     behaviour_domain: Mapped[str] = mapped_column(String) # e.g. "authentication"
     behaviour_outcome: Mapped[str] = mapped_column(String) # e.g. "success"
+    outcome_certainty: Mapped[str] = mapped_column(String, default="grounded")
     user_goal: Mapped[str] = mapped_column(String) # e.g. "User logs in successfully"
     
     intent_scope: Mapped[str] = mapped_column(String, default="end_to_end")
