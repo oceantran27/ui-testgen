@@ -19,6 +19,10 @@ class UIState(Base):
     image_id: Mapped[str] = mapped_column(String, ForeignKey("images.id"), index=True)
     
     page_type: Mapped[str] = mapped_column(String)
+    screen_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    screen_purpose: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    domain: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
     state_summary: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     state_signature: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     

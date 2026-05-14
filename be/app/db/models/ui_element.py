@@ -21,7 +21,7 @@ class UIElement(Base):
     
     type: Mapped[str] = mapped_column(String)
     label: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    text: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    text: Mapped[Optional[list[str]]] = mapped_column(JSON, nullable=True)
     placeholder: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     bbox_xmin: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

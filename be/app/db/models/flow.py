@@ -20,6 +20,7 @@ class Flow(Base):
     name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     flow_type: Mapped[str] = mapped_column(String)  # linear_flow, branched_flow, single_state_pseudo_flow
     input_level: Mapped[str] = mapped_column(String)
+    user_goal: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     start_state_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     ordered_state_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON)  # List of state IDs

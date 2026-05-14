@@ -15,35 +15,36 @@ class BehaviourIntent(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True)
     run_id: Mapped[str] = mapped_column(String, ForeignKey("runs.id"), index=True)
     flow_id: Mapped[str] = mapped_column(String, ForeignKey("flows.id"), index=True)
-    path_id: Mapped[Optional[str]] = mapped_column(String, nullable=True) # For branched flows
-
-    intent_name: Mapped[str] = mapped_column(String, index=True) # e.g. "login_success"
-    behaviour_domain: Mapped[str] = mapped_column(String) # e.g. "authentication"
-    behaviour_outcome: Mapped[str] = mapped_column(String) # e.g. "success"
-    outcome_certainty: Mapped[str] = mapped_column(String, default="grounded")
-    user_goal: Mapped[str] = mapped_column(String) # e.g. "User logs in successfully"
     
-    intent_scope: Mapped[str] = mapped_column(String, default="end_to_end")
-    observable_precondition_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    main_user_action_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    observable_result_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    grounding_evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    grounding_level: Mapped[str] = mapped_column(String, default="grounded")
-    ambiguity_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    # Traceability
+    source_flow_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_flow_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_transition_indexes_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    source_outcome_state: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    # Scenario hints for Phase 11
-    scenario_type_hint: Mapped[str] = mapped_column(String) # e.g. "positive_behaviour"
-    expected_grounding: Mapped[str] = mapped_column(String) # e.g. "grounded"
-    should_generate: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    confidence: Mapped[float] = mapped_column(Float, default=0.0)
-    confidence_label: Mapped[str] = mapped_column(String, default="low")
-
-    # Evidence
-    evidence_state_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    evidence_element_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    evidence_transition_ids_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    # Core Intent
+    behaviour_name: Mapped[str] = mapped_column(String, index=True)
+    intent_type: Mapped[str] = mapped_column(String)  # positive | negative | ...
+    test_path: Mapped[str] = mapped_column(String)    # happy_path | negative_path | ...
+    user_intent: Mapped[str] = mapped_column(String)
+    business_goal: Mapped[str] = mapped_column(String)
     
+    # State mapping
+    start_state: Mapped[str] = mapped_column(String)
+    end_state: Mapped[str] = mapped_column(String)
+
+    # Detailed Behaviour
+    trigger_action_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    preconditions_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    test_data_requirements_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    user_actions_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    expected_result: Mapped[str] = mapped_column(String)
+    expected_ui_evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    negative_expectations_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+
+    # Metadata
+    confidence: Mapped[str] = mapped_column(String, default="low")
+    assumptions_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     warnings_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     raw_result_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
