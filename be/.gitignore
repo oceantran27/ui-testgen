@@ -40,3 +40,4 @@ experiments/logs/
 
 # Local runtime logs (pipeline sessions, API error dumps)
 var/
+ui_benchmark
