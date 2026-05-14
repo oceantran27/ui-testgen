@@ -517,6 +517,32 @@ async def get_model_config(
         "gemini_vision_model": settings.GEMINI_VISION_MODEL,
         "openai_text_model": settings.OPENAI_TEXT_MODEL,
         "openai_vision_model": settings.OPENAI_VISION_MODEL,
+        "pipeline_phase_models": {
+            "ui_state_extraction": {
+                "provider": settings.UI_STATE_EXTRACTION_PROVIDER,
+                "model": settings.UI_STATE_EXTRACTION_MODEL_NAME,
+            },
+            "semantic_duplicate": {
+                "provider": settings.SEMANTIC_DUPLICATE_MODEL_PROVIDER,
+                "model": settings.SEMANTIC_DUPLICATE_MODEL_NAME,
+            },
+            "llm_flow_discovery": {
+                "provider": settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
+                "model": settings.LLM_FLOW_DISCOVERY_MODEL_NAME,
+            },
+            "behaviour_intent_inference": {
+                "provider": settings.BEHAVIOUR_INTENT_MODEL_PROVIDER,
+                "model": settings.BEHAVIOUR_INTENT_MODEL_NAME,
+            },
+            "bdd_scenario_generation": {
+                "provider": settings.BDD_SCENARIO_GENERATION_MODEL_PROVIDER,
+                "model": settings.BDD_SCENARIO_GENERATION_MODEL_NAME,
+            },
+            "scenario_validation": {
+                "provider": settings.SCENARIO_VALIDATION_MODEL_PROVIDER,
+                "model": settings.SCENARIO_VALIDATION_MODEL_NAME,
+            },
+        },
         "feature_flags": {
             "USE_VLM_FOR_QUALITY_CHECK": settings.USE_VLM_FOR_QUALITY_CHECK,
             "USE_VLM_FOR_DUPLICATE_CHECK": settings.USE_VLM_FOR_DUPLICATE_CHECK,
@@ -860,15 +886,15 @@ async def list_behaviour_intents(
             {
                 "intent_id": i.id,
                 "flow_id": i.flow_id,
-                "intent_name": i.intent_name,
-                "domain": i.behaviour_domain,
-                "outcome": i.behaviour_outcome,
-                "outcome_certainty": i.outcome_certainty,
-                "intent_scope": i.intent_scope,
-                "user_goal": i.user_goal,
-                "grounding_level": i.grounding_level,
+                "behaviour_name": i.behaviour_name,
+                "intent_type": i.intent_type,
+                "test_path": i.test_path,
+                "user_intent": i.user_intent,
+                "business_goal": i.business_goal,
+                "start_state": i.start_state,
+                "end_state": i.end_state,
                 "confidence": i.confidence,
-                "should_generate": i.should_generate,
+                "created_at": i.created_at,
             }
             for i in intents
         ]
