@@ -25,9 +25,9 @@ export const PIPELINE_STEP_LABELS: Record<PipelineNodeId, string> = {
   ui_state_extraction_node: "A1: UI Extraction",
   semantic_duplicate_adjudication_node: "A2: Canonicalization",
   llm_flow_discovery_node: "A3: Flow Discovery",
-  behaviour_intent_inference_node: "A4: Intent Inference",
-  behaviour_scenario_generation_node: "A5: Scenario Generation",
-  scenario_validation_node: "A6: Validation",
+  behaviour_intent_inference_node: "A5: Intent Inference",
+  behaviour_scenario_generation_node: "A6: Scenario Generation",
+  scenario_validation_node: "A7: Validation",
   output_assembly_node: "Assembly",
   graph_finalizer_node: "Finalize",
 };

@@ -2,6 +2,9 @@
 
 export type RunConfig = {
   max_revision_round?: number;
+  allow_unordered_images?: boolean;
+  allow_duplicate_images?: boolean;
+  input_level_mode?: string;
 };
 
 export type RunResponse = {
@@ -92,6 +95,8 @@ export type ImageRecord = {
   duplicate_group_id?: string | null;
   is_canonical?: boolean | null;
   duplicate_type?: string | null;
+  phash?: string | null;
+  dhash?: string | null;
   created_at?: string | null;
 };
 
@@ -156,6 +161,14 @@ export type ModelCallDetailResponse = ModelCallSummary & {
   raw_output_artifact_id?: string | null;
 };
 
+export type PipelinePhaseModelKey =
+  | "ui_state_extraction"
+  | "semantic_duplicate"
+  | "llm_flow_discovery"
+  | "behaviour_intent_inference"
+  | "bdd_scenario_generation"
+  | "scenario_validation";
+
 export type ModelConfigResponse = {
   run_id: string;
   default_model_provider?: string;
@@ -163,6 +176,9 @@ export type ModelConfigResponse = {
   gemini_vision_model?: string;
   openai_text_model?: string;
   openai_vision_model?: string;
+  pipeline_phase_models?: Partial<
+    Record<PipelinePhaseModelKey, { provider: string; model: string }>
+  >;
   feature_flags?: Record<string, boolean>;
   retry_config?: Record<string, number>;
   mock_mode?: boolean;
@@ -176,7 +192,16 @@ export type UIStateSummary = {
   state_id: string;
   image_id: string;
   page_type?: string | null;
+  screen_type?: string | null;
+  screen_purpose?: string | null;
+  domain?: string | null;
   state_summary?: string | null;
+  state_signature?: string | null;
+  confidence?: number | null;
+  has_form?: boolean;
+  has_table?: boolean;
+  has_modal?: boolean;
+  has_feedback?: boolean;
   extraction_status?: string | null;
   created_at?: string | null;
 };
@@ -191,29 +216,97 @@ export type UIElementRecord = {
   element_id: string;
   type: string;
   label?: string | null;
-  text?: string | null;
-  bbox: number[];
+  text?: string[] | string | null;
+  bbox?: number[] | null;
   actionable: boolean;
   is_feedback: boolean;
+  feedback_type?: string | null;
+  action_type?: string | null;
   semantic_role?: string | null;
-  visibility: string;
+  visibility?: string | null;
 };
 
 export type UIStateDetailResponse = UIStateSummary & {
   ui_elements: UIElementRecord[];
-  feedback_elements: any[];
-  primary_action_candidates: any[];
+  feedback_elements: unknown[];
+  primary_action_candidates: unknown[];
+};
+
+export type CanonicalStateGroupData = {
+  state_id: string;
+  screen_purpose: string;
+  screen_type: string;
+  domain: string;
+};
+
+export type CanonicalStateGroup = {
+  canonical_id: string;
+  merged_from: string[];
+  confidence: string;
+  data: CanonicalStateGroupData;
 };
 
 export type SemanticCanonicalizationResult = {
   canonical_state_set_id: string;
-  canonical_states: Array<{
-    canonical_state_id: string;
-    representative_state_id: string;
-    member_state_ids: string[];
-    canonical_summary: string;
-    merge_rationale: string;
+  unique_states: CanonicalStateGroup[];
+  deduplication_map?: Array<{ original_state_id: string; canonical_id: string }>;
+  merge_decisions?: Array<{
+    decision_type: "merge";
+    states: string[];
+    canonical_id: string;
+    confidence: string;
+    reason: string;
   }>;
+  separation_decisions?: Array<{
+    decision_type: "keep_separate";
+    states: string[];
+    confidence: string;
+    reason: string;
+  }>;
+  warnings?: Array<{
+    type: string;
+    message: string;
+    affected_states: string[];
+  }>;
+};
+
+export type FlowTransitionTrigger = {
+  action_type: string;
+  text: string[];
+};
+
+export type FlowTransition = {
+  transition_id: string;
+  from_state_id: string;
+  to_state_id: string;
+  transition_type: string;
+  trigger: FlowTransitionTrigger;
+  target_state_evidence?: {
+    target_page_type?: string;
+    supporting_element_ids?: string[];
+    supporting_feedback_element_ids?: string[];
+    reason?: string;
+  } | null;
+  transition_basis: string[];
+  ordering_strength: string;
+  transition_certainty?: string | null;
+  uncertainty_reason?: string | null;
+  reason?: string | null;
+  confidence_label?: string | null;
+  score?: number | null;
+};
+
+export type IntentReadiness = {
+  readiness_level: string;
+  reason: string;
+  usable_for_primary_scenario: boolean;
+};
+
+export type FlowEvidencePackage = {
+  state_ids: string[];
+  transition_ids: string[];
+  element_ids: string[];
+  feedback_element_ids: string[];
 };
 
 export type FlowSummary = {
@@ -223,7 +316,7 @@ export type FlowSummary = {
   entry_state_id?: string | null;
   state_ids: string[];
   terminal_state_ids: string[];
-  state_sequence: Array<{
+  state_sequence?: Array<{
     sequence_index: number;
     canonical_state_id: string;
     state_role_in_flow: string;
@@ -231,18 +324,9 @@ export type FlowSummary = {
     state_summary: string;
     evidence_element_ids: string[];
   }>;
-  flow_completeness: Record<string, boolean>;
-  intent_readiness: {
-    readiness_level: string;
-    reason: string;
-    usable_for_primary_scenario: boolean;
-  };
-  flow_evidence_package: {
-    state_ids: string[];
-    transition_ids: string[];
-    element_ids: string[];
-    feedback_element_ids: string[];
-  };
+  flow_completeness?: Record<string, boolean>;
+  intent_readiness?: IntentReadiness;
+  flow_evidence_package?: FlowEvidencePackage;
 };
 
 export type FlowsListResponse = {
@@ -252,41 +336,21 @@ export type FlowsListResponse = {
 };
 
 export type FlowDetailResponse = FlowSummary & {
-  transitions: Array<{
-    transition_id: string;
-    from_state_id: string;
-    to_state_id: string;
-    transition_type: string;
-    trigger: {
-      trigger_element_id: string;
-      action_type: string;
-      action_label: string;
-      trigger_text?: string | null;
-      trigger_semantic_role?: string | null;
-    };
-    target_state_evidence: {
-      target_page_type: string;
-      supporting_element_ids: string[];
-      supporting_feedback_element_ids: string[];
-      reason: string;
-    };
-    transition_basis: string[];
-    ordering_strength: string;
-    transition_certainty: string;
-    uncertainty_reason?: string | null;
-  }>;
+  transitions: FlowTransition[];
 };
 
 export type BehaviourIntentSummary = {
   intent_id: string;
   flow_id: string;
-  intent_name: string;
-  domain: string;
-  outcome: string;
-  outcome_certainty: string;
-  intent_scope: string;
-  user_goal: string;
-  grounding_level: string;
+  behaviour_name: string;
+  intent_type: string;
+  test_path: string;
+  user_intent: string;
+  business_goal: string;
+  start_state: string;
+  end_state: string;
+  confidence: "high" | "medium" | "low" | string;
+  created_at?: string | null;
 };
 
 export type BehaviourIntentsListResponse = {
@@ -301,6 +365,10 @@ export type ScenarioSummary = {
   scenario_type: string;
   status: string;
   validation_status?: string | null;
+  /** From list endpoint: maps from initial_confidence */
+  confidence?: number | null;
+  confidence_label?: string | null;
+  grounding_mode?: string | null;
 };
 
 export type ScenariosListResponse = {
@@ -309,33 +377,99 @@ export type ScenariosListResponse = {
   scenarios: ScenarioSummary[];
 };
 
+export type BddStepRecord = {
+  step_number: number;
+  keyword: string;
+  text: string;
+  source: string;
+};
+
+export type ValidationScores = {
+  grounding_score: number;
+  evidence_coverage_score: number;
+  transition_support_score?: number | null;
+  bdd_structure_score: number;
+  hallucination_penalty: number;
+};
+
+export type StepAuditSupportingEvidence = {
+  state_ids?: string[];
+  transition_ids?: string[];
+  element_ids?: string[];
+};
+
+export type StepAuditRecord = {
+  step_number: number;
+  keyword: string;
+  step_text: string;
+  grounding_level: string;
+  step_support_status: string;
+  step_grounding_value: number;
+  audit_reason: string;
+  supporting_evidence: StepAuditSupportingEvidence;
+  issues?: Array<Record<string, string>>;
+};
+
+export type HallucinationFlagsRecord = {
+  element_hallucination?: boolean;
+  business_rule_hallucination?: boolean;
+  data_hallucination?: boolean;
+  outcome_hallucination?: boolean;
+  transition_hallucination?: boolean;
+  bdd_structure_issue?: boolean;
+};
+
+export type RevisionSuggestionRecord = {
+  target: string;
+  issue_type: string;
+  suggestion: string;
+};
+
 export type ScenarioDetailResponse = {
   scenario_id: string;
+  run_id?: string;
+  intent_id?: string | null;
+  flow_id?: string | null;
+  feature?: string | null;
   scenario_title: string;
+  scenario_type: string;
   gherkin_text: string;
-  bdd_steps: Array<{
-    step_id: string;
-    keyword: string;
-    text: string;
-    inference_level: string;
-  }>;
+  bdd_steps: BddStepRecord[];
+  status?: string;
   validation?: {
     validation_status: string;
     final_reliability: number;
-    hallucination_flags: Record<string, boolean>;
-  };
-};
-
-export type ScenarioValidationResult = {
-  validated_scenarios: Array<{
-    scenario_id: string;
-    validation_status: string;
-    final_reliability: number;
-    acceptance_decision: {
+    hallucination_flags?: HallucinationFlagsRecord | Record<string, boolean>;
+    acceptance_decision?: {
       include_in_final_output: boolean;
       reason: string;
     };
-  }>;
+    scores?: ValidationScores;
+    validated_at?: string | null;
+  };
+};
+
+export type ValidatedScenarioRecord = {
+  scenario_id: string;
+  source_flow_id?: string;
+  source_intent_id?: string;
+  scenario_name?: string;
+  scenario_type?: string;
+  validation_status: string;
+  final_reliability: number;
+  scores?: ValidationScores;
+  step_audits?: StepAuditRecord[];
+  hallucination_flags?: HallucinationFlagsRecord;
+  revision_suggestions?: RevisionSuggestionRecord[];
+  acceptance_decision: {
+    include_in_final_output: boolean;
+    reason: string;
+  };
+  validation_warnings?: string[];
+};
+
+export type ScenarioValidationResult = {
+  validated_scenarios: ValidatedScenarioRecord[];
   /** Agent 7 summary counts (snake_case from backend model_dump). */
   final_output_summary?: {
     validated_count?: number;
@@ -344,4 +478,5 @@ export type ScenarioValidationResult = {
     needs_revision_count?: number;
     total_count?: number;
   };
+  package_warnings?: string[];
 };

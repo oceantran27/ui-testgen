@@ -9,20 +9,19 @@ export interface FlowLightboxModalProps {
   onClose: () => void;
 }
 
-export function FlowLightboxModal({
-  isOpen,
+function clampIndex(startIndex: number, len: number): number {
+  return Math.min(startIndex, Math.max(0, len - 1));
+}
+
+type InnerProps = Omit<FlowLightboxModalProps, "isOpen">;
+
+function FlowLightboxModalInner({
   images,
   startIndex,
   flowTitle,
   onClose,
-}: FlowLightboxModalProps) {
-  const [index, setIndex] = useState(startIndex);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIndex(Math.min(startIndex, Math.max(0, images.length - 1)));
-    }
-  }, [isOpen, startIndex, images.length]);
+}: InnerProps) {
+  const [index, setIndex] = useState(() => clampIndex(startIndex, images.length));
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -41,9 +40,6 @@ export function FlowLightboxModal({
   );
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
@@ -57,11 +53,7 @@ export function FlowLightboxModal({
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, [isOpen, onClose, go]);
-
-  if (!isOpen || images.length === 0) {
-    return null;
-  }
+  }, [onClose, go]);
 
   const current = images[index];
   if (!current) {
@@ -123,5 +115,27 @@ export function FlowLightboxModal({
         />
       </div>
     </div>
+  );
+}
+
+export function FlowLightboxModal({
+  isOpen,
+  images,
+  startIndex,
+  flowTitle,
+  onClose,
+}: FlowLightboxModalProps) {
+  if (!isOpen || images.length === 0) {
+    return null;
+  }
+
+  return (
+    <FlowLightboxModalInner
+      key={`${startIndex}-${images.length}`}
+      images={images}
+      startIndex={startIndex}
+      flowTitle={flowTitle}
+      onClose={onClose}
+    />
   );
 }
