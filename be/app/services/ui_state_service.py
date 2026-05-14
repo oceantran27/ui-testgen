@@ -7,7 +7,7 @@ import asyncio
 import json
 import time
 import uuid
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +21,7 @@ from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
 from app.model_providers import model_adapter
 from app.model_providers.base import ImageInput
-from app.model_providers.schemas import UIElementA1, UIStateExtractionResult
+from app.model_providers.schemas import UIElementA1, UIActionA1, UIFeedbackA1, UIStateExtractionResult
 from app.services.storage_service import storage_service
 
 
@@ -47,6 +47,8 @@ def _convert_bbox(normalized_0_1000: List[int]) -> Dict[str, float]:
 
 def _confidence_from_extraction(extraction_status: str, quality: Any) -> float:
     base = {"success": 0.88, "partial": 0.62, "failed": 0.05}.get(extraction_status, 0.5)
+    if quality is None:
+        return round(base, 3)
     vr = getattr(quality, "visual_readability", "") or ""
     ec = getattr(quality, "extraction_completeness", "") or ""
     if vr == "high" and ec == "complete":
@@ -64,32 +66,37 @@ def _confidence_label(conf: float) -> str:
     return "low"
 
 
-def _generate_state_signature(page_type: str, elements: List[UIElementA1]) -> str:
+def _generate_state_signature(page_type: str, elements: List[UIElementA1], actions: List[UIActionA1], feedback_list: List[UIFeedbackA1]) -> str:
     inputs: List[str] = []
-    actions: List[str] = []
-    feedback = "none"
+    action_labels: List[str] = []
+    fb_type = "none"
+    
     for el in elements:
-        if el.type in ("input", "textarea", "checkbox", "radio", "dropdown"):
-            label = el.label or el.text or ""
-            if label:
-                inputs.append(label[:20])
-        elif el.actionable:
-            label = el.label or el.text or ""
-            if label:
-                actions.append(label[:20])
-        if el.is_feedback and el.feedback_type:
-            feedback = el.feedback_type
-    return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(actions[:5]) or 'none'}|feedback:{feedback}"
+        if el.element_type in ("input", "textarea", "checkbox", "radio", "select", "dropdown"):
+            t = " ".join(el.text) if el.text else ""
+            if t:
+                inputs.append(t[:20])
+    
+    for act in actions:
+        t = " ".join(act.text) if act.text else ""
+        if t:
+            action_labels.append(t[:20])
+            
+    if feedback_list:
+        fb_type = feedback_list[0].feedback_type
+        
+    return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(action_labels[:5]) or 'none'}|feedback:{fb_type}"
 
 
-def _flags_from_elements(elements: List[UIElementA1]) -> tuple[bool, bool, bool, bool]:
+def _flags_from_elements(elements: List[UIElementA1], actions: List[UIActionA1], feedback_list: List[UIFeedbackA1]) -> tuple[bool, bool, bool, bool]:
     has_form = any(
-        el.type in ("input", "textarea", "dropdown", "checkbox", "radio", "form")
+        el.element_type in ("input", "textarea", "select", "checkbox", "radio")
         for el in elements
-    )
-    has_table = any(el.type == "table" for el in elements)
-    has_modal = any(el.type in ("modal", "drawer", "toast", "banner", "alert") for el in elements)
-    has_feedback = any(el.is_feedback for el in elements)
+    ) or any(act.action_type == "submit" for act in actions)
+    
+    has_table = any(el.element_type == "table" for el in elements)
+    has_modal = any(el.element_type == "modal" for el in elements)
+    has_feedback = len(feedback_list) > 0
     return has_form, has_table, has_modal, has_feedback
 
 
@@ -144,6 +151,8 @@ async def run_ui_state_extraction(
                 output_schema=UIStateExtractionResult,
                 prompt_name="ui_state_extraction_prompt",
                 prompt_version="v1",
+                provider_override=settings.UI_STATE_EXTRACTION_PROVIDER,
+                model_name_override=settings.UI_STATE_EXTRACTION_MODEL_NAME,
             )
 
     vision_outcomes = await asyncio.gather(
@@ -208,18 +217,39 @@ async def run_ui_state_extraction(
             continue
 
         result_data: UIStateExtractionResult = response.parsed_output
+        
+        extraction_status = "success" if (result_data.visible_elements or result_data.available_actions) else "partial"
+        state_quality_payload: Dict[str, Any] = {}
+        # result_data no longer has extraction_warnings, but we can check if it's empty
+        if not result_data.screen_purpose or result_data.screen_purpose == "null":
+            extraction_status = "failed"
+
         state_id = _generate_state_id()
-        conf = _confidence_from_extraction(result_data.extraction_status, result_data.state_quality)
+        conf = _confidence_from_extraction(extraction_status, None)
         conf_label = _confidence_label(conf)
-        has_form, has_table, has_modal, has_feedback = _flags_from_elements(result_data.ui_elements)
-        signature = _generate_state_signature(result_data.page_type, result_data.ui_elements)
+        
+        has_form, has_table, has_modal, has_feedback = _flags_from_elements(
+            result_data.visible_elements, 
+            result_data.available_actions, 
+            result_data.visible_feedback
+        )
+        
+        signature = _generate_state_signature(
+            result_data.screen_type, 
+            result_data.visible_elements,
+            result_data.available_actions,
+            result_data.visible_feedback
+        )
 
         db_state = UIState(
             id=state_id,
             run_id=run_id,
             image_id=img.id,
-            page_type=result_data.page_type,
-            state_summary=result_data.state_summary,
+            page_type=result_data.screen_type,
+            screen_type=result_data.screen_type,
+            screen_purpose=result_data.screen_purpose,
+            domain=result_data.domain,
+            state_summary=result_data.screen_purpose,
             state_signature=signature,
             confidence=conf,
             confidence_label=conf_label,
@@ -227,64 +257,92 @@ async def run_ui_state_extraction(
             has_table=has_table,
             has_modal=has_modal,
             has_feedback=has_feedback,
-            state_quality=result_data.state_quality.model_dump(),
-            extraction_status=result_data.extraction_status,
+            state_quality=state_quality_payload,
+            extraction_status=extraction_status,
         )
         db.add(db_state)
 
-        actionable_count = 0
-        feedback_count = 0
-
-        for idx, el_data in enumerate(result_data.ui_elements):
-            bbox = _convert_bbox(el_data.bbox)
+        total_elements_in_state = 0
+        
+        # 1. Visible Elements
+        for idx, el_data in enumerate(result_data.visible_elements):
             db_el = UIElement(
-                id=_safe_element_db_id(state_id, el_data.element_id, idx),
+                id=_safe_element_db_id(state_id, f"el_{idx}", idx),
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
-                type=el_data.type,
-                label=el_data.label,
+                type=el_data.element_type,
                 text=el_data.text,
-                placeholder=None,
-                bbox_xmin=bbox["x_min"],
-                bbox_ymin=bbox["y_min"],
-                bbox_xmax=bbox["x_max"],
-                bbox_ymax=bbox["y_max"],
-                actionable=el_data.actionable,
-                action_type=None,
-                semantic_role=el_data.semantic_role,
-                visibility=el_data.visibility,
+                actionable=False,
+                is_feedback=False,
+                visibility="fully_visible",
                 visible=True,
-                is_feedback=el_data.is_feedback,
-                feedback_type=None,
                 confidence=0.0,
             )
             db.add(db_el)
+            total_elements_in_state += 1
             total_ui_elements += 1
-            if el_data.actionable:
-                actionable_count += 1
-                total_actionable_elements += 1
-            if el_data.is_feedback:
-                feedback_count += 1
-                total_feedback_elements += 1
+
+        # 2. Available Actions
+        for idx, act_data in enumerate(result_data.available_actions):
+            db_el = UIElement(
+                id=_safe_element_db_id(state_id, f"act_{idx}", idx),
+                state_id=state_id,
+                run_id=run_id,
+                image_id=img.id,
+                type="action",
+                action_type=act_data.action_type,
+                text=act_data.text,
+                actionable=True,
+                is_feedback=False,
+                visibility="fully_visible",
+                visible=True,
+                confidence=0.0,
+            )
+            db.add(db_el)
+            total_elements_in_state += 1
+            total_ui_elements += 1
+            total_actionable_elements += 1
+
+        # 3. Visible Feedback
+        for idx, fb_data in enumerate(result_data.visible_feedback):
+            db_el = UIElement(
+                id=_safe_element_db_id(state_id, f"fb_{idx}", idx),
+                state_id=state_id,
+                run_id=run_id,
+                image_id=img.id,
+                type="feedback",
+                feedback_type=fb_data.feedback_type,
+                text=fb_data.text,
+                actionable=False,
+                is_feedback=True,
+                visibility="fully_visible",
+                visible=True,
+                confidence=0.0,
+            )
+            db.add(db_el)
+            total_elements_in_state += 1
+            total_ui_elements += 1
+            total_feedback_elements += 1
 
         state_row = {
-            "extraction_status": result_data.extraction_status,
+            "extraction_status": extraction_status,
             "state_id": state_id,
             "source_image_id": img.id,
-            "page_type": result_data.page_type,
-            "state_summary": result_data.state_summary,
-            "visible_texts": [v.model_dump() for v in result_data.visible_texts],
-            "ui_elements": [u.model_dump() for u in result_data.ui_elements],
-            "feedback_elements": [f.model_dump() for f in result_data.feedback_elements],
-            "primary_action_candidates": [p.model_dump() for p in result_data.primary_action_candidates],
-            "state_quality": result_data.state_quality.model_dump(),
+            "page_type": result_data.screen_type,
+            "screen_type": result_data.screen_type,
+            "screen_purpose": result_data.screen_purpose,
+            "domain": result_data.domain,
+            "state_summary": result_data.screen_purpose,
+            "visible_texts": [],
+            "visible_elements": [e.model_dump() for e in result_data.visible_elements],
+            "available_actions": [a.model_dump() for a in result_data.available_actions],
+            "visible_feedback": [f.model_dump() for f in result_data.visible_feedback],
+            "state_quality": state_quality_payload,
         }
         extracted_states.append(state_row)
         extracted_states_count += 1
-        page_type_distribution[result_data.page_type] = page_type_distribution.get(result_data.page_type, 0) + 1
-        for w in result_data.state_quality.warnings:
-            warnings.append(f"[{img.id}] {w}")
+        page_type_distribution[result_data.screen_type] = page_type_distribution.get(result_data.screen_type, 0) + 1
 
     await db.commit()
 

@@ -27,111 +27,78 @@ class VisualDeltaRef(_PromptOutputBase):
 # ──────────────────────────────────────────────
 
 class UIElementA1(_PromptOutputBase):
-    element_id: str
-    type: str
-    label: Optional[str] = None
-    text: Optional[str] = None
-    placeholder: Optional[str] = None
-    bbox: List[float] = Field(min_length=4, max_length=4)
-    actionable: bool = False
-    is_feedback: bool = False
-    semantic_role: Optional[str] = None
-    visibility: str = "fully_visible"
+    element_type: str
+    text: List[str] = Field(default_factory=list)
 
 
-class UIStateA1(_PromptOutputBase):
-    state_id: str
-    image_id: str
-    page_type: str
-    state_summary: str
-    state_signature: str
-    ui_elements: List[UIElementA1] = Field(default_factory=list)
-    has_form: bool = False
-    has_table: bool = False
-    has_modal: bool = False
-    has_feedback: bool = False
+class UIActionA1(_PromptOutputBase):
+    action_type: str
+    text: List[str] = Field(default_factory=list)
+
+
+class UIFeedbackA1(_PromptOutputBase):
+    feedback_type: str
+    text: List[str] = Field(default_factory=list)
 
 
 class UIStateExtractionResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    ui_state_package_id: str
-    run_id: str
-    extracted_states: List[UIStateA1] = Field(default_factory=list)
-    extraction_warnings: List[str] = Field(default_factory=list)
+    state_id: str
+    screen_purpose: str
+    screen_type: str
+    domain: str
+    visible_elements: List[UIElementA1] = Field(default_factory=list)
+    available_actions: List[UIActionA1] = Field(default_factory=list)
+    visible_feedback: List[UIFeedbackA1] = Field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
 # A2: Semantic Canonicalization (semantic_canonicalization.txt)
 # ──────────────────────────────────────────────
 
-class CanonicalElementA2(_PromptOutputBase):
-    canonical_element_id: str
-    source_element_refs: List[SourceElementRefA2] = Field(default_factory=list)
-    type: str
-    label: Optional[str] = None
-    text: Optional[str] = None
-    actionable: bool = True
-    is_feedback: bool = False
-    semantic_role: Optional[str] = None
-
-
-class CanonicalFeedbackElementA2(_PromptOutputBase):
-    canonical_element_id: str
-    source_element_refs: List[SourceElementRefA2] = Field(default_factory=list)
-    feedback_type: str
-    text: Optional[str] = None
-
-
-class PrimaryActionCandidateA2(_PromptOutputBase):
-    canonical_element_id: str
-    action_type: str
-    action_label: str
-
-
-class PreservedDistinctionA2(_PromptOutputBase):
-    distinction_type: str
-    state_ids: List[str] = Field(default_factory=list)
-    reason: str
-
-
-class ExcludedStateA2(_PromptOutputBase):
-    state_id: str
-    reason: str
-
-
 class CanonicalStateA2(_PromptOutputBase):
-    canonical_state_id: str
-    representative_state_id: str
-    member_state_ids: List[str] = Field(default_factory=list)
-    source_image_ids: List[str] = Field(default_factory=list)
-    canonical_page_type: str
-    canonical_summary: str
-    canonical_elements: List[CanonicalElementA2] = Field(default_factory=list)
-    canonical_feedback_elements: List[CanonicalFeedbackElementA2] = Field(default_factory=list)
-    primary_action_candidates: List[PrimaryActionCandidateA2] = Field(default_factory=list)
-    preserved_distinctions: List[PreservedDistinctionA2] = Field(default_factory=list)
-    merge_rationale: str = ""
+    canonical_id: str
+    merged_from: List[str] = Field(default_factory=list)
+    confidence: str  # high|medium|low
+    data: UIStateExtractionResult
 
 
 class MergeDecisionA2(_PromptOutputBase):
-    decision_id: str
-    state_ids: List[str] = Field(default_factory=list)
-    decision: str  # merged|kept_separate
-    reason: str = ""
-    supporting_element_refs: List[SourceElementRefA2] = Field(default_factory=list)
+    decision_type: str = "merge"
+    states: List[str] = Field(default_factory=list)
+    canonical_id: str
+    confidence: str
+    reason: str
+
+
+class SeparationDecisionA2(_PromptOutputBase):
+    decision_type: str = "keep_separate"
+    states: List[str] = Field(default_factory=list)
+    confidence: str
+    reason: str
+
+
+class WarningA2(_PromptOutputBase):
+    type: str
+    message: str
+    affected_states: List[str] = Field(default_factory=list)
+
+
+class DeduplicationMapEntryA2(_PromptOutputBase):
+    """One original state id mapped to its canonical group (strict OpenAI JSON has no Dict[str,str])."""
+
+    original_state_id: str
+    canonical_id: str
 
 
 class SemanticCanonicalizationResult(_PromptOutputBase):
     schema_version: Optional[str] = None
     agent_name: Optional[str] = None
     canonical_state_set_id: str
-    source_ui_state_package_id: Optional[str] = None
-    canonical_states: List[CanonicalStateA2] = Field(default_factory=list)
-    non_merged_state_ids: List[str] = Field(default_factory=list)
-    excluded_state_ids: List[ExcludedStateA2] = Field(default_factory=list)
+    unique_states: List[CanonicalStateA2] = Field(default_factory=list)
+    deduplication_map: List[DeduplicationMapEntryA2] = Field(default_factory=list)
     merge_decisions: List[MergeDecisionA2] = Field(default_factory=list)
-    canonicalization_warnings: List[str] = Field(default_factory=list)
+    separation_decisions: List[SeparationDecisionA2] = Field(default_factory=list)
+    warnings: List[WarningA2] = Field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
@@ -146,41 +113,65 @@ class FlowTransitionTriggerA3(_PromptOutputBase):
     trigger_semantic_role: Optional[str] = None
 
 
-class TargetStateEvidenceA3(_PromptOutputBase):
-    target_page_type: str
-    supporting_element_ids: List[str] = Field(default_factory=list)
-    supporting_feedback_element_ids: List[str] = Field(default_factory=list)
-    reason: str
 
 
 class FlowTransitionA3(_PromptOutputBase):
-    transition_id: str
-    from_state_id: str
-    to_state_id: str
-    trigger: FlowTransitionTriggerA3
-    target_state_evidence: TargetStateEvidenceA3
-    transition_basis: List[str] = Field(default_factory=list)
-    ordering_strength: str  # strong, medium, weak, none
-    transition_certainty: str  # likely, plausible, uncertain, unsupported
-    uncertainty_reason: Optional[str] = None
+    from_state: str
+    to_state: str
+    relation_type: str = "direct_transition"
+    trigger_action: FlowTransitionTriggerA3
+    evidence_level: str  # strong, medium
+    reasoning_pattern: Optional[str] = None
+    source_evidence: List[str] = Field(default_factory=list)
+    target_evidence: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
 
 
-class FlowStateInSequenceA3(_PromptOutputBase):
-    sequence_index: int
-    canonical_state_id: str
-    state_role_in_flow: str  # entry, intermediate, terminal_candidate, standalone, cluster_member
-    page_type: str
-    state_summary: str
-    evidence_element_ids: List[str] = Field(default_factory=list)
+class AlternativeOutcomeA3(_PromptOutputBase):
+    source_state: str
+    trigger_action: FlowTransitionTriggerA3
+    outcome_states: List[str] = Field(default_factory=list)
+    reason: str
+    evidence_level: str
+    warnings: List[str] = Field(default_factory=list)
 
 
-class FlowCompletenessA3(_PromptOutputBase):
-    has_entry_state: bool
-    has_action_transition: bool
-    has_observable_terminal_state: bool
-    missing_intermediate_state: bool
-    missing_final_verification: bool
+class FlowDiscoveryA3(_PromptOutputBase):
+    flow_id: str
+    flow_name: str
+    flow_type: str  # single_step_outcome, ordered_sequence, branching_flow
+    user_goal: str
+    ordered_states: List[str] = Field(default_factory=list)
+    transitions: List[FlowTransitionA3] = Field(default_factory=list)
+    alternative_outcomes: List[AlternativeOutcomeA3] = Field(default_factory=list)
 
+
+class SemanticClusterA3(_PromptOutputBase):
+    cluster_id: str
+    domain: str
+    states: List[str] = Field(default_factory=list)
+    reason: str
+
+
+class UncertainRelationA3(_PromptOutputBase):
+    state_a: str
+    state_b: str
+    reason: str
+
+
+class UIFlowDiscoveryResult(_PromptOutputBase):
+    flow_discovery_result_id: Optional[str] = None
+    source_canonical_state_set_id: Optional[str] = None
+    candidate_flows: List[FlowDiscoveryA3] = Field(default_factory=list)
+    semantic_clusters: List[SemanticClusterA3] = Field(default_factory=list)
+    uncertain_relations: List[UncertainRelationA3] = Field(default_factory=list)
+    discovery_warnings: List[str] = Field(default_factory=list)
+
+
+# ──────────────────────────────────────────────
+# A4: Behaviour Intent Inference (behaviour_intent.txt)
+# ──────────────────────────────────────────────
 
 class IntentReadinessA3(_PromptOutputBase):
     readiness_level: str  # ready_for_intent, partial_intent_only, capability_only, not_ready
@@ -188,173 +179,138 @@ class IntentReadinessA3(_PromptOutputBase):
     usable_for_primary_scenario: bool
 
 
-class FlowEvidencePackageA3(_PromptOutputBase):
-    state_ids: List[str] = Field(default_factory=list)
-    transition_ids: List[str] = Field(default_factory=list)
-    element_ids: List[str] = Field(default_factory=list)
-    feedback_element_ids: List[str] = Field(default_factory=list)
-
-
-class FlowDiscoveryA3(_PromptOutputBase):
-    flow_id: str
-    flow_label: str
-    flow_type: str  # ordered_sequence, semantic_cluster, single_state_inferred_flow
-    flow_summary: str
-    state_sequence: List[FlowStateInSequenceA3] = Field(default_factory=list)
-    transitions: List[FlowTransitionA3] = Field(default_factory=list)
-    flow_completeness: FlowCompletenessA3
-    intent_readiness: IntentReadinessA3
-    flow_evidence_package: FlowEvidencePackageA3
-    flow_warnings: List[str] = Field(default_factory=list)
-
-
-class UIFlowDiscoveryResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    flow_discovery_result_id: str
-    source_canonical_state_set_id: str
-    flows: List[FlowDiscoveryA3] = Field(default_factory=list)
-    unassigned_state_ids: List[str] = Field(default_factory=list)
-    discovery_warnings: List[str] = Field(default_factory=list)
-
-
-# ──────────────────────────────────────────────
-# A5: Behaviour Intent (behaviour_intent.txt)
-# ──────────────────────────────────────────────
-
-class ObservablePreconditionA5(_PromptOutputBase):
-    description: str = ""
-    state_ids: List[str] = Field(default_factory=list)
-    element_ids: List[str] = Field(default_factory=list)
-    source_flow_fields: List[str] = Field(default_factory=list)
-
-
-class MainUserActionA5(_PromptOutputBase):
-    description: str = ""
-    transition_ids: List[str] = Field(default_factory=list)
-    state_ids: List[str] = Field(default_factory=list)
-    element_ids: List[str] = Field(default_factory=list)
+class TriggerActionA5(_PromptOutputBase):
     action_type: str
-    source_flow_fields: List[str] = Field(default_factory=list)
+    text: List[str] = Field(default_factory=list)
 
 
-class ObservableResultA5(_PromptOutputBase):
-    description: str = ""
-    state_ids: List[str] = Field(default_factory=list)
-    element_ids: List[str] = Field(default_factory=list)
-    feedback_element_ids: List[str] = Field(default_factory=list)
-    source_flow_fields: List[str] = Field(default_factory=list)
+class TestDataRequirementA5(_PromptOutputBase):
+    field_or_input: str
+    value_type: str
+    reason: str
+    required: bool
 
 
-class IntentGroundingEvidenceA5(_PromptOutputBase):
-    flow_id: str
-    state_ids: List[str] = Field(default_factory=list)
-    transition_ids: List[str] = Field(default_factory=list)
-    element_ids: List[str] = Field(default_factory=list)
-    feedback_element_ids: List[str] = Field(default_factory=list)
-    ordering_strength_used: List[str] = Field(default_factory=list)
-    flow_completeness_used: Dict[str, bool] = Field(default_factory=dict)
-
-
-class IntentAmbiguityA5(_PromptOutputBase):
-    is_ambiguous: bool = False
-    ambiguity_reasons: List[str] = Field(default_factory=list)
-
-
-class BehaviourIntentPrimaryA5(_PromptOutputBase):
+class BehaviourIntentA5(_PromptOutputBase):
     intent_id: str
-    intent_name: str
-    domain: str
-    intent_scope: str  # end_to_end, partial_flow, single_state_capability, alternative_path, validation_error, unknown_behaviour
-    user_goal: str
-    behaviour_outcome: str  # success_observed, failure_observed, validation_error_observed, no_result_observed, in_progress, capability_only, unknown
-    outcome_certainty: str  # grounded, partially_inferred, inferred_only, unknown
-    observable_precondition: ObservablePreconditionA5
-    main_user_action: MainUserActionA5
-    observable_result: ObservableResultA5
-    grounding_evidence: IntentGroundingEvidenceA5
-    grounding_level: str
-    ambiguity: IntentAmbiguityA5
-    intent_warnings: List[str] = Field(default_factory=list)
+    source_flow_id: str
+    source_flow_name: str
+    source_flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
+    source_transition_indexes: List[int] = Field(default_factory=list)
+    source_outcome_state: Optional[str] = None
+    behaviour_name: str
+    intent_type: str  # positive | negative | validation | navigation | recovery | registration | access_control | data_entry | unknown
+    test_path: str  # happy_path | negative_path | validation_path | navigation_path | recovery_path | registration_path | access_control_path | data_entry_path | unknown_path
+    user_intent: str
+    business_goal: str
+    start_state: str
+    end_state: str
+    trigger_action: TriggerActionA5
+    preconditions: List[str] = Field(default_factory=list)
+    test_data_requirements: List[TestDataRequirementA5] = Field(default_factory=list)
+    user_actions: List[str] = Field(default_factory=list)
+    expected_result: str
+    expected_ui_evidence: List[str] = Field(default_factory=list)
+    negative_expectations: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    confidence: str  # high | medium | low
 
 
-class BehaviourIntentAlternativeA5(_PromptOutputBase):
-    intent_id: str
-    intent_name: str
-    domain: str
-    intent_scope: str
-    user_goal: str
-    behaviour_outcome: str
-    outcome_certainty: str
-    grounding_evidence: IntentGroundingEvidenceA5
-    grounding_level: str
-    ambiguity: IntentAmbiguityA5
-    intent_warnings: List[str] = Field(default_factory=list)
+class UnresolvedFlowItemA5(_PromptOutputBase):
+    item_type: str  # semantic_cluster | uncertain_relation | unsupported_flow | unsupported_transition | unmatched_branch_outcome
+    source_id: Optional[str] = None
+    related_states: List[str] = Field(default_factory=list)
+    reason: str
 
 
-class FlowIntentA5(_PromptOutputBase):
-    flow_id: str
-    source_flow_type: str
-    primary_intent: BehaviourIntentPrimaryA5
-    alternative_intents: List[BehaviourIntentAlternativeA5] = Field(default_factory=list)
+class GenerationSummaryA5(_PromptOutputBase):
+    total_candidate_flows: int = 0
+    total_behaviour_intents: int = 0
+    total_unresolved_items: int = 0
 
 
 class BehaviourIntentInferenceResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    intent_package_id: str
-    source_flow_discovery_result_id: str
-    flow_intents: List[FlowIntentA5] = Field(default_factory=list)
-    package_warnings: List[str] = Field(default_factory=list)
+    behaviour_intents: List[BehaviourIntentA5] = Field(default_factory=list)
+    unresolved_flow_items: List[UnresolvedFlowItemA5] = Field(default_factory=list)
+    generation_summary: GenerationSummaryA5
 
 
 # ──────────────────────────────────────────────
 # A6: BDD Scenario Generation (scenario_generation.txt)
 # ──────────────────────────────────────────────
 
-class BDDStepA6(_PromptOutputBase):
-    step_id: str
-    keyword: str
-    text: str
-    evidence_state_ids: List[str] = Field(default_factory=list)
-    evidence_transition_ids: List[str] = Field(default_factory=list)
-    evidence_element_ids: List[str] = Field(default_factory=list)
-    source_intent_field: str
-    inference_level: str
-
-
-class ScenarioA6(_PromptOutputBase):
-    scenario_id: str
-    linked_flow_id: str
-    linked_intent_ids: List[str] = Field(default_factory=list)
-    scenario_type: str
-    scenario_title: str
-    bdd_steps: List[BDDStepA6] = Field(default_factory=list)
-    gherkin_text: str
-    generation_warnings: List[str] = Field(default_factory=list)
-
-
-class FeatureA6(_PromptOutputBase):
-    feature_id: str
-    feature_name: str
-    source_domain: str
-    scenarios: List[ScenarioA6] = Field(default_factory=list)
-
-
-class SkippedIntentA6(_PromptOutputBase):
-    flow_id: str
-    intent_id: str
+class TestDataA6(_PromptOutputBase):
+    data_name: str
+    value_placeholder: str
+    source_requirement: str
+    required: bool
     reason: str
 
 
+class TestScenarioStepA6(_PromptOutputBase):
+    step_number: int
+    keyword: str  # Given | When | Then | And
+    text: str
+    source: str  # precondition | test_data | user_action | expected_result | expected_ui_evidence | negative_expectation
+
+
+class AssertionA6(_PromptOutputBase):
+    assertion_type: str  # state_reached | feedback_visible | screen_type_visible | screen_purpose_matched | ui_evidence_present | state_not_reached | feedback_not_visible | unknown
+    expected: str
+    source: str  # expected_result | expected_ui_evidence | negative_expectation
+
+
+class TestScenarioA6(_PromptOutputBase):
+    scenario_id: str
+    scenario_name: str
+    scenario_type: str  # happy_path | negative_path | validation_path | navigation_path | recovery_path | registration_path | access_control_path | data_entry_path | unknown_path
+    source_intent_id: str
+    source_flow_id: str
+    source_flow_name: str
+    source_flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
+    source_transition_indexes: List[int] = Field(default_factory=list)
+    start_state: str
+    end_state: str
+    trigger_action: TriggerActionA5
+    test_objective: str
+    preconditions: List[str] = Field(default_factory=list)
+    test_data: List[TestDataA6] = Field(default_factory=list)
+    steps: List[TestScenarioStepA6] = Field(default_factory=list)
+    expected_results: List[str] = Field(default_factory=list)
+    assertions: List[AssertionA6] = Field(default_factory=list)
+    gherkin: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    confidence: str  # high | medium | low
+
+
+class UnresolvedScenarioItemA6(_PromptOutputBase):
+    item_type: str  # invalid_intent | missing_critical_field | unsupported_intent | insufficient_expected_result | insufficient_traceability
+    source_intent_id: Optional[str] = None
+    source_flow_id: Optional[str] = None
+    reason: str
+
+
+class CoverageMatrixItemA6(_PromptOutputBase):
+    intent_id: str
+    scenario_id: Optional[str] = None
+    coverage_status: str  # covered | unresolved
+    reason: str
+
+
+class ScenarioGenerationSummaryA6(_PromptOutputBase):
+    total_behaviour_intents: int = 0
+    total_test_scenarios: int = 0
+    total_unresolved_scenario_items: int = 0
+    coverage_rate: float = 0.0
+
+
 class BDDScenarioGenerationResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    scenario_draft_package_id: str
-    source_intent_package_id: str
-    features: List[FeatureA6] = Field(default_factory=list)
-    skipped_intents: List[SkippedIntentA6] = Field(default_factory=list)
-    package_warnings: List[str] = Field(default_factory=list)
+    test_scenarios: List[TestScenarioA6] = Field(default_factory=list)
+    unresolved_scenario_items: List[UnresolvedScenarioItemA6] = Field(default_factory=list)
+    coverage_matrix: List[CoverageMatrixItemA6] = Field(default_factory=list)
+    generation_summary: ScenarioGenerationSummaryA6
 
 
 # ──────────────────────────────────────────────
@@ -368,49 +324,55 @@ class StepAuditSupportingEvidenceA7(_PromptOutputBase):
 
 
 class StepAuditA7(_PromptOutputBase):
-    step_id: str
-    is_grounded: bool
-    grounding_score: float
-    hallucination_detected: bool
-    hallucination_reason: Optional[str] = None
+    step_number: int
+    keyword: str
+    step_text: str
+    grounding_level: str  # grounded | partially_grounded | weakly_grounded | ungrounded | contradicted | not_verifiable
+    step_support_status: str  # supported | partially_supported | weakly_supported | unsupported | contradicted | not_verifiable
+    step_grounding_value: float
+    audit_reason: str
     supporting_evidence: StepAuditSupportingEvidenceA7
+    issues: List[Dict[str, str]] = Field(default_factory=list)
 
 
 class ScenarioAcceptanceDecisionA7(_PromptOutputBase):
     include_in_final_output: bool
     reason: str
-    suggested_priority: str
 
 
 class ValidationScoresA7(_PromptOutputBase):
     grounding_score: float
     evidence_coverage_score: float
-    logic_consistency_score: float
-    overall_reliability: float
+    transition_support_score: Optional[float] = None
+    bdd_structure_score: float
+    hallucination_penalty: float
 
 
 class RevisionSuggestionA7(_PromptOutputBase):
-    step_id: Optional[str] = None
-    original_text: str
-    suggested_text: str
-    reason: str
+    target: str  # scenario | step_number
+    issue_type: str
+    suggestion: str
 
 
 class HallucinationFlagsA7(_PromptOutputBase):
-    has_hallucination: bool = False
-    hallucination_types: List[str] = Field(default_factory=list)
-    affected_step_ids: List[str] = Field(default_factory=list)
-    reason: str = ""
+    element_hallucination: bool = False
+    business_rule_hallucination: bool = False
+    data_hallucination: bool = False
+    outcome_hallucination: bool = False
+    transition_hallucination: bool = False
+    bdd_structure_issue: bool = False
 
 
 class ValidatedScenarioA7(_PromptOutputBase):
     scenario_id: str
-    validation_status: str  # validated, rejected, needs_revision
-    grounding_score: float
-    evidence_coverage_score: float
+    source_flow_id: str
+    source_intent_id: str
+    scenario_name: str
+    scenario_type: str
+    validation_status: str  # validated | low_confidence | needs_revision | rejected
     final_reliability: float
-    step_audits: List[StepAuditA7] = Field(default_factory=list)
     scores: ValidationScoresA7
+    step_audits: List[StepAuditA7] = Field(default_factory=list)
     hallucination_flags: HallucinationFlagsA7
     revision_suggestions: List[RevisionSuggestionA7] = Field(default_factory=list)
     acceptance_decision: ScenarioAcceptanceDecisionA7
@@ -426,10 +388,6 @@ class FinalOutputSummaryA7(_PromptOutputBase):
 
 
 class ScenarioValidationResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    validated_scenario_package_id: str
-    source_scenario_draft_package_id: str
     validated_scenarios: List[ValidatedScenarioA7] = Field(default_factory=list)
     final_output_summary: FinalOutputSummaryA7
     package_warnings: List[str] = Field(default_factory=list)

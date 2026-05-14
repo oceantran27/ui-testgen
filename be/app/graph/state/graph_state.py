@@ -55,6 +55,7 @@ class PipelineState(TypedDict, total=False):
     
     # A1: UI State Extraction
     ui_state_package: Dict[str, Any]
+    state_catalog: List[Dict[str, Any]]               # verbatim extracted states (A1 output)
     
     # A2: Semantic Canonicalization
     canonical_state_set: Dict[str, Any]

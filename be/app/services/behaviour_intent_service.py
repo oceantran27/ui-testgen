@@ -13,48 +13,42 @@ from app.core.logging import log_event, logger
 from app.db.models.behaviour_intent import BehaviourIntent
 from app.model_providers import model_adapter
 from app.model_providers.schemas import (
-    BehaviourIntentAlternativeA5,
+    BehaviourIntentA5,
     BehaviourIntentInferenceResult,
-    BehaviourIntentPrimaryA5,
 )
 from app.core.prompt_manager import prompt_manager
 
 
 def _persist_intent_row(
     run_id: str,
-    flow_id: str,
-    intent: BehaviourIntentPrimaryA5 | BehaviourIntentAlternativeA5,
+    intent: BehaviourIntentA5,
 ) -> BehaviourIntent:
-    is_alt = isinstance(intent, BehaviourIntentAlternativeA5)
-    pre = {}
-    main_act = {}
-    obs_res = {}
-    if not is_alt:
-        p = intent  # type: BehaviourIntentPrimaryA5
-        pre = p.observable_precondition.model_dump()
-        main_act = p.main_user_action.model_dump()
-        obs_res = p.observable_result.model_dump()
-        
     return BehaviourIntent(
         id=intent.intent_id,
         run_id=run_id,
-        flow_id=flow_id,
-        intent_name=intent.intent_name,
-        behaviour_domain=intent.domain,
-        behaviour_outcome=intent.behaviour_outcome,
-        outcome_certainty=intent.outcome_certainty,
-        user_goal=intent.user_goal,
-        intent_scope=intent.intent_scope,
-        observable_precondition_json=pre,
-        main_user_action_json=main_act,
-        observable_result_json=obs_res,
-        grounding_evidence_json=intent.grounding_evidence.model_dump(),
-        grounding_level=intent.grounding_level,
-        ambiguity_json=intent.ambiguity.model_dump(),
-        confidence=0.0,
-        confidence_label="high",
-        scenario_type_hint="positive_behaviour",
-        expected_grounding=intent.grounding_level,
+        flow_id=intent.source_flow_id,
+        source_flow_name=intent.source_flow_name,
+        source_flow_type=intent.source_flow_type,
+        source_transition_indexes_json={"indexes": intent.source_transition_indexes},
+        source_outcome_state=intent.source_outcome_state,
+        behaviour_name=intent.behaviour_name,
+        intent_type=intent.intent_type,
+        test_path=intent.test_path,
+        user_intent=intent.user_intent,
+        business_goal=intent.business_goal,
+        start_state=intent.start_state,
+        end_state=intent.end_state,
+        trigger_action_json=intent.trigger_action.model_dump(),
+        preconditions_json={"items": intent.preconditions},
+        test_data_requirements_json={"items": [i.model_dump() for i in intent.test_data_requirements]},
+        user_actions_json={"items": intent.user_actions},
+        expected_result=intent.expected_result,
+        expected_ui_evidence_json={"items": intent.expected_ui_evidence},
+        negative_expectations_json={"items": intent.negative_expectations},
+        confidence=intent.confidence,
+        assumptions_json={"items": intent.assumptions},
+        warnings_json={"items": intent.warnings},
+        raw_result_json=intent.model_dump(),
     )
 
 
@@ -66,15 +60,16 @@ async def run_behaviour_intent_inference(
     start_time = time.time()
     log_event("behaviour_intent_inference_started", run_id=run_id)
 
-    flows = flow_discovery_result.get("flows", [])
-    if not flows:
+    candidate_flows = flow_discovery_result.get("candidate_flows", [])
+    if not candidate_flows:
         return BehaviourIntentInferenceResult(
-            intent_package_id="",
-            source_flow_discovery_result_id=flow_discovery_result.get(
-                "flow_discovery_result_id", ""
-            ),
-            flow_intents=[],
-            package_warnings=["NO_FLOWS_DISCOVERED"],
+            behaviour_intents=[],
+            unresolved_flow_items=[],
+            generation_summary={
+                "total_candidate_flows": 0,
+                "total_behaviour_intents": 0,
+                "total_unresolved_items": 0
+            },
         ).model_dump()
 
     system_instruction = prompt_manager.get_prompt("behaviour_intent")
@@ -100,22 +95,21 @@ async def run_behaviour_intent_inference(
     if response.status.value != "success" or not response.parsed_output:
         logger.error(f"Behaviour Intent Inference failed: {response.error}")
         err = BehaviourIntentInferenceResult(
-            intent_package_id="",
-            source_flow_discovery_result_id=flow_discovery_result.get(
-                "flow_discovery_result_id", ""
-            ),
-            flow_intents=[],
-            package_warnings=[str(response.error or "LLM_FAILED")],
+            behaviour_intents=[],
+            unresolved_flow_items=[],
+            generation_summary={
+                "total_candidate_flows": len(candidate_flows),
+                "total_behaviour_intents": 0,
+                "total_unresolved_items": 0
+            },
         ).model_dump()
         err["report"] = {"error": str(response.error)}
         return err
 
     result: BehaviourIntentInferenceResult = response.parsed_output
 
-    for flow_intent in result.flow_intents:
-        db.add(_persist_intent_row(run_id, flow_intent.flow_id, flow_intent.primary_intent))
-        for alt in flow_intent.alternative_intents:
-            db.add(_persist_intent_row(run_id, flow_intent.flow_id, alt))
+    for intent in result.behaviour_intents:
+        db.add(_persist_intent_row(run_id, intent))
 
     await db.commit()
 

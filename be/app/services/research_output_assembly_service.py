@@ -23,9 +23,13 @@ async def run_research_output_assembly(
     log_event("research_output_assembly_started", run_id=run_id)
 
     # 1. Gather all data from state
+    intent_pkg = state.get("intent_package", {})
+    scenario_pkg = state.get("scenario_draft_package", {})
+    validation_pkg = state.get("validated_scenario_package", {})
+
     final_output = {
         "run_id": run_id,
-        "system_version": "model_first_research_v1",
+        "system_version": "model_first_research_v2",
         "input_assumption": {
             "image_quality_validation": "skipped",
             "image_size_validation": "skipped",
@@ -33,22 +37,20 @@ async def run_research_output_assembly(
         },
         "duplicate_processing": {
             "exact_duplicate_groups": state.get("exact_duplicate_groups", []),
-            "semantic_duplicate_groups": state.get("semantic_duplicate_groups", []),
-            "canonical_state_count": len(state.get("canonical_state_catalog", []))
+            "semantic_duplicate_groups": state.get("canonical_state_set", {}).get("merge_decisions", []),
+            "canonical_state_count": len(state.get("canonical_state_set", {}).get("unique_states", []))
         },
         "state_catalog": state.get("state_catalog", []),
         "flow_discovery": {
             "method": "llm_structured_reasoning",
-            "flows": state.get("flow_clusters", []),
-            "unassigned_state_ids": state.get("unassigned_state_ids", []),
-            "warnings": state.get("flow_discovery_report", {}).get("warnings", [])
+            "candidate_flows": state.get("flow_discovery_result", {}).get("candidate_flows", []),
+            "warnings": state.get("flow_discovery_result", {}).get("discovery_warnings", [])
         },
-        "behaviour_intents": state.get("behaviour_intents", []),
-        "behaviour_scenarios": state.get("draft_scenarios", []),
+        "behaviour_intents": intent_pkg.get("behaviour_intents", []),
+        "behaviour_scenarios": scenario_pkg.get("test_scenarios", []),
         "validation": {
-            "validated_scenarios": state.get("validated_scenarios", []),
-            "low_confidence_scenarios": state.get("low_confidence_scenarios", []),
-            "rejected_scenarios": state.get("rejected_scenarios", [])
+            "validated_scenarios": validation_pkg.get("validated_scenarios", []),
+            "summary": validation_pkg.get("final_output_summary", {})
         },
         "metrics": _calculate_metrics(state),
         "system_warnings": state.get("warnings", [])
@@ -56,7 +58,7 @@ async def run_research_output_assembly(
 
     # 2. Save to storage
     if settings.SAVE_RESEARCH_FINAL_OUTPUT:
-        output_bytes = json.dumps(final_output, indent=2).encode("utf-8")
+        output_bytes = json.dumps(final_output, indent=2, default=str).encode("utf-8")
         output_key = f"artifacts/{run_id}/final_output.json"
         storage_service.upload_file(output_bytes, output_key, content_type="application/json")
 
@@ -67,10 +69,14 @@ async def run_research_output_assembly(
 
 def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
     """Calculate research metrics."""
-    state_catalog = state.get("state_catalog", [])
-    canonical_state_catalog = state.get("canonical_state_catalog", [])
-    flows = state.get("flow_clusters", [])
-    validated_scenarios = state.get("validated_scenarios", [])
+    canonical_state_set = state.get("canonical_state_set", {})
+    unique_states = canonical_state_set.get("unique_states", [])
+    flow_discovery = state.get("flow_discovery_result", {})
+    intent_pkg = state.get("intent_package", {})
+    scenario_pkg = state.get("scenario_draft_package", {})
+    validation_pkg = state.get("validated_scenario_package", {})
+    
+    validated_scenarios = validation_pkg.get("validated_scenarios", [])
     
     # Simple averages
     avg_grounding_score = 0.0
@@ -82,11 +88,11 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "input_image_count": len(state.get("raw_image_ids", [])),
         "exact_duplicate_group_count": len(state.get("exact_duplicate_groups", [])),
-        "semantic_duplicate_group_count": len(state.get("semantic_duplicate_groups", [])),
-        "canonical_state_count": len(canonical_state_catalog),
-        "flow_count": len(flows),
-        "scenario_count": len(state.get("draft_scenarios", [])),
+        "semantic_duplicate_group_count": len(canonical_state_set.get("merge_decisions", [])),
+        "canonical_state_count": len(unique_states),
+        "flow_count": len(flow_discovery.get("candidate_flows", [])),
+        "intent_count": len(intent_pkg.get("behaviour_intents", [])),
+        "scenario_count": len(scenario_pkg.get("test_scenarios", [])),
         "validated_scenario_count": len(validated_scenarios),
         "average_grounding_score": avg_grounding_score,
-        "average_evidence_coverage_score": 0.0 # Placeholder
     }

@@ -5,17 +5,16 @@ Discovers user behavior flows using structured LLM reasoning.
 import json
 import time
 import uuid
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.core.config import settings
 from app.core.logging import log_event, logger
 from app.db.models.flow import Flow
 from app.db.models.flow_transition import FlowTransition
 from app.model_providers import model_adapter
-from app.model_providers.schemas import UIFlowDiscoveryResult
+from app.model_providers.schemas import FlowTransitionTriggerA3, UIFlowDiscoveryResult
 from app.core.prompt_manager import prompt_manager
 
 
@@ -24,6 +23,21 @@ def _generate_flow_id() -> str:
 
 def _generate_transition_id() -> str:
     return f"tr_{uuid.uuid4().hex[:12]}"
+
+
+def _hypothesized_action_from_a3_trigger(trigger: FlowTransitionTriggerA3) -> Optional[str]:
+    """Human-readable action for DB row; schema uses action_label/trigger_text (not legacy .text list)."""
+    parts: List[str] = []
+    if trigger.action_label:
+        parts.append(trigger.action_label.strip())
+    if trigger.trigger_text:
+        parts.append(trigger.trigger_text.strip())
+    joined = " ".join(p for p in parts if p)
+    if joined:
+        return joined
+    if trigger.action_type:
+        return trigger.action_type.strip() or None
+    return None
 
 
 async def run_ui_flow_discovery(
@@ -37,22 +51,23 @@ async def run_ui_flow_discovery(
     start_time = time.time()
     log_event("ui_flow_discovery_started", run_id=run_id)
 
-    canonical_states = canonical_state_set.get("canonical_states", [])
-    if not canonical_states:
+    unique_states = canonical_state_set.get("unique_states", [])
+    if not unique_states:
         return UIFlowDiscoveryResult(
-            flow_discovery_result_id="",
-            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", ""),
-            flows=[],
-            unassigned_state_ids=[],
-            discovery_warnings=["NO_CANONICAL_STATES"],
+            flow_discovery_result_id=f"fdr_{uuid.uuid4().hex[:12]}",
+            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            candidate_flows=[],
+            semantic_clusters=[],
+            uncertain_relations=[],
+            discovery_warnings=["NO_UNIQUE_STATES"],
         ).model_dump()
 
     system_instruction = prompt_manager.get_prompt("llm_flow_discovery")
 
     user_instruction = (
-        f"Group the following {len(canonical_states)} canonical UI states into behaviour flows "
+        f"Group the following {len(unique_states)} canonical UI states into behaviour flows "
         f"and infer ordered transitions:\n"
-        f"{json.dumps(canonical_states, indent=2)}\n"
+        f"{json.dumps(unique_states, indent=2)}\n"
     )
 
     response = await model_adapter.call_text_structured(
@@ -71,10 +86,11 @@ async def run_ui_flow_discovery(
     if response.status.value != "success" or not response.parsed_output:
         logger.error(f"UI Flow Discovery failed: {response.error}")
         err = UIFlowDiscoveryResult(
-            flow_discovery_result_id="",
-            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", ""),
-            flows=[],
-            unassigned_state_ids=[],
+            flow_discovery_result_id=f"fdr_{uuid.uuid4().hex[:12]}",
+            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            candidate_flows=[],
+            semantic_clusters=[],
+            uncertain_relations=[],
             discovery_warnings=[str(response.error or "LLM_FAILED")],
         ).model_dump()
         err["report"] = {"error": str(response.error)}
@@ -82,53 +98,105 @@ async def run_ui_flow_discovery(
 
     result: UIFlowDiscoveryResult = response.parsed_output
 
-    for flow_data in result.flows:
-        # Save Flow to DB
+    flow_id_map: Dict[str, str] = {}
+    transition_id_map: Dict[str, str] = {}
+
+    for flow_data in result.candidate_flows:
+        db_flow_id = f"flow_{uuid.uuid4().hex[:12]}"
+        flow_id_map[flow_data.flow_id] = db_flow_id
+
+        # Basic metadata
         flow_row = Flow(
-            id=flow_data.flow_id,
+            id=db_flow_id,
             run_id=run_id,
-            name=flow_data.flow_label,
+            name=flow_data.flow_name,
             flow_type=flow_data.flow_type,
-            flow_label=flow_data.flow_label,
+            flow_label=flow_data.flow_name,
             input_level="AGENT_3_FLOW_DISCOVERY",
-            entry_state_id=flow_data.state_sequence[0].canonical_state_id if flow_data.state_sequence else None,
-            ordered_state_ids_json={"ids": [s.canonical_state_id for s in flow_data.state_sequence]},
-            state_sequence_json={"sequence": [s.model_dump() for s in flow_data.state_sequence]},
-            flow_completeness_json=flow_data.flow_completeness.model_dump(),
-            intent_readiness_json=flow_data.intent_readiness.model_dump(),
-            flow_evidence_package_json=flow_data.flow_evidence_package.model_dump(),
-            confidence=0.0, # Placeholder
+            entry_state_id=flow_data.ordered_states[0] if flow_data.ordered_states else None,
+            ordered_state_ids_json={"ids": flow_data.ordered_states},
+            user_goal=flow_data.user_goal,
+            confidence=0.0,  # Calculated downstream or kept as 0.0
         )
         db.add(flow_row)
-        
-        # Save Transitions
+
+        # Map Direct Transitions
         for tr_data in flow_data.transitions:
+            db_tr_id = f"tr_{uuid.uuid4().hex[:12]}"
+            transition_id_map[f"{flow_data.flow_id}:{tr_data.from_state}:{tr_data.to_state}"] = db_tr_id
+            
             tr_row = FlowTransition(
-                id=tr_data.transition_id,
+                id=db_tr_id,
                 run_id=run_id,
-                flow_id=flow_data.flow_id,
-                from_state_id=tr_data.from_state_id,
-                to_state_id=tr_data.to_state_id,
-                transition_type="llm_inferred",
-                trigger_element_id=tr_data.trigger.trigger_element_id,
-                trigger_json=tr_data.trigger.model_dump(),
-                target_state_evidence_json=tr_data.target_state_evidence.model_dump(),
-                transition_basis=",".join(tr_data.transition_basis),
-                ordering_strength=tr_data.ordering_strength,
-                transition_certainty=tr_data.transition_certainty,
-                uncertainty_reason=tr_data.uncertainty_reason,
+                flow_id=db_flow_id,
+                from_state_id=tr_data.from_state,
+                to_state_id=tr_data.to_state,
+                transition_type="direct_transition",
+                trigger_json=tr_data.trigger_action.model_dump(),
+                hypothesized_action=_hypothesized_action_from_a3_trigger(tr_data.trigger_action),
+                ordering_strength=tr_data.evidence_level,
+                transition_basis=tr_data.reasoning_pattern,
+                supporting_evidence_refs_json={
+                    "source": tr_data.source_evidence,
+                    "target": tr_data.target_evidence
+                },
+                reason=tr_data.reasoning_pattern,
+                evidence_json={
+                    "assumptions": tr_data.assumptions,
+                    "warnings": tr_data.warnings
+                }
             )
             db.add(tr_row)
 
-    await db.commit()
+        # Map Alternative Outcomes
+        for alt_data in flow_data.alternative_outcomes:
+            for outcome_state in alt_data.outcome_states:
+                db_tr_id = f"tr_{uuid.uuid4().hex[:12]}"
+                tr_row = FlowTransition(
+                    id=db_tr_id,
+                    run_id=run_id,
+                    flow_id=db_flow_id,
+                    from_state_id=alt_data.source_state,
+                    to_state_id=outcome_state,
+                    transition_type="alternative_outcome",
+                    trigger_json=alt_data.trigger_action.model_dump(),
+                    hypothesized_action=_hypothesized_action_from_a3_trigger(alt_data.trigger_action),
+                    ordering_strength=alt_data.evidence_level,
+                    reason=alt_data.reason,
+                    evidence_json={
+                        "warnings": alt_data.warnings
+                    }
+                )
+                db.add(tr_row)
+
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+    out = result.model_dump()
+    for flow_dict in out.get("candidate_flows") or []:
+        old_fid = flow_dict.get("flow_id")
+        if old_fid in flow_id_map:
+            flow_dict["flow_id"] = flow_id_map[old_fid]
+        
+        for tr_dict in flow_dict.get("transitions") or []:
+            # Note: transition IDs are no longer in the new prompt output, 
+            # we generated them during DB insertion. 
+            # If we need them in the output, we should add them to the dict.
+            # For now, let's just ensure the flow_id is correct.
+            pass
 
     report = {
-        "discovered_flow_count": len(result.flows),
-        "unassigned_state_count": len(result.unassigned_state_ids),
+        "candidate_flow_count": len(result.candidate_flows),
+        "semantic_cluster_count": len(result.semantic_clusters),
+        "uncertain_relation_count": len(result.uncertain_relations),
         "warnings": result.discovery_warnings,
     }
 
     duration_ms = int((time.time() - start_time) * 1000)
     log_event("ui_flow_discovery_completed", run_id=run_id, duration_ms=duration_ms)
 
-    return result.model_dump()
+    out["report"] = report
+    return out

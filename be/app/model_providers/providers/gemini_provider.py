@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import time
+import asyncio
 from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ValidationError
@@ -61,8 +62,9 @@ class GeminiModelProvider(BaseModelProvider):
                 ))
             http_options = None
             if settings.DISABLE_MODEL_HTTP_TIMEOUT:
-                decade_ms = 10 * 365 * 24 * 3600 * 1000
-                http_options = gtypes.HttpOptions(timeout=decade_ms)
+                # Use a large but safe timeout (24 hours) instead of 10 years to avoid C timeval overflow
+                day_ms = 24 * 3600 * 1000
+                http_options = gtypes.HttpOptions(timeout=day_ms)
             self._client = genai.Client(api_key=api_key, http_options=http_options)
         return self._client
 
@@ -123,7 +125,9 @@ class GeminiModelProvider(BaseModelProvider):
             from google.genai import types as gtypes
             gen_config = gtypes.GenerateContentConfig(**gen_config_kwargs)
 
-            response = client.models.generate_content(
+            # Use asyncio.to_thread to prevent the synchronous SDK call from blocking the event loop
+            response = await asyncio.to_thread(
+                client.models.generate_content,
                 model=model_name,
                 contents=contents,
                 config=gen_config,

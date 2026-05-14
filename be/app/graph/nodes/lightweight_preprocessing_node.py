@@ -15,6 +15,18 @@ async def lightweight_preprocessing_node(state: PipelineState, db: AsyncSession)
     await persist_run_graph_progress(run_id, node_name)
     
     try:
+        if "raw_image_ids" not in state:
+            reason = "MISSING_RAW_IMAGE_IDS"
+            logger.error("[%s] %s for run %s (init_run_context likely failed).", node_name, reason, run_id)
+            return {
+                "current_node": node_name,
+                "failed_nodes": [node_name],
+                "errors": [f"{node_name}: {reason}"],
+                "should_stop": True,
+                "stop_reason": reason,
+                "graph_status": "failed",
+            }
+
         image_ids = state["raw_image_ids"]
 
         if is_active():

@@ -101,6 +101,7 @@ class Settings(BaseSettings):
     
     # Provider for Phase 6 (overrideable)
     UI_STATE_EXTRACTION_PROVIDER: str = "openai"
+    UI_STATE_EXTRACTION_MODEL_NAME: str = "gpt-5.4-mini"
     UI_STATE_EXTRACTION_TIMEOUT_SECONDS: int = 120
     UI_STATE_EXTRACTION_MAX_RETRIES: int = 2
     # Phase 6 JSON can be very large (many ui_elements); default 4096 often truncates mid-string.
@@ -143,7 +144,7 @@ class Settings(BaseSettings):
     MIN_INTENT_CONFIDENCE_FOR_GROUNDED: float = 0.65
     USE_LLM_FOR_BEHAVIOUR_INTENT_INFERENCE: bool = True # Enabled as per user request
     BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
-    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5-mini"
+    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5.4-mini"
     SAVE_BEHAVIOUR_INTENT_REPORT: bool = True
     
     # Phase 11 — Behaviour Scenario Generation
@@ -151,13 +152,19 @@ class Settings(BaseSettings):
     USE_LLM_FOR_SCENARIO_GENERATION: bool = True
     ALLOW_INFERRED_ONLY_SCENARIOS: bool = True
     SAVE_SCENARIO_GENERATION_REPORT: bool = True
-    
+    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "openai"
+    BDD_SCENARIO_GENERATION_MODEL_NAME: str = "gpt-5.4-nano"
+    # BDD packages can be large (many intents × Gherkin); 4096 completion often truncates mid-JSON.
+    BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 16384
+
     # Phase 12 — Scenario Grounding & Validation
     ENABLE_SCENARIO_GROUNDING_VALIDATION_NODE: bool = True
     USE_LLM_FOR_SCENARIO_VALIDATION: bool = True
     VALIDATED_GROUNDING_SCORE_THRESHOLD: float = 0.75
     LOW_CONFIDENCE_GROUNDING_SCORE_THRESHOLD: float = 0.50
     SAVE_SCENARIO_VALIDATION_REPORT: bool = True
+    SCENARIO_VALIDATION_MODEL_PROVIDER: str = "openai"
+    SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4"
     
     # Phase 13 — Scenario Curation
     ENABLE_SCENARIO_CURATION_NODE: bool = True
@@ -179,9 +186,9 @@ class Settings(BaseSettings):
     
     # Overrides for Flow Discovery
     LLM_FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
-    LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5-mini"
+    LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
     SEMANTIC_DUPLICATE_MODEL_PROVIDER: str = "openai"
-    SEMANTIC_DUPLICATE_MODEL_NAME: str = "gpt-5-mini"
+    SEMANTIC_DUPLICATE_MODEL_NAME: str = "gpt-5.4-nano"
     # GPT-5* may consume output budget for reasoning before emitting JSON; keep aligned with flow/UI ceilings.
     SEMANTIC_DUPLICATE_MAX_OUTPUT_TOKENS: int = 16384
     # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.

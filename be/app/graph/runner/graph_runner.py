@@ -26,54 +26,25 @@ from app.graph.nodes.graph_finalizer_node import graph_finalizer_node
 # Conditional edge functions
 # ──────────────────────────────────────────────
 
-def _route_after_preprocessing(state: PipelineState) -> Literal["graph_finalizer_node", "exact_duplicate_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "exact_duplicate_node"
+def _make_route(next_node: str):
+    """Factory to create routing functions that handle early stopping."""
+    def _route(state: PipelineState) -> str:
+        if state.get("should_stop"):
+            return "graph_finalizer_node"
+        return next_node
+    return _route
 
+_route_after_init = _make_route("lightweight_preprocessing_node")
+_route_after_preprocessing = _make_route("exact_duplicate_node")
+_route_after_exact_duplicate = _make_route("ui_state_extraction_node")
+_route_after_ui_state_extraction = _make_route("semantic_duplicate_adjudication_node")
+_route_after_semantic_duplicate = _make_route("llm_flow_discovery_node")
+_route_after_llm_flow_discovery = _make_route("behaviour_intent_inference_node")
+_route_after_behaviour_intent_inference = _make_route("behaviour_scenario_generation_node")
+_route_after_behaviour_scenario_generation = _make_route("scenario_validation_node")
+_route_after_scenario_validation = _make_route("output_assembly_node")
 
-def _route_after_exact_duplicate(state: PipelineState) -> Literal["graph_finalizer_node", "ui_state_extraction_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "ui_state_extraction_node"
-
-def _route_after_ui_state_extraction(state: PipelineState) -> Literal["graph_finalizer_node", "semantic_duplicate_adjudication_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "semantic_duplicate_adjudication_node"
-
-
-def _route_after_semantic_duplicate(state: PipelineState) -> Literal["graph_finalizer_node", "llm_flow_discovery_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "llm_flow_discovery_node"
-
-
-def _route_after_llm_flow_discovery(state: PipelineState) -> Literal["graph_finalizer_node", "behaviour_intent_inference_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "behaviour_intent_inference_node"
-
-
-def _route_after_behaviour_intent_inference(state: PipelineState) -> Literal["graph_finalizer_node", "behaviour_scenario_generation_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "behaviour_scenario_generation_node"
-
-
-def _route_after_behaviour_scenario_generation(state: PipelineState) -> Literal["graph_finalizer_node", "scenario_validation_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "scenario_validation_node"
-
-
-def _route_after_scenario_validation(state: PipelineState) -> Literal["graph_finalizer_node", "output_assembly_node"]:
-    if state.get("should_stop"):
-        return "graph_finalizer_node"
-    return "output_assembly_node"
-
-
-def _route_after_output_assembly(state: PipelineState) -> Literal["graph_finalizer_node"]:
+def _route_after_output_assembly(state: PipelineState) -> str:
     return "graph_finalizer_node"
 
 
@@ -112,7 +83,14 @@ def build_graph(db) -> StateGraph:
 
     # Add edges
     graph.add_edge(START, "init_run_context_node")
-    graph.add_edge("init_run_context_node", "lightweight_preprocessing_node")
+    graph.add_conditional_edges(
+        "init_run_context_node",
+        _route_after_init,
+        {
+            "graph_finalizer_node": "graph_finalizer_node",
+            "lightweight_preprocessing_node": "lightweight_preprocessing_node",
+        },
+    )
     
     graph.add_conditional_edges(
         "lightweight_preprocessing_node",

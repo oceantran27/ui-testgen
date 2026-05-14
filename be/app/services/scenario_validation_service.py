@@ -5,11 +5,12 @@ Acts as a judge to audit generated scenarios against UI evidence.
 import datetime
 import json
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.logging import log_event, logger
 from app.core.prompt_manager import prompt_manager
 from app.db.models.behaviour_scenario import BehaviourScenario
@@ -38,17 +39,16 @@ async def run_scenario_validation(
     db: AsyncSession,
     run_id: str,
     scenario_draft_package: Dict[str, Any],
+    ui_state_package: Optional[Dict[str, Any]] = None,
+    flow_discovery_result: Optional[Dict[str, Any]] = None,
+    intent_package: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     start_time = time.time()
     log_event("scenario_validation_started", run_id=run_id)
 
-    features = scenario_draft_package.get("features", [])
-    if not features:
+    test_scenarios = scenario_draft_package.get("test_scenarios", [])
+    if not test_scenarios:
         empty = ScenarioValidationResult(
-            validated_scenario_package_id="",
-            source_scenario_draft_package_id=scenario_draft_package.get(
-                "scenario_draft_package_id", ""
-            ),
             validated_scenarios=[],
             final_output_summary=FinalOutputSummaryA7(),
             package_warnings=["NO_SCENARIOS"],
@@ -58,9 +58,18 @@ async def run_scenario_validation(
 
     system_instruction = prompt_manager.get_prompt("scenario_validation")
 
+    # Construct enriched user instruction for multi-layer validation
+    validation_input = {
+        "test_scenarios": test_scenarios,
+        "behaviour_intents": intent_package.get("behaviour_intents", []) if intent_package else [],
+        "candidate_flows": flow_discovery_result.get("candidate_flows", []) if flow_discovery_result else [],
+        "ui_state_evidence": ui_state_package.get("extracted_states", []) if ui_state_package else [],
+        "unresolved_flow_items": intent_package.get("unresolved_flow_items", []) if intent_package else [],
+    }
+
     user_instruction = (
-        "Audit the following scenario draft package against the UI evidence:\n"
-        f"{json.dumps(scenario_draft_package, indent=2)}"
+        "Audit the following scenario draft package against the UI evidence and pipeline context:\n"
+        f"{json.dumps(validation_input, indent=2)}"
     )
 
     response = await model_adapter.call_text_structured(
@@ -72,15 +81,13 @@ async def run_scenario_validation(
         output_schema=ScenarioValidationResult,
         prompt_name="scenario_validation_prompt",
         prompt_version="v1",
+        provider_override=settings.SCENARIO_VALIDATION_MODEL_PROVIDER,
+        model_name_override=settings.SCENARIO_VALIDATION_MODEL_NAME,
     )
 
     if response.status.value != "success" or not response.parsed_output:
         logger.error(f"Scenario Validation failed: {response.error}")
         err = ScenarioValidationResult(
-            validated_scenario_package_id="",
-            source_scenario_draft_package_id=scenario_draft_package.get(
-                "scenario_draft_package_id", ""
-            ),
             validated_scenarios=[],
             final_output_summary=FinalOutputSummaryA7(),
             package_warnings=[str(response.error or "LLM_FAILED")],

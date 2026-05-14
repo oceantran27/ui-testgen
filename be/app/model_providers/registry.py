@@ -270,6 +270,8 @@ class ModelProviderAdapter:
             max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
         elif task_name == "semantic_canonicalization":
             max_output_tokens = settings.SEMANTIC_DUPLICATE_MAX_OUTPUT_TOKENS
+        elif task_name == "bdd_scenario_generation":
+            max_output_tokens = settings.BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS
 
         request = ModelRequest(
             task_name=task_name,
