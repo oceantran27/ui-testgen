@@ -50,10 +50,22 @@ async def run_bdd_scenario_generation(
 
     system_instruction = prompt_manager.get_prompt("scenario_generation")
 
+    # Feedback Loop: Handle revision context
+    revision_context = intent_package.pop("revision_context", None)
+
     user_instruction = (
         f"Generate BDD scenarios for the following intent package:\n"
         f"{json.dumps(intent_package, indent=2)}"
     )
+
+    if revision_context:
+        user_instruction += (
+            f"\n\n## REVISION CONTEXT (Round {revision_context['round']})\n"
+            f"Previous scenarios were rejected by the validation agent. "
+            f"Please address the following issues:\n"
+            f"{json.dumps(revision_context['previous_rejection_suggestions'], indent=2)}"
+        )
+
 
     try:
         response = await model_adapter.call_text_structured(
@@ -106,11 +118,13 @@ async def run_bdd_scenario_generation(
 
     scenario_id_map: Dict[str, str] = {}
     for scn in result.test_scenarios:
-        if scn.scenario_id not in scenario_id_map:
-            scenario_id_map[scn.scenario_id] = _generate_behaviour_scenario_id()
-
-    for scn in result.test_scenarios:
-        db_id = scenario_id_map[scn.scenario_id]
+        db_id = _generate_behaviour_scenario_id()
+        scenario_id_map[scn.scenario_id] = db_id
+        # Option A: Programmatic Gherkin generation
+        gherkin_lines = [f"Scenario: {scn.scenario_name}"]
+        for s in scn.steps:
+            gherkin_lines.append(f"{s.keyword} {s.text}")
+        
         bs = BehaviourScenario(
             id=db_id,
             run_id=run_id,
@@ -119,7 +133,7 @@ async def run_bdd_scenario_generation(
             feature=scn.source_flow_name,
             scenario_title=scn.scenario_name,
             scenario_type=scn.scenario_type,
-            gherkin_text="\n".join(scn.gherkin),
+            gherkin_text="\n".join(gherkin_lines),
             bdd_steps_json={"steps": [s.model_dump() for s in scn.steps]},
             evidence_json={
                 "assertions": [a.model_dump() for a in scn.assertions],
@@ -150,6 +164,12 @@ async def run_bdd_scenario_generation(
         old_sid = sc.get("scenario_id")
         if isinstance(old_sid, str) and old_sid in scenario_id_map:
             sc["scenario_id"] = scenario_id_map[old_sid]
+        
+        # Ensure gherkin is available for Agent 7 (Validation)
+        sc_steps = sc.get("steps", [])
+        sc["gherkin"] = [f"Scenario: {sc.get('scenario_name', '')}"] + [
+            f"{s.get('keyword')} {s.get('text')}" for s in sc_steps
+        ]
     
     out["report"] = {
         "generated_scenario_count": len(result.test_scenarios),

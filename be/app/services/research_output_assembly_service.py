@@ -37,8 +37,7 @@ async def run_research_output_assembly(
         },
         "duplicate_processing": {
             "exact_duplicate_groups": state.get("exact_duplicate_groups", []),
-            "semantic_duplicate_groups": state.get("canonical_state_set", {}).get("merge_decisions", []),
-            "canonical_state_count": len(state.get("canonical_state_set", {}).get("unique_states", []))
+            "canonical_state_count": len(state.get("state_catalog", []))
         },
         "state_catalog": state.get("state_catalog", []),
         "flow_discovery": {
@@ -69,8 +68,7 @@ async def run_research_output_assembly(
 
 def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
     """Calculate research metrics."""
-    canonical_state_set = state.get("canonical_state_set", {})
-    unique_states = canonical_state_set.get("unique_states", [])
+    unique_states = state.get("state_catalog", [])
     flow_discovery = state.get("flow_discovery_result", {})
     intent_pkg = state.get("intent_package", {})
     scenario_pkg = state.get("scenario_draft_package", {})
@@ -88,7 +86,6 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "input_image_count": len(state.get("raw_image_ids", [])),
         "exact_duplicate_group_count": len(state.get("exact_duplicate_groups", [])),
-        "semantic_duplicate_group_count": len(canonical_state_set.get("merge_decisions", [])),
         "canonical_state_count": len(unique_states),
         "flow_count": len(flow_discovery.get("candidate_flows", [])),
         "intent_count": len(intent_pkg.get("behaviour_intents", [])),

@@ -45,11 +45,28 @@ async def scenario_validation_node(state: PipelineState, db: AsyncSession) -> Di
             "current_node": node_name,
             "completed_nodes": [node_name]
         }
+
+        # Feedback Loop: Collect revision suggestions if rejection rate > 50%
+        final_summary = result.get("final_output_summary", {})
+        rejected_count = final_summary.get("rejected_count", 0)
+        total_count = final_summary.get("total_count", 0)
+
+        if total_count > 0 and (rejected_count / total_count) > 0.5:
+            all_suggestions = []
+            for vs in result.get("validated_scenarios", []):
+                if vs.get("validation_status") == "rejected":
+                    all_suggestions.extend(vs.get("revision_suggestions", []))
+            if all_suggestions:
+                out["revision_suggestions"] = all_suggestions
+                logger.info(f"[{node_name}] Rejection rate {rejected_count}/{total_count} > 50%. Suggestions collected for retry.")
+
         if is_active():
             log_node_return(node_name, ["ok"], out)
         return out
+
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

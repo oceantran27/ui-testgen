@@ -48,14 +48,6 @@ class ImageResponse(BaseModel):
     quality_status: Optional[str] = None
     sha256_hash: Optional[str] = None
     
-    # Phase 3: Duplicate Detection
-    duplicate_status: Optional[str] = None
-    duplicate_group_id: Optional[str] = None
-    is_canonical: Optional[bool] = None
-    duplicate_type: Optional[str] = None
-    duplicate_reason: Optional[str] = None
-    phash: Optional[str] = None
-    dhash: Optional[str] = None
 
     created_at: Optional[datetime] = None
 

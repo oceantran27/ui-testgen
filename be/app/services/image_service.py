@@ -224,7 +224,7 @@ async def upload_images(
             file_size=size_bytes,
             sha256_hash=sha256_hash,
             upload_order=upload_order,
-            quality_status="pending_validation",
+            quality_status="valid",
             is_valid=True,
         )
         db.add(image_record)
@@ -264,9 +264,8 @@ async def get_run_images(
     db: AsyncSession, 
     run_id: str, 
     quality_status: str | None = None,
-    is_canonical: bool | None = None
 ) -> List[Image]:
-    """Return images for a run, optionally filtered by quality_status or is_canonical."""
+    """Return images for a run, optionally filtered by quality_status."""
     # Ensure run exists
     run_result = await db.execute(select(Run).where(Run.id == run_id))
     if not run_result.scalar_one_or_none():
@@ -275,8 +274,6 @@ async def get_run_images(
     query = select(Image).where(Image.run_id == run_id)
     if quality_status:
         query = query.where(Image.quality_status == quality_status)
-    if is_canonical is not None:
-        query = query.where(Image.is_canonical == is_canonical)
     query = query.order_by(Image.upload_order.asc())
 
     result = await db.execute(query)
@@ -294,37 +291,6 @@ async def get_artifact_by_type(db: AsyncSession, run_id: str, artifact_type: str
     )
     return art_result.scalar_one_or_none()
 
-
-async def get_preprocessing_report(db: AsyncSession, run_id: str) -> dict | None:
-    """
-    Fetch the image_quality_report.json artifact for a run.
-    Returns the parsed JSON dict or None if not available yet.
-    """
-    from app.db.models.artifact import Artifact
-    import json
-
-    run_result = await db.execute(select(Run).where(Run.id == run_id))
-    if not run_result.scalar_one_or_none():
-        raise RunNotFoundException(run_id)
-
-    art_result = await db.execute(
-        select(Artifact)
-        .where(Artifact.run_id == run_id)
-        .where(Artifact.artifact_type == "image_quality_report")
-        .order_by(Artifact.created_at.desc())
-    )
-    artifact = art_result.scalar_one_or_none()
-    if not artifact or not artifact.storage_uri:
-        return None
-
-    # Download from storage
-    from app.services.storage_service import storage_service
-    object_key = artifact.storage_uri.replace(f"s3://{storage_service.bucket_name}/", "")
-    try:
-        data = storage_service.download_file(object_key)
-        return json.loads(data)
-    except Exception:
-        return None
 
 
 def get_image_thumbnail_url(image: Image, expiration: int = 3600) -> str | None:

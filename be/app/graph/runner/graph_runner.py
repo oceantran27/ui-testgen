@@ -10,10 +10,7 @@ from langgraph.graph import StateGraph, START, END
 
 from app.graph.state.graph_state import PipelineState
 from app.graph.nodes.init_run_context_node import init_run_context_node
-from app.graph.nodes.lightweight_preprocessing_node import lightweight_preprocessing_node
-from app.graph.nodes.exact_duplicate_node import exact_duplicate_node
 from app.graph.nodes.ui_state_node import ui_state_extraction_node
-from app.graph.nodes.semantic_duplicate_node import semantic_duplicate_adjudication_node
 from app.graph.nodes.llm_flow_discovery_node import llm_flow_discovery_node
 from app.graph.nodes.behaviour_intent_node import behaviour_intent_inference_node
 from app.graph.nodes.scenario_generation_node import behaviour_scenario_generation_node
@@ -34,15 +31,24 @@ def _make_route(next_node: str):
         return next_node
     return _route
 
-_route_after_init = _make_route("lightweight_preprocessing_node")
-_route_after_preprocessing = _make_route("exact_duplicate_node")
-_route_after_exact_duplicate = _make_route("ui_state_extraction_node")
-_route_after_ui_state_extraction = _make_route("semantic_duplicate_adjudication_node")
-_route_after_semantic_duplicate = _make_route("llm_flow_discovery_node")
+_route_after_init = _make_route("ui_state_extraction_node")
+_route_after_ui_state_extraction = _make_route("llm_flow_discovery_node")
 _route_after_llm_flow_discovery = _make_route("behaviour_intent_inference_node")
 _route_after_behaviour_intent_inference = _make_route("behaviour_scenario_generation_node")
 _route_after_behaviour_scenario_generation = _make_route("scenario_validation_node")
-_route_after_scenario_validation = _make_route("output_assembly_node")
+def _route_after_scenario_validation(state: PipelineState) -> str:
+    if state.get("should_stop"):
+        return "graph_finalizer_node"
+    
+    revision_round = state.get("scenario_revision_round", 0)
+    revision_suggestions = state.get("revision_suggestions", [])
+    
+    # Retry if: round 0 (first pass) AND has revision suggestions
+    if revision_round == 0 and revision_suggestions:
+        return "behaviour_scenario_generation_node"
+        
+    return "output_assembly_node"
+
 
 def _route_after_output_assembly(state: PipelineState) -> str:
     return "graph_finalizer_node"
@@ -58,10 +64,7 @@ def build_graph(db) -> StateGraph:
 
     # Bind nodes with db
     init_node = functools.partial(init_run_context_node, db=db)
-    preprocessing_node = functools.partial(lightweight_preprocessing_node, db=db)
-    exact_dup_node = functools.partial(exact_duplicate_node, db=db)
     ui_state_node = functools.partial(ui_state_extraction_node, db=db)
-    semantic_dup_node = functools.partial(semantic_duplicate_adjudication_node, db=db)
     llm_flow_node = functools.partial(llm_flow_discovery_node, db=db)
     intent_node = functools.partial(behaviour_intent_inference_node, db=db)
     generation_node = functools.partial(behaviour_scenario_generation_node, db=db)
@@ -70,10 +73,7 @@ def build_graph(db) -> StateGraph:
     finalizer_node = functools.partial(graph_finalizer_node, db=db)
 
     graph.add_node("init_run_context_node", init_node)
-    graph.add_node("lightweight_preprocessing_node", preprocessing_node)
-    graph.add_node("exact_duplicate_node", exact_dup_node)
     graph.add_node("ui_state_extraction_node", ui_state_node)
-    graph.add_node("semantic_duplicate_adjudication_node", semantic_dup_node)
     graph.add_node("llm_flow_discovery_node", llm_flow_node)
     graph.add_node("behaviour_intent_inference_node", intent_node)
     graph.add_node("behaviour_scenario_generation_node", generation_node)
@@ -88,45 +88,20 @@ def build_graph(db) -> StateGraph:
         _route_after_init,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "lightweight_preprocessing_node": "lightweight_preprocessing_node",
+            "ui_state_extraction_node": "ui_state_extraction_node",
         },
     )
     
-    graph.add_conditional_edges(
-        "lightweight_preprocessing_node",
-        _route_after_preprocessing,
-        {
-            "graph_finalizer_node": "graph_finalizer_node",
-            "exact_duplicate_node": "exact_duplicate_node"
-        },
-    )
-    
-    graph.add_conditional_edges(
-        "exact_duplicate_node",
-        _route_after_exact_duplicate,
-        {
-            "graph_finalizer_node": "graph_finalizer_node",
-            "ui_state_extraction_node": "ui_state_extraction_node"
-        },
-    )
 
     graph.add_conditional_edges(
         "ui_state_extraction_node",
         _route_after_ui_state_extraction,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "semantic_duplicate_adjudication_node": "semantic_duplicate_adjudication_node"
-        },
-    )
-
-    graph.add_conditional_edges(
-        "semantic_duplicate_adjudication_node",
-        _route_after_semantic_duplicate,
-        {
-            "graph_finalizer_node": "graph_finalizer_node",
             "llm_flow_discovery_node": "llm_flow_discovery_node"
         },
     )
+
 
     graph.add_conditional_edges(
         "llm_flow_discovery_node",
@@ -160,9 +135,11 @@ def build_graph(db) -> StateGraph:
         _route_after_scenario_validation,
         {
             "graph_finalizer_node": "graph_finalizer_node",
+            "behaviour_scenario_generation_node": "behaviour_scenario_generation_node",
             "output_assembly_node": "output_assembly_node"
         },
     )
+
 
     graph.add_conditional_edges(
         "output_assembly_node",

@@ -42,8 +42,6 @@ class RunResponse(BaseModel):
     total_images: int = 0
     valid_images: int = 0
     invalid_images: int = 0
-    canonical_images: int = 0
-    duplicate_groups_count: int = 0
     config: Optional[Dict[str, Any]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

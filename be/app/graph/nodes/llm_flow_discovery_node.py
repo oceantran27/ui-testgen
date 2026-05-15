@@ -21,20 +21,20 @@ async def llm_flow_discovery_node(state: PipelineState, db: AsyncSession) -> Dic
                 "Infer user flows and transitions from canonical states.",
                 "routing: behaviour_intent_inference unless error."
             ],
-            state_keys=("run_id", "canonical_state_set"),
+            state_keys=("run_id", "ui_state_package"),
             state=state
         )
     
     try:
-        canonical_state_set = state.get("canonical_state_set")
-        if not canonical_state_set:
+        ui_state_package = state.get("ui_state_package")
+        if not ui_state_package:
             # Fallback for transition compatibility
-            canonical_state_set = {"unique_states": state.get("canonical_state_catalog", [])}
+            ui_state_package = {"unique_states": state.get("state_catalog", [])}
 
         result = await run_ui_flow_discovery(
             db=db,
             run_id=run_id,
-            canonical_state_set=canonical_state_set
+            canonical_state_set=ui_state_package
         )
 
         out = {
@@ -49,6 +49,7 @@ async def llm_flow_discovery_node(state: PipelineState, db: AsyncSession) -> Dic
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

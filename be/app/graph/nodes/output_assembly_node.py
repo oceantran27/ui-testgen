@@ -44,6 +44,7 @@ async def output_assembly_node(state: PipelineState, db: AsyncSession) -> Dict[s
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

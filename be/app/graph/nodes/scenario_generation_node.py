@@ -31,6 +31,18 @@ async def behaviour_scenario_generation_node(state: PipelineState, db: AsyncSess
             # Fallback
             intent_package = {"behaviour_intents": state.get("behaviour_intents", [])}
 
+        # Feedback Loop: Increment round and inject suggestions if this is a retry
+        revision_round = state.get("scenario_revision_round", 0)
+        revision_suggestions = state.get("revision_suggestions", [])
+        
+        if revision_suggestions:
+            revision_round += 1
+            intent_package["revision_context"] = {
+                "round": revision_round,
+                "previous_rejection_suggestions": revision_suggestions,
+                "instruction": "Revise scenarios based on the validation feedback above."
+            }
+
         result = await run_bdd_scenario_generation(
             db=db,
             run_id=run_id,
@@ -39,14 +51,17 @@ async def behaviour_scenario_generation_node(state: PipelineState, db: AsyncSess
 
         out = {
             "scenario_draft_package": result,
+            "scenario_revision_round": revision_round,
             "current_node": node_name,
             "completed_nodes": [node_name]
         }
+
         if is_active():
             log_node_return(node_name, ["ok"], out)
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

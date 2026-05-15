@@ -14,8 +14,6 @@ class Run(Base):
     total_images: Mapped[int] = mapped_column(Integer, default=0)
     valid_images: Mapped[int] = mapped_column(Integer, default=0)
     invalid_images: Mapped[int] = mapped_column(Integer, default=0)
-    canonical_images: Mapped[int] = mapped_column(Integer, default=0)
-    duplicate_groups_count: Mapped[int] = mapped_column(Integer, default=0)
 
     # Phase 4: Graph Execution Tracking
     current_phase: Mapped[str] = mapped_column(String, default="created")
@@ -47,5 +45,4 @@ class Run(Base):
     flow_transitions: Mapped[list["FlowTransition"]] = relationship("FlowTransition", back_populates="run", cascade="all, delete-orphan")
     behaviour_intents: Mapped[list["BehaviourIntent"]] = relationship("BehaviourIntent", back_populates="run", cascade="all, delete-orphan")
     behaviour_scenarios: Mapped[list["BehaviourScenario"]] = relationship("BehaviourScenario", back_populates="run", cascade="all, delete-orphan")
-    duplicate_groups = relationship("DuplicateGroup", back_populates="run", cascade="all, delete-orphan")
     artifacts = relationship("Artifact", back_populates="run", cascade="all, delete-orphan")

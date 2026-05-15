@@ -51,54 +51,6 @@ class UIStateExtractionResult(_PromptOutputBase):
     visible_feedback: List[UIFeedbackA1] = Field(default_factory=list)
 
 
-# ──────────────────────────────────────────────
-# A2: Semantic Canonicalization (semantic_canonicalization.txt)
-# ──────────────────────────────────────────────
-
-class CanonicalStateA2(_PromptOutputBase):
-    canonical_id: str
-    merged_from: List[str] = Field(default_factory=list)
-    confidence: str  # high|medium|low
-    data: UIStateExtractionResult
-
-
-class MergeDecisionA2(_PromptOutputBase):
-    decision_type: str = "merge"
-    states: List[str] = Field(default_factory=list)
-    canonical_id: str
-    confidence: str
-    reason: str
-
-
-class SeparationDecisionA2(_PromptOutputBase):
-    decision_type: str = "keep_separate"
-    states: List[str] = Field(default_factory=list)
-    confidence: str
-    reason: str
-
-
-class WarningA2(_PromptOutputBase):
-    type: str
-    message: str
-    affected_states: List[str] = Field(default_factory=list)
-
-
-class DeduplicationMapEntryA2(_PromptOutputBase):
-    """One original state id mapped to its canonical group (strict OpenAI JSON has no Dict[str,str])."""
-
-    original_state_id: str
-    canonical_id: str
-
-
-class SemanticCanonicalizationResult(_PromptOutputBase):
-    schema_version: Optional[str] = None
-    agent_name: Optional[str] = None
-    canonical_state_set_id: str
-    unique_states: List[CanonicalStateA2] = Field(default_factory=list)
-    deduplication_map: List[DeduplicationMapEntryA2] = Field(default_factory=list)
-    merge_decisions: List[MergeDecisionA2] = Field(default_factory=list)
-    separation_decisions: List[SeparationDecisionA2] = Field(default_factory=list)
-    warnings: List[WarningA2] = Field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
@@ -106,11 +58,9 @@ class SemanticCanonicalizationResult(_PromptOutputBase):
 # ──────────────────────────────────────────────
 
 class FlowTransitionTriggerA3(_PromptOutputBase):
-    trigger_element_id: str
     action_type: str
-    action_label: str
-    trigger_text: Optional[str] = None
-    trigger_semantic_role: Optional[str] = None
+    text: List[str] = Field(default_factory=list)
+
 
 
 
@@ -200,7 +150,6 @@ class BehaviourIntentA5(_PromptOutputBase):
     source_outcome_state: Optional[str] = None
     behaviour_name: str
     intent_type: str  # positive | negative | validation | navigation | recovery | registration | access_control | data_entry | unknown
-    test_path: str  # happy_path | negative_path | validation_path | navigation_path | recovery_path | registration_path | access_control_path | data_entry_path | unknown_path
     user_intent: str
     business_goal: str
     start_state: str
@@ -279,7 +228,6 @@ class TestScenarioA6(_PromptOutputBase):
     steps: List[TestScenarioStepA6] = Field(default_factory=list)
     expected_results: List[str] = Field(default_factory=list)
     assertions: List[AssertionA6] = Field(default_factory=list)
-    gherkin: List[str] = Field(default_factory=list)
     assumptions: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     confidence: str  # high | medium | low
@@ -323,6 +271,11 @@ class StepAuditSupportingEvidenceA7(_PromptOutputBase):
     element_ids: List[str] = Field(default_factory=list)
 
 
+class StepAuditIssueA7(_PromptOutputBase):
+    issue_type: str
+    issue_description: str
+
+
 class StepAuditA7(_PromptOutputBase):
     step_number: int
     keyword: str
@@ -332,7 +285,7 @@ class StepAuditA7(_PromptOutputBase):
     step_grounding_value: float
     audit_reason: str
     supporting_evidence: StepAuditSupportingEvidenceA7
-    issues: List[Dict[str, str]] = Field(default_factory=list)
+    audit_issues: List[StepAuditIssueA7] = Field(default_factory=list)
 
 
 class ScenarioAcceptanceDecisionA7(_PromptOutputBase):
@@ -343,7 +296,7 @@ class ScenarioAcceptanceDecisionA7(_PromptOutputBase):
 class ValidationScoresA7(_PromptOutputBase):
     grounding_score: float
     evidence_coverage_score: float
-    transition_support_score: Optional[float] = None
+    transition_support_score: float = 0.0
     bdd_structure_score: float
     hallucination_penalty: float
 
@@ -397,9 +350,9 @@ class ScenarioValidationResult(_PromptOutputBase):
 # Registry & Helper
 # ──────────────────────────────────────────────
 
+
 SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
     "ui_state_extraction": UIStateExtractionResult,
-    "semantic_canonicalization": SemanticCanonicalizationResult,
     "ui_flow_discovery": UIFlowDiscoveryResult,
     "behaviour_intent_inference": BehaviourIntentInferenceResult,
     "behaviour_scenario_generation": BDDScenarioGenerationResult,

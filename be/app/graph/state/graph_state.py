@@ -8,16 +8,6 @@ from typing import Any, Dict, List, Optional, Annotated
 from typing_extensions import TypedDict
 
 
-class ImagePreprocessingResult(TypedDict):
-    image_id: str
-    original_filename: str
-    is_valid: bool
-    quality_status: str
-    invalid_reason: Optional[str]
-    normalized_uri: Optional[str]
-    thumbnail_uri: Optional[str]
-    warnings: List[str]
-    preprocessing_json: Dict[str, Any]
 
 
 # Custom reducer for dicts: updates existing dict instead of overwriting
@@ -40,16 +30,9 @@ class PipelineState(TypedDict, total=False):
     # ── Run config (merge reducer) ───────────
     config: Annotated[Dict[str, Any], merge_dicts]
 
-    # ── Phase 2: Image Preprocessing ─────────
+    # ── Input Data ───────────
     raw_image_ids: List[str]                          # image IDs loaded from DB
-    valid_images: List[ImagePreprocessingResult]      # passed all checks
-    image_quality_report: Dict[str, Any]              # full report dict
-    preprocessing_warnings: Annotated[List[str], operator.add]
 
-    # ── Phase 3: Exact Duplicate Detection ──
-    exact_duplicate_groups: List[Dict[str, Any]]
-    exact_canonical_images: List[str]
-    exact_duplicate_report: Dict[str, Any]
     
     # ── 7-Agent Pipeline Packages (Strict JSON) ──
     
@@ -57,8 +40,6 @@ class PipelineState(TypedDict, total=False):
     ui_state_package: Dict[str, Any]
     state_catalog: List[Dict[str, Any]]               # verbatim extracted states (A1 output)
     
-    # A2: Semantic Canonicalization
-    canonical_state_set: Dict[str, Any]
     
     # A3: UI Flow Discovery
     flow_discovery_result: Dict[str, Any]
@@ -90,3 +71,8 @@ class PipelineState(TypedDict, total=False):
     
     should_stop: bool                                 # set True to halt pipeline early
     stop_reason: Optional[str]                        # e.g. "NO_VALID_IMAGES"
+
+    # Feedback Loop Control
+    scenario_revision_round: int                      # 0 = first pass, 1 = retry (max)
+    revision_suggestions: List[Dict[str, Any]]        # A7's revision suggestions for A6
+

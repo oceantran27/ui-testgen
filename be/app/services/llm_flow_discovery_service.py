@@ -18,26 +18,21 @@ from app.model_providers.schemas import FlowTransitionTriggerA3, UIFlowDiscovery
 from app.core.prompt_manager import prompt_manager
 
 
-def _generate_flow_id() -> str:
-    return f"fl_{uuid.uuid4().hex[:12]}"
+def _generate_flow_id(run_id: str) -> str:
+    return f"flow_{run_id[-6:]}_{uuid.uuid4().hex[:8]}"
 
-def _generate_transition_id() -> str:
-    return f"tr_{uuid.uuid4().hex[:12]}"
+def _generate_transition_id(run_id: str) -> str:
+    return f"tr_{run_id[-6:]}_{uuid.uuid4().hex[:8]}"
 
 
 def _hypothesized_action_from_a3_trigger(trigger: FlowTransitionTriggerA3) -> Optional[str]:
-    """Human-readable action for DB row; schema uses action_label/trigger_text (not legacy .text list)."""
-    parts: List[str] = []
-    if trigger.action_label:
-        parts.append(trigger.action_label.strip())
-    if trigger.trigger_text:
-        parts.append(trigger.trigger_text.strip())
-    joined = " ".join(p for p in parts if p)
-    if joined:
-        return joined
+    """Human-readable action for DB row; schema uses text list from A3 prompt."""
+    if trigger.text:
+        return " ".join(trigger.text).strip() or None
     if trigger.action_type:
         return trigger.action_type.strip() or None
     return None
+
 
 
 async def run_ui_flow_discovery(
@@ -51,16 +46,33 @@ async def run_ui_flow_discovery(
     start_time = time.time()
     log_event("ui_flow_discovery_started", run_id=run_id)
 
-    unique_states = canonical_state_set.get("unique_states", [])
-    if not unique_states:
+    unique_states_raw = (
+        canonical_state_set.get("unique_states") 
+        or canonical_state_set.get("extracted_states") 
+        or []
+    )
+    if not unique_states_raw:
         return UIFlowDiscoveryResult(
-            flow_discovery_result_id=f"fdr_{uuid.uuid4().hex[:12]}",
-            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            flow_discovery_result_id=f"fdr_{run_id[-6:]}_{uuid.uuid4().hex[:8]}",
+            source_canonical_state_set_id=canonical_state_set.get("ui_state_package_id") or canonical_state_set.get("canonical_state_set_id", "unknown_set"),
             candidate_flows=[],
             semantic_clusters=[],
             uncertain_relations=[],
             discovery_warnings=["NO_UNIQUE_STATES"],
         ).model_dump()
+
+    # Normalization: ensure states are flat (handle A2 nested output)
+    unique_states = []
+    for s in unique_states_raw:
+        if isinstance(s, dict) and "data" in s and isinstance(s["data"], dict):
+            # A2 nested format: { "canonical_id": ..., "data": { ... } }
+            flat = s["data"].copy()
+            if "canonical_id" in s:
+                flat["canonical_id"] = s["canonical_id"]
+            unique_states.append(flat)
+        else:
+            # A1 flat format or unknown
+            unique_states.append(s)
 
     system_instruction = prompt_manager.get_prompt("llm_flow_discovery")
 
@@ -86,8 +98,8 @@ async def run_ui_flow_discovery(
     if response.status.value != "success" or not response.parsed_output:
         logger.error(f"UI Flow Discovery failed: {response.error}")
         err = UIFlowDiscoveryResult(
-            flow_discovery_result_id=f"fdr_{uuid.uuid4().hex[:12]}",
-            source_canonical_state_set_id=canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            flow_discovery_result_id=f"fdr_{run_id[-6:]}_{uuid.uuid4().hex[:8]}",
+            source_canonical_state_set_id=canonical_state_set.get("ui_state_package_id") or canonical_state_set.get("canonical_state_set_id", "unknown_set"),
             candidate_flows=[],
             semantic_clusters=[],
             uncertain_relations=[],
@@ -102,7 +114,7 @@ async def run_ui_flow_discovery(
     transition_id_map: Dict[str, str] = {}
 
     for flow_data in result.candidate_flows:
-        db_flow_id = f"flow_{uuid.uuid4().hex[:12]}"
+        db_flow_id = _generate_flow_id(run_id)
         flow_id_map[flow_data.flow_id] = db_flow_id
 
         # Basic metadata
@@ -122,7 +134,7 @@ async def run_ui_flow_discovery(
 
         # Map Direct Transitions
         for tr_data in flow_data.transitions:
-            db_tr_id = f"tr_{uuid.uuid4().hex[:12]}"
+            db_tr_id = _generate_transition_id(run_id)
             transition_id_map[f"{flow_data.flow_id}:{tr_data.from_state}:{tr_data.to_state}"] = db_tr_id
             
             tr_row = FlowTransition(
@@ -151,7 +163,7 @@ async def run_ui_flow_discovery(
         # Map Alternative Outcomes
         for alt_data in flow_data.alternative_outcomes:
             for outcome_state in alt_data.outcome_states:
-                db_tr_id = f"tr_{uuid.uuid4().hex[:12]}"
+                db_tr_id = _generate_transition_id(run_id)
                 tr_row = FlowTransition(
                     id=db_tr_id,
                     run_id=run_id,

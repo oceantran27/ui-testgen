@@ -7,10 +7,7 @@ from app.db.models.run import Run
 # Must match `fe/src/constants/pipeline.ts` and LangGraph `graph_runner.py` order
 PIPELINE_NODE_ORDER = [
     "init_run_context_node",
-    "lightweight_preprocessing_node",
-    "exact_duplicate_node",
     "ui_state_extraction_node",
-    "semantic_duplicate_adjudication_node",
     "llm_flow_discovery_node",
     "behaviour_intent_inference_node",
     "behaviour_scenario_generation_node",

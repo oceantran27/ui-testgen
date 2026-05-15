@@ -44,13 +44,6 @@ class Settings(BaseSettings):
     JOB_EXECUTION_MODE: str = "async"
     WORKER_CONCURRENCY: int = 2
     
-    # Phase 3 — Duplicate detection
-    PHASH_EXACT_THRESHOLD: int = 0         # distance = 0 → exact visual
-    PHASH_NEAR_THRESHOLD: int = 5          # distance ≤ 5 → near-visual
-    PHASH_UNCERTAIN_THRESHOLD: int = 10    # 6–10 → uncertain, needs VLM
-    DHASH_NEAR_THRESHOLD: int = 5
-    DUPLICATE_MIN_CONFIDENCE: float = 0.75 # min confidence to auto-merge semantic
-    USE_VLM_FOR_DUPLICATE_CHECK: bool = False
     
     # Phase 4 — Graph Configuration
     ENABLE_GRAPH_CHECKPOINT: bool = True
@@ -177,27 +170,20 @@ class Settings(BaseSettings):
     SAVE_GHERKIN_EXPORT: bool = True
     # Research Model-First Mode (Technical Specification v1)
     RESEARCH_MODEL_FIRST_MODE: bool = True
-    SKIP_IMAGE_QUALITY_VALIDATION: bool = True
-    ASSUME_VALID_VIEWPORT_SCREENSHOT: bool = True
 
-    ENABLE_EXACT_DUPLICATE: bool = True
-    ENABLE_SEMANTIC_DUPLICATE_LLM: bool = True
+
     ENABLE_LLM_FLOW_DISCOVERY: bool = True
     
     # Overrides for Flow Discovery
     LLM_FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
     LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
-    SEMANTIC_DUPLICATE_MODEL_PROVIDER: str = "openai"
-    SEMANTIC_DUPLICATE_MODEL_NAME: str = "gpt-5.4-nano"
-    # GPT-5* may consume output budget for reasoning before emitting JSON; keep aligned with flow/UI ceilings.
-    SEMANTIC_DUPLICATE_MAX_OUTPUT_TOKENS: int = 16384
     # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
     LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
 
     MAX_STATE_PAIR_COMPARISONS: int = 200
+
     MAX_STATES_PER_FLOW_DISCOVERY_CALL: int = 25
 
-    SAVE_SEMANTIC_DUPLICATE_REPORT: bool = True
     SAVE_LLM_FLOW_DISCOVERY_REPORT: bool = True
     SAVE_RESEARCH_FINAL_OUTPUT: bool = True
 

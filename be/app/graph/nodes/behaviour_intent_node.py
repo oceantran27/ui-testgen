@@ -47,6 +47,11 @@ async def behaviour_intent_inference_node(state: PipelineState, db: AsyncSession
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        try:
+            await db.rollback()
+        except Exception as rb_err:
+            logger.warning(f"[{node_name}] Double fault during rollback: {rb_err}")
+            
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

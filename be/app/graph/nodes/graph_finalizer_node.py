@@ -34,6 +34,14 @@ async def graph_finalizer_node(
     await persist_run_graph_progress(run_id, NODE_NAME)
     log_event("graph_node_started", run_id=run_id, node_name=NODE_NAME)
 
+    # Ensure any previous failures are rolled back before we try to use the session here
+    try:
+        await db.rollback()
+        # Expire all objects in the session to ensure we fetch fresh data and reset state
+        db.expire_all()
+    except Exception as e:
+        logger.warning(f"[{NODE_NAME}] Rollback/Expire failed in finalizer: {e}")
+
     if is_active():
         log_node(
             NODE_NAME,

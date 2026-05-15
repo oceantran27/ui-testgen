@@ -30,7 +30,7 @@ async def init_run_context_node(
             NODE_NAME,
             intent_lines=[
                 "Load Run row and Image rows; merge run.config with defaults.",
-                "routing: always lightweight_preprocessing unless error (should_stop).",
+                "routing: always ui_state_extraction unless error (should_stop).",
             ],
             state_keys=("run_id", "job_id"),
             state=state,
@@ -82,6 +82,7 @@ async def init_run_context_node(
 
     except Exception as e:
         logger.exception(f"[{NODE_NAME}] Error for run {run_id}: {e}")
+        await db.rollback()
         log_event("graph_node_failed", run_id=run_id, node_name=NODE_NAME, error_code=str(e))
         fail = {
             "current_node": NODE_NAME,

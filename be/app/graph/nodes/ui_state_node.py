@@ -19,22 +19,21 @@ async def ui_state_extraction_node(state: PipelineState, db: AsyncSession) -> Di
             node_name,
             intent_lines=[
                 "Extract UI states from canonical screenshots.",
-                "routing: semantic_duplicate unless error or no images."
             ],
-            state_keys=("run_id", "exact_canonical_images"),
+            state_keys=("run_id", "raw_image_ids"),
             state=state
         )
     
     try:
-        canonical_images = state.get("exact_canonical_images", [])
-        if not canonical_images:
+        image_ids = state.get("raw_image_ids", [])
+        if not image_ids:
             return {
                 "should_stop": True,
-                "stop_reason": "NO_CANONICAL_IMAGES",
-                "current_node": node_name
+                "stop_reason": "NO_IMAGE_IDS",
+                "graph_status": "failed"
             }
-
-        result = await run_ui_state_extraction(db=db, run_id=run_id, canonical_images=canonical_images)
+        
+        result = await run_ui_state_extraction(db=db, run_id=run_id, image_ids=image_ids)
 
         out = {
             "ui_state_package": result,
@@ -47,6 +46,7 @@ async def ui_state_extraction_node(state: PipelineState, db: AsyncSession) -> Di
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
+        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],

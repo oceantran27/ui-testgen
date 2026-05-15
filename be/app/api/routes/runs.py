@@ -82,8 +82,6 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
             total_images=r.total_images,
             valid_images=r.valid_images,
             invalid_images=r.invalid_images,
-            canonical_images=r.canonical_images,
-            duplicate_groups_count=r.duplicate_groups_count,
             config=r.config_json,
             created_at=r.created_at,
             updated_at=r.updated_at,
@@ -113,8 +111,6 @@ async def get_run(run_id: str, db: AsyncSession = Depends(get_db_session)):
         total_images=run.total_images,
         valid_images=run.valid_images,
         invalid_images=run.invalid_images,
-        canonical_images=run.canonical_images,
-        duplicate_groups_count=run.duplicate_groups_count,
         config=run.config_json,
         created_at=run.created_at,
         updated_at=run.updated_at,
@@ -188,12 +184,6 @@ async def get_run_images(
             storage_uri=img.storage_uri,
             quality_status=img.quality_status,
             sha256_hash=img.sha256_hash,
-            duplicate_status=img.duplicate_status,
-            duplicate_group_id=img.duplicate_group_id,
-            is_canonical=img.is_canonical,
-            duplicate_type=img.duplicate_type,
-            phash=img.phash,
-            dhash=img.dhash,
             created_at=img.created_at,
         )
         for img in images
@@ -201,54 +191,6 @@ async def get_run_images(
     return ImageListResponse(run_id=run_id, total=len(items), images=items)
 
 
-@router.get("/{run_id}/duplicate-report")
-async def get_duplicate_report(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the duplicate_detection_report.json for a completed run."""
-    artifact = await image_service.get_artifact_by_type(db, run_id, "duplicate_detection_report")
-    if not artifact or not artifact.storage_uri:
-        raise HTTPException(
-            status_code=404,
-            detail={"error_code": "REPORT_NOT_FOUND", "message": f"No duplicate report found for run '{run_id}'."},
-        )
-    
-    # In a real app, we might want to parse and return JSON, but here we redirect to storage for consistency with Phase 2
-    from app.services.storage_service import storage_service
-    object_key = artifact.storage_uri.replace("s3://", "").split("/", 1)[-1]
-    url = storage_service.get_presigned_url(object_key)
-    return RedirectResponse(url=url, status_code=302)
-
-
-@router.get("/{run_id}/duplicate-groups")
-async def get_duplicate_groups(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """List all duplicate groups for a run."""
-    from app.db.models.duplicate_group import DuplicateGroup
-    from sqlalchemy import select
-    
-    result = await db.execute(
-        select(DuplicateGroup).where(DuplicateGroup.run_id == run_id)
-    )
-    groups = result.scalars().all()
-    
-    return {
-        "run_id": run_id,
-        "total": len(groups),
-        "groups": [
-            {
-                "group_id": g.id,
-                "canonical_image_id": g.canonical_image_id,
-                "type": g.duplicate_type,
-                "confidence": g.confidence,
-                "reason": g.group_reason
-            }
-            for g in groups
-        ]
-    }
 
 
 # ──────────────────────────────────────────────
@@ -285,23 +227,6 @@ async def delete_run(
     return None
 
 
-# ──────────────────────────────────────────────
-# Phase 2 — Preprocessing query endpoints
-# ──────────────────────────────────────────────
-
-@router.get("/{run_id}/preprocessing-report")
-async def get_preprocessing_report(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the image_quality_report.json for a completed preprocessing phase."""
-    report = await image_service.get_preprocessing_report(db, run_id)
-    if not report:
-        raise HTTPException(
-            status_code=404,
-            detail={"error_code": "REPORT_NOT_FOUND", "message": f"No preprocessing report found for run '{run_id}'."},
-        )
-    return report
 
 
 @router.get("/{run_id}/images/{image_id}/thumbnail")
@@ -521,10 +446,6 @@ async def get_model_config(
             "ui_state_extraction": {
                 "provider": settings.UI_STATE_EXTRACTION_PROVIDER,
                 "model": settings.UI_STATE_EXTRACTION_MODEL_NAME,
-            },
-            "semantic_duplicate": {
-                "provider": settings.SEMANTIC_DUPLICATE_MODEL_PROVIDER,
-                "model": settings.SEMANTIC_DUPLICATE_MODEL_NAME,
             },
             "llm_flow_discovery": {
                 "provider": settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
@@ -830,37 +751,6 @@ async def get_flow_discovery_report(
 # ──────────────────────────────────────────────
 # Agent 2 — Semantic Canonicalization endpoints
 # ──────────────────────────────────────────────
-
-@router.get("/{run_id}/canonical-states")
-async def get_canonical_states(
-    run_id: str,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """Return the semantic canonicalization results."""
-    from app.db.models.artifact import Artifact
-    from app.services.storage_service import storage_service
-    from sqlalchemy import select
-    import json
-
-    result = await db.execute(
-        select(Artifact).where(
-            Artifact.run_id == run_id, 
-            Artifact.artifact_type == "semantic_canonicalization_report"
-        )
-    )
-    artifact = result.scalar_one_or_none()
-    if not artifact:
-        raise HTTPException(
-            status_code=404,
-            detail={
-                "error_code": "SEMANTIC_CANONICALIZATION_REPORT_NOT_FOUND",
-                "message": f"No semantic_canonicalization_report artifact for run '{run_id}'.",
-            },
-        )
-
-    content = storage_service.download_file(artifact.storage_uri)
-    return json.loads(content)
-
 
 # Agent 5 — Behaviour Intent Inference endpoints
 # ──────────────────────────────────────────────

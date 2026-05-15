@@ -4,6 +4,7 @@ Infers user intentions and outcomes from validated UI flows.
 """
 import json
 import time
+import uuid
 from typing import Any, Dict
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,10 +20,32 @@ from app.model_providers.schemas import (
 from app.core.prompt_manager import prompt_manager
 
 
+
+def _generate_behaviour_intent_id(run_id: str) -> str:
+    """behaviour_intents.id is a global PK — never persist LLM ids directly."""
+    # Combine bi_ prefix, a slice of run_id, and a random part
+    return f"bi_{run_id[-6:]}_{uuid.uuid4().hex[:8]}"
+
+
+def _map_test_path(intent_type: str) -> str:
+    mapping = {
+        "positive": "happy_path",
+        "negative": "negative_path",
+        "validation": "validation_path",
+        "navigation": "navigation_path",
+        "recovery": "recovery_path",
+        "registration": "registration_path",
+        "access_control": "access_control_path",
+        "data_entry": "data_entry_path",
+    }
+    return mapping.get(intent_type, "unknown_path")
+
+
 def _persist_intent_row(
     run_id: str,
     intent: BehaviourIntentA5,
 ) -> BehaviourIntent:
+    test_path = _map_test_path(intent.intent_type)
     return BehaviourIntent(
         id=intent.intent_id,
         run_id=run_id,
@@ -33,7 +56,7 @@ def _persist_intent_row(
         source_outcome_state=intent.source_outcome_state,
         behaviour_name=intent.behaviour_name,
         intent_type=intent.intent_type,
-        test_path=intent.test_path,
+        test_path=test_path,
         user_intent=intent.user_intent,
         business_goal=intent.business_goal,
         start_state=intent.start_state,
@@ -108,10 +131,17 @@ async def run_behaviour_intent_inference(
 
     result: BehaviourIntentInferenceResult = response.parsed_output
 
+    # Generate a unique DB ID for every intent record to prevent collisions
     for intent in result.behaviour_intents:
+        intent.intent_id = _generate_behaviour_intent_id(run_id)
         db.add(_persist_intent_row(run_id, intent))
 
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception as e:
+        logger.error(f"Failed to commit behaviour intents for run {run_id}: {e}")
+        await db.rollback()
+        raise
 
     duration_ms = int((time.time() - start_time) * 1000)
     log_event("behaviour_intent_inference_completed", run_id=run_id, duration_ms=duration_ms)
