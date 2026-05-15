@@ -180,6 +180,11 @@ class Settings(BaseSettings):
     # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
     LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
 
+    # Baseline Research Settings
+    BASELINE_MODEL_PROVIDER: str = "openai"
+    BASELINE_MODEL_NAME: str = "gpt-5.4-mini"
+    BASELINE_MAX_OUTPUT_TOKENS: int = 16384
+
     MAX_STATE_PAIR_COMPARISONS: int = 200
 
     MAX_STATES_PER_FLOW_DISCOVERY_CALL: int = 25

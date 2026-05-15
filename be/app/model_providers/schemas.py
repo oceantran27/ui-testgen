@@ -347,6 +347,27 @@ class ScenarioValidationResult(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
+# Baseline: Single-Agent (baseline_single_agent.txt)
+# ──────────────────────────────────────────────
+
+class BaselineScenarioStep(_PromptOutputBase):
+    keyword: str  # Given | When | Then | And
+    text: str
+
+
+class BaselineScenario(_PromptOutputBase):
+    scenario_name: str
+    scenario_type: str
+    steps: List[BaselineScenarioStep] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+
+
+class BaselineGenerationResult(_PromptOutputBase):
+    scenarios: List[BaselineScenario] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+
+
+# ──────────────────────────────────────────────
 # Registry & Helper
 # ──────────────────────────────────────────────
 
