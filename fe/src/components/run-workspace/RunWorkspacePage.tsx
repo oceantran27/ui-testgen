@@ -20,7 +20,6 @@ import { apiAbsoluteUrl } from "../../api/client";
 import {
   cancelRun,
   getArtifacts,
-  getCanonicalStates,
   getFlowDetail,
   getModelConfig,
   getResearchOutput,
@@ -47,7 +46,6 @@ import type {
   ScenarioSummary,
   UIStateDetailResponse,
   UIStateSummary,
-  SemanticCanonicalizationResult,
   ScenarioValidationResult,
   IntentReadiness,
 } from "../../types/run";
@@ -200,7 +198,6 @@ type TabId =
   | "overview"
   | "images"
   | "states"
-  | "canonical"
   | "flows"
   | "intents"
   | "scenarios"
@@ -213,7 +210,6 @@ const TABS: { id: TabId; label: string; icon?: ComponentType<{ className?: strin
   { id: "overview", label: "Overview" },
   { id: "images", label: "Images", icon: FiImage },
   { id: "states", label: "States", icon: FiLayout },
-  { id: "canonical", label: "Canonical", icon: FiTarget },
   { id: "flows", label: "Flows", icon: FiMap },
   { id: "intents", label: "Intents", icon: FiTarget },
   { id: "scenarios", label: "Scenarios", icon: FiFileText },
@@ -260,7 +256,6 @@ export function RunWorkspacePage() {
   const [stateDetail, setStateDetail] = useState<UIStateDetailResponse | null>(
     null,
   );
-  const [canonicalResult, setCanonicalResult] = useState<SemanticCanonicalizationResult | null>(null);
   const [flows, setFlows] = useState<FlowSummary[] | null>(null);
   const [flowDetail, setFlowDetail] = useState<FlowDetailResponse | null>(
     null,
@@ -428,22 +423,6 @@ export function RunWorkspacePage() {
       } else if (tab === "states") {
         const res = await listUIStates(decodedId);
         setStates(res.states);
-      } else if (tab === "canonical") {
-        try {
-          const raw = await getCanonicalStates(decodedId);
-          if (
-            raw &&
-            typeof raw === "object" &&
-            "unique_states" in raw &&
-            Array.isArray((raw as SemanticCanonicalizationResult).unique_states)
-          ) {
-            setCanonicalResult(raw as SemanticCanonicalizationResult);
-          } else {
-            setCanonicalResult(null);
-          }
-        } catch {
-          setCanonicalResult(null);
-        }
       } else if (tab === "flows") {
         const res = await listFlows(decodedId);
         setFlows(
@@ -628,7 +607,7 @@ export function RunWorkspacePage() {
           <div className="space-y-6">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { label: "Canonical States", value: run?.canonical_images ?? 0 },
+                { label: "Total Images", value: run?.total_images ?? 0 },
                 { label: "Discovered Flows", value: hints.flowCount },
                 {
                   label: "Validated Scenarios",
@@ -740,37 +719,6 @@ export function RunWorkspacePage() {
           </div>
         )}
 
-        {tab === "canonical" && !tabLoading && (
-          canonicalResult == null ? (
-            <p className="text-sm text-zinc-500">
-              Canonical report is not available yet (pipeline still running, not reached Agent 2, or report missing).
-            </p>
-          ) : !Array.isArray(canonicalResult.unique_states) || canonicalResult.unique_states.length === 0 ? (
-            <p className="text-sm text-zinc-500">No semantic groups in this report.</p>
-          ) : (
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-300">Semantic groups (unique_states)</h3>
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {canonicalResult.unique_states.map((cs) => (
-                <li key={cs.canonical_id} className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4">
-                  <p className="text-sm font-bold text-zinc-200 mb-1">{cs.data.screen_purpose}</p>
-                  <p className="text-xs text-zinc-500 mb-1">
-                    <span className="font-mono text-zinc-400">{cs.canonical_id}</span>
-                    {" · "}
-                    <span className="uppercase">{cs.confidence}</span>
-                  </p>
-                  <p className="text-xs text-zinc-500 mb-2">
-                    Type: {cs.data.screen_type} · Domain: {cs.data.domain}
-                  </p>
-                  <p className="text-xs text-zinc-500 mb-2">
-                    Merged from: {cs.merged_from.length ? cs.merged_from.join(", ") : "(representative only)"}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-          )
-        )}
 
         {tab === "flows" && flows && (
           <div className="grid gap-4 lg:grid-cols-2">

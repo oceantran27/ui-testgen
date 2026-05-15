@@ -15,8 +15,6 @@ export type RunResponse = {
   total_images?: number;
   valid_images?: number;
   invalid_images?: number;
-  canonical_images?: number;
-  duplicate_groups_count?: number;
   config?: Record<string, unknown> | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -91,12 +89,6 @@ export type ImageRecord = {
   storage_uri?: string | null;
   quality_status?: string | null;
   sha256_hash?: string | null;
-  duplicate_status?: string | null;
-  duplicate_group_id?: string | null;
-  is_canonical?: boolean | null;
-  duplicate_type?: string | null;
-  phash?: string | null;
-  dhash?: string | null;
   created_at?: string | null;
 };
 
@@ -163,7 +155,6 @@ export type ModelCallDetailResponse = ModelCallSummary & {
 
 export type PipelinePhaseModelKey =
   | "ui_state_extraction"
-  | "semantic_duplicate"
   | "llm_flow_discovery"
   | "behaviour_intent_inference"
   | "bdd_scenario_generation"
@@ -232,43 +223,6 @@ export type UIStateDetailResponse = UIStateSummary & {
   primary_action_candidates: unknown[];
 };
 
-export type CanonicalStateGroupData = {
-  state_id: string;
-  screen_purpose: string;
-  screen_type: string;
-  domain: string;
-};
-
-export type CanonicalStateGroup = {
-  canonical_id: string;
-  merged_from: string[];
-  confidence: string;
-  data: CanonicalStateGroupData;
-};
-
-export type SemanticCanonicalizationResult = {
-  canonical_state_set_id: string;
-  unique_states: CanonicalStateGroup[];
-  deduplication_map?: Array<{ original_state_id: string; canonical_id: string }>;
-  merge_decisions?: Array<{
-    decision_type: "merge";
-    states: string[];
-    canonical_id: string;
-    confidence: string;
-    reason: string;
-  }>;
-  separation_decisions?: Array<{
-    decision_type: "keep_separate";
-    states: string[];
-    confidence: string;
-    reason: string;
-  }>;
-  warnings?: Array<{
-    type: string;
-    message: string;
-    affected_states: string[];
-  }>;
-};
 
 export type FlowTransitionTrigger = {
   action_type: string;
@@ -407,7 +361,7 @@ export type StepAuditRecord = {
   step_grounding_value: number;
   audit_reason: string;
   supporting_evidence: StepAuditSupportingEvidence;
-  issues?: Array<Record<string, string>>;
+  audit_issues?: Array<{ issue_type: string; issue_description: string }>;
 };
 
 export type HallucinationFlagsRecord = {

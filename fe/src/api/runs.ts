@@ -20,7 +20,6 @@ import type {
   UIStatesListResponse,
   UploadImagesResponse,
   PipelineLogResponse,
-  SemanticCanonicalizationResult,
   ScenarioValidationResult,
 } from "../types/run";
 
@@ -59,7 +58,7 @@ export async function uploadRunImages(
 
 export async function listRunImages(
   runId: string,
-  params?: { quality_status?: string; is_canonical?: boolean },
+  params?: { quality_status?: string },
 ): Promise<ImageListResponse> {
   const { data } = await apiClient.get<ImageListResponse>(
     `runs/${encodeURIComponent(runId)}/images`,
@@ -152,12 +151,6 @@ export async function getUIState(
   return data;
 }
 
-export async function getCanonicalStates(runId: string): Promise<SemanticCanonicalizationResult> {
-  const { data } = await apiClient.get<SemanticCanonicalizationResult>(
-    `runs/${encodeURIComponent(runId)}/canonical-states`,
-  );
-  return data;
-}
 
 export async function listFlows(runId: string): Promise<FlowsListResponse> {
   const { data } = await apiClient.get<FlowsListResponse>(
