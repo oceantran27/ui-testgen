@@ -270,6 +270,12 @@ class ModelProviderAdapter:
             max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
         elif task_name == "bdd_scenario_generation":
             max_output_tokens = settings.BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS
+        elif task_name == "scenario_evidence_audit":
+            max_output_tokens = settings.SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS
+
+        timeout_seconds = settings.TEXT_MODEL_TIMEOUT_SECONDS
+        if task_name == "scenario_evidence_audit":
+            timeout_seconds = settings.SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS
 
         request = ModelRequest(
             task_name=task_name,
@@ -284,7 +290,7 @@ class ModelProviderAdapter:
             model_name=model_name_override,
             temperature=temperature,
             max_output_tokens=max_output_tokens,
-            timeout_seconds=settings.TEXT_MODEL_TIMEOUT_SECONDS,
+            timeout_seconds=timeout_seconds,
         )
 
         return await _execute_with_retry_pipeline_log(provider, request, fallback)

@@ -51,6 +51,87 @@ class UIStateExtractionResult(_PromptOutputBase):
     visible_feedback: List[UIFeedbackA1] = Field(default_factory=list)
 
 
+class UIElementA1V2(_PromptOutputBase):
+    element_id: str
+    element_type: str
+    text: List[str] = Field(default_factory=list)
+    role_hint: Optional[str] = None
+    visual_region: Optional[str] = None
+
+
+class UIActionA1V2(_PromptOutputBase):
+    action_id: str
+    action_type: str
+    text: List[str] = Field(default_factory=list)
+    action_priority: Optional[str] = None
+    visual_region: Optional[str] = None
+
+
+class UIFeedbackA1V2(_PromptOutputBase):
+    feedback_id: str
+    feedback_type: str
+    text: List[str] = Field(default_factory=list)
+    related_element_ids: List[str] = Field(default_factory=list)
+    visual_region: Optional[str] = None
+
+
+class InteractionGroupA1V2(_PromptOutputBase):
+    group_id: str
+    group_type: str
+    group_label: Optional[str] = None
+    element_ids: List[str] = Field(default_factory=list)
+    action_ids: List[str] = Field(default_factory=list)
+    feedback_ids: List[str] = Field(default_factory=list)
+    primary_action_id: Optional[str] = None
+    group_evidence: List[str] = Field(default_factory=list)
+    group_confidence: str
+
+
+class UIStateExtractionV2Result(_PromptOutputBase):
+    state_id: str
+    screen_purpose: str
+    screen_type: str
+    domain: str
+    visible_elements: List[UIElementA1V2] = Field(default_factory=list)
+    available_actions: List[UIActionA1V2] = Field(default_factory=list)
+    visible_feedback: List[UIFeedbackA1V2] = Field(default_factory=list)
+    interaction_groups: List[InteractionGroupA1V2] = Field(default_factory=list)
+
+
+# ──────────────────────────────────────────────
+# A2 v2: Screen Behaviour Intent Extraction (NEW)
+# ──────────────────────────────────────────────
+
+
+class ScreenIntentPrimaryActionA2(_PromptOutputBase):
+    """Primary action for a screen intent — explicit keys for OpenAI strict json_schema."""
+
+    action_id: str
+    action_type: str
+
+
+class UnresolvedScreenGroupA2(_PromptOutputBase):
+    group_id: str
+    reason: str
+
+
+class ScreenBehaviourIntentA2(_PromptOutputBase):
+    screen_intent_id: str
+    source_state_id: str
+    source_group_id: str
+    intent_name: str
+    intent_kind: str
+    local_user_goal: str
+    primary_action: Optional[ScreenIntentPrimaryActionA2] = None
+    required_input_groups: List[str] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    confidence: str
+
+
+class ScreenIntentExtractionV2Result(_PromptOutputBase):
+    screen_behaviour_intents: List[ScreenBehaviourIntentA2] = Field(default_factory=list)
+    unresolved_screen_groups: List[UnresolvedScreenGroupA2] = Field(default_factory=list)
+
 
 
 # ──────────────────────────────────────────────
@@ -70,6 +151,8 @@ class FlowTransitionA3(_PromptOutputBase):
     to_state: str
     relation_type: str = "direct_transition"
     trigger_action: FlowTransitionTriggerA3
+    source_group_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
     evidence_level: str  # strong, medium
     reasoning_pattern: Optional[str] = None
     source_evidence: List[str] = Field(default_factory=list)
@@ -148,6 +231,9 @@ class BehaviourIntentA5(_PromptOutputBase):
     source_flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
     source_transition_indexes: List[int] = Field(default_factory=list)
     source_outcome_state: Optional[str] = None
+    source_group_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
+    source_transition_ids: List[str] = Field(default_factory=list)
     behaviour_name: str
     intent_type: str  # positive | negative | validation | navigation | recovery | registration | access_control | data_entry | unknown
     user_intent: str
@@ -280,11 +366,12 @@ class StepAuditA7(_PromptOutputBase):
     step_number: int
     keyword: str
     step_text: str
-    grounding_level: str  # grounded | partially_grounded | weakly_grounded | ungrounded | contradicted | not_verifiable
-    step_support_status: str  # supported | partially_supported | weakly_supported | unsupported | contradicted | not_verifiable
-    step_grounding_value: float
-    audit_reason: str
-    supporting_evidence: StepAuditSupportingEvidenceA7
+    status: Optional[str] = None  # Added to support compact format "ok"
+    grounding_level: Optional[str] = None
+    step_support_status: Optional[str] = None
+    step_grounding_value: Optional[float] = None
+    audit_reason: Optional[str] = None
+    supporting_evidence: Optional[Union[StepAuditSupportingEvidenceA7, str]] = None
     audit_issues: List[StepAuditIssueA7] = Field(default_factory=list)
 
 
@@ -294,11 +381,13 @@ class ScenarioAcceptanceDecisionA7(_PromptOutputBase):
 
 
 class ValidationScoresA7(_PromptOutputBase):
-    grounding_score: float
-    evidence_coverage_score: float
-    transition_support_score: float = 0.0
-    bdd_structure_score: float
-    hallucination_penalty: float
+    intent_alignment_score: float = 0.0
+    screen_intent_grounding_score: float = 0.0
+    flow_grounding_score: float = 0.0
+    evidence_grounding_score: float = 0.0
+    bdd_structure_score: float = 0.0
+    data_and_assertion_quality_score: float = 0.0
+    hallucination_penalty: float = 0.0
 
 
 class RevisionSuggestionA7(_PromptOutputBase):
@@ -374,10 +463,15 @@ class BaselineGenerationResult(_PromptOutputBase):
 
 SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
     "ui_state_extraction": UIStateExtractionResult,
+    "ui_state_extraction_v2": UIStateExtractionV2Result,
+    "screen_intent_extraction_v2": ScreenIntentExtractionV2Result,
     "ui_flow_discovery": UIFlowDiscoveryResult,
+    "intent_aware_flow_discovery": UIFlowDiscoveryResult,
     "behaviour_intent_inference": BehaviourIntentInferenceResult,
+    "behaviour_contract_builder": BehaviourIntentInferenceResult,
     "behaviour_scenario_generation": BDDScenarioGenerationResult,
     "scenario_validation": ScenarioValidationResult,
+    "scenario_evidence_audit": ScenarioValidationResult,
 }
 
 

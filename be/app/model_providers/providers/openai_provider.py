@@ -81,6 +81,19 @@ class OpenAIModelProvider(BaseModelProvider):
         self._client = None
 
     @staticmethod
+    def _strip_json_code_fence(raw_text: str) -> str:
+        """If the model wraps JSON in ```json ... ```, extract the inner payload."""
+        s = raw_text.strip()
+        if not s.startswith("```"):
+            return s
+        lines = s.split("\n")
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        return "\n".join(lines).strip()
+
+    @staticmethod
     def _uses_restricted_sampling(model_name: str) -> bool:
         """Models that reject custom temperature / max_tokens (use API defaults)."""
         m = model_name.lower()
@@ -217,7 +230,20 @@ class OpenAIModelProvider(BaseModelProvider):
 
             latency_ms = int((time.time() - start_time) * 1000)
 
-            raw_text = response.choices[0].message.content or ""
+            choice = response.choices[0]
+            raw_text = choice.message.content or ""
+            finish_reason = getattr(choice, "finish_reason", None) or ""
+            if finish_reason == "length":
+                raise RetryableModelError(ModelProviderError(
+                    error_code=ModelErrorCode.MODEL_PROVIDER_ERROR,
+                    provider=self.name, model_name=model_name, task_name=request.task_name,
+                    retryable=True,
+                    message=(
+                        f"OpenAI response truncated (finish_reason=length, {len(raw_text)} chars). "
+                        f"Increase max_output_tokens for task '{request.task_name}'."
+                    ),
+                    details={"finish_reason": finish_reason},
+                ))
             if not raw_text:
                 raise RetryableModelError(ModelProviderError(
                     error_code=ModelErrorCode.MODEL_EMPTY_RESPONSE,
@@ -295,14 +321,21 @@ class OpenAIModelProvider(BaseModelProvider):
 
     def _parse_and_validate(self, raw_text: str, request: ModelRequest) -> Union[BaseModel, Dict[str, Any]]:
         """Parse JSON and validate against Pydantic schema. Returns the model instance when schema is set."""
+        payload = self._strip_json_code_fence(raw_text)
         try:
-            parsed = json.loads(raw_text)
+            parsed = json.loads(payload)
         except json.JSONDecodeError as e:
+            tail = payload[-400:] if len(payload) > 400 else payload
             raise RetryableModelError(ModelProviderError(
                 error_code=ModelErrorCode.MODEL_INVALID_JSON,
                 provider=self.name, model_name=request.model_name, task_name=request.task_name,
-                retryable=True, message=f"Invalid JSON from model: {e}",
-                details={"raw_text_preview": raw_text[:200]},
+                retryable=True,
+                message=f"Invalid JSON from model: {e}",
+                details={
+                    "raw_text_len": len(payload),
+                    "raw_text_head": payload[:200],
+                    "raw_text_tail": tail,
+                },
             )) from e
 
         if request.output_schema:

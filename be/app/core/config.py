@@ -158,7 +158,13 @@ class Settings(BaseSettings):
     SAVE_SCENARIO_VALIDATION_REPORT: bool = True
     SCENARIO_VALIDATION_MODEL_PROVIDER: str = "openai"
     SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4"
-    
+    # Agent 7: many scenarios × step_audits; truncation mid-JSON → JSONDecodeError. Reasoning models may consume budget.
+    SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 65536
+    # Wall-clock for large completions (registry uses TEXT_MODEL_TIMEOUT_SECONDS by default = 60s).
+    SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 600
+    # Max scenarios per LLM call; smaller batches avoid finish_reason=length on huge step_audits JSON.
+    SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
+
     # Phase 13 — Scenario Curation
     ENABLE_SCENARIO_CURATION_NODE: bool = True
     USE_LLM_FOR_SCENARIO_CURATION: bool = True
@@ -179,6 +185,7 @@ class Settings(BaseSettings):
     LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
     # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
     LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
+    LLM_FLOW_DISCOVERY_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
 
     # Baseline Research Settings
     BASELINE_MODEL_PROVIDER: str = "openai"
