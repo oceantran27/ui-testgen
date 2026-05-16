@@ -34,30 +34,30 @@ class PipelineState(TypedDict, total=False):
     raw_image_ids: List[str]                          # image IDs loaded from DB
 
     
-    # ── 7-Agent Pipeline Packages (Strict JSON) ──
+    # ── Pipeline packages (graph node order, strict JSON payloads) ──
     
-    # A1: UI State Extraction
+    # UI state evidence extraction (vision V2)
     ui_state_package: Dict[str, Any]
-    state_catalog: List[Dict[str, Any]]               # verbatim extracted states (A1 output)
-    interaction_group_catalog: List[Dict[str, Any]]   # V2
+    state_catalog: List[Dict[str, Any]]
+    interaction_group_catalog: List[Dict[str, Any]]
     
-    # A2 v2: Screen Behaviour Intent Extraction (NEW)
+    # Screen behaviour intent extraction V2
     screen_intent_package: Dict[str, Any]
     
-    # A3: Flow Context Builder (NEW)
+    # Flow context builder (deterministic merge of states + intents)
     flow_context_package: Dict[str, Any]
     
-    # A4: Intent-aware Flow Discovery (previously A3)
+    # Intent-aware flow discovery
     flow_discovery_result: Dict[str, Any]
     
-    # A5: Behaviour Contract Builder (previously A5 Behaviour Intent Inference)
+    # Behaviour contract builder (structured behaviour intents + persistence)
     behaviour_contract_package: Dict[str, Any]
     intent_package: Dict[str, Any]
     
-    # A6: BDD Scenario Generation
+    # BDD scenario generation
     scenario_draft_package: Dict[str, Any]
     
-    # A7: Scenario Validation
+    # Scenario evidence audit (structured validation report)
     validated_scenario_package: Dict[str, Any]
 
     # Final assembled artifact (output_assembly_node) — must be declared or LangGraph drops it.
@@ -81,5 +81,5 @@ class PipelineState(TypedDict, total=False):
 
     # Feedback Loop Control
     scenario_revision_round: int                      # 0 = first pass, 1 = retry (max)
-    revision_suggestions: List[Dict[str, Any]]        # A7's revision suggestions for A6
+    revision_suggestions: List[Dict[str, Any]]        # audit revision hints for scenario regeneration
 

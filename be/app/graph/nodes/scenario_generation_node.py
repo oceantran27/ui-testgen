@@ -19,7 +19,7 @@ async def behaviour_scenario_generation_node(state: PipelineState, db: AsyncSess
             node_name,
             intent_lines=[
                 "Synthesize BDD scenarios and Gherkin steps from intents.",
-                "routing: scenario_validation unless error."
+                "routing: scenario_evidence_audit unless error."
             ],
             state_keys=("run_id", "intent_package"),
             state=state
