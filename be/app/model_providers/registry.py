@@ -26,6 +26,7 @@ from app.model_providers.base import (
 )
 from app.model_providers.retry_handler import execute_with_retry
 from app.core.prompt_manager import prompt_manager
+from app.model_providers.db_session_context import model_call_db_session, model_call_job_id
 
 try:
     from app.core import pipeline_run_log as _prl
@@ -137,6 +138,16 @@ async def _execute_with_retry_pipeline_log(
             ],
             raw_path=path,
         )
+    db_sess = model_call_db_session.get()
+    if db_sess is not None:
+        from app.model_providers.usage_logger import log_model_call
+
+        try:
+            await log_model_call(
+                db_sess, response, job_id=model_call_job_id.get()
+            )
+        except Exception as log_exc:
+            logger.warning("log_model_call failed for %s: %s", request.request_id, log_exc)
     return response
 
 
@@ -266,8 +277,10 @@ class ModelProviderAdapter:
             fallback = self._registry.get_fallback(provider.name)
 
         max_output_tokens = 4096
-        if task_name == "llm_flow_discovery":
+        if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery"):
             max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+        elif task_name == "behaviour_contract_builder":
+            max_output_tokens = settings.BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS
         elif task_name == "bdd_scenario_generation":
             max_output_tokens = settings.BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS
         elif task_name == "scenario_evidence_audit":

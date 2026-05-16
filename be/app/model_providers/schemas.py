@@ -90,7 +90,8 @@ class InteractionGroupA1V2(_PromptOutputBase):
 class UIStateExtractionV2Result(_PromptOutputBase):
     state_id: str
     screen_purpose: str
-    screen_type: str
+    screen_type: str  # form, list, detail, dashboard, search, landing, error, success, modal, unknown
+    outcome_state_type: str = "normal"  # normal | validation_error | failure | success | warning | confirmation | review | empty_state | modal | unknown
     domain: str
     visible_elements: List[UIElementA1V2] = Field(default_factory=list)
     available_actions: List[UIActionA1V2] = Field(default_factory=list)
@@ -108,11 +109,32 @@ class ScreenIntentPrimaryActionA2(_PromptOutputBase):
 
     action_id: str
     action_type: str
+    text: List[str] = Field(default_factory=list)
 
 
 class UnresolvedScreenGroupA2(_PromptOutputBase):
     group_id: str
     reason: str
+
+
+class SelectionOptionA2(_PromptOutputBase):
+    option_element_id: str
+    option_action_id: Optional[str] = None
+    option_text: List[str] = Field(default_factory=list)
+    visible_status: str = "unknown"  # selected | unselected | disabled | unknown
+
+
+class ActionSequenceStepA2(_PromptOutputBase):
+    step_type: str  # select_option | click_action | enter_input
+    source_action_id: Optional[str] = None
+    source_element_id: Optional[str] = None
+    text: List[str] = Field(default_factory=list)
+
+
+class ActionSequenceTemplateA2(_PromptOutputBase):
+    sequence_name: str
+    steps: List[ActionSequenceStepA2] = Field(default_factory=list)
+    outcome_prediction_allowed: bool = False
 
 
 class ScreenBehaviourIntentA2(_PromptOutputBase):
@@ -123,6 +145,10 @@ class ScreenBehaviourIntentA2(_PromptOutputBase):
     intent_kind: str
     local_user_goal: str
     primary_action: Optional[ScreenIntentPrimaryActionA2] = None
+    selection_options: List[SelectionOptionA2] = Field(default_factory=list)
+    commit_action: Optional[ScreenIntentPrimaryActionA2] = None
+    secondary_actions: List[ScreenIntentPrimaryActionA2] = Field(default_factory=list)
+    local_action_sequence_templates: List[ActionSequenceTemplateA2] = Field(default_factory=list)
     required_input_groups: List[str] = Field(default_factory=list)
     evidence: List[str] = Field(default_factory=list)
     confidence: str
@@ -157,17 +183,30 @@ class FlowTransitionA3(_PromptOutputBase):
     reasoning_pattern: Optional[str] = None
     source_evidence: List[str] = Field(default_factory=list)
     target_evidence: List[str] = Field(default_factory=list)
+    source_visible_evidence: List[str] = Field(default_factory=list)
+    target_visible_evidence: List[str] = Field(default_factory=list)
     assumptions: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
 
 
 class AlternativeOutcomeA3(_PromptOutputBase):
     source_state: str
+    source_group_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
     trigger_action: FlowTransitionTriggerA3
     outcome_states: List[str] = Field(default_factory=list)
+    visible_evidence: List[str] = Field(default_factory=list)
     reason: str
     evidence_level: str
     warnings: List[str] = Field(default_factory=list)
+
+
+class LocalInteractionA3(_PromptOutputBase):
+    source_state: str
+    source_group_id: str
+    source_screen_intent_id: str
+    trigger_action: FlowTransitionTriggerA3
+    reason: str
 
 
 class FlowDiscoveryA3(_PromptOutputBase):
@@ -178,6 +217,7 @@ class FlowDiscoveryA3(_PromptOutputBase):
     ordered_states: List[str] = Field(default_factory=list)
     transitions: List[FlowTransitionA3] = Field(default_factory=list)
     alternative_outcomes: List[AlternativeOutcomeA3] = Field(default_factory=list)
+    local_interactions: List[LocalInteractionA3] = Field(default_factory=list)
 
 
 class SemanticClusterA3(_PromptOutputBase):
@@ -304,6 +344,9 @@ class TestScenarioA6(_PromptOutputBase):
     source_flow_id: str
     source_flow_name: str
     source_flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
+    source_screen_intent_id: Optional[str] = None
+    source_group_id: Optional[str] = None
+    source_transition_ids: List[str] = Field(default_factory=list)
     source_transition_indexes: List[int] = Field(default_factory=list)
     start_state: str
     end_state: str
