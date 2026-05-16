@@ -515,7 +515,7 @@ export function RunWorkspacePage() {
   const subtitle = useMemo(
     () =>
       run?.project_name
-        ? `${run.project_name} · 7-Agent Pipeline Workspace`
+        ? `${run.project_name} · 10-Node Granular Pipeline Workspace`
         : "Run workspace",
     [run?.project_name],
   );
@@ -573,7 +573,7 @@ export function RunWorkspacePage() {
 
       <div className="card-dark mb-6">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-500">
-          Sequential 7-Agent Pipeline
+          Sequential 10-Node Pipeline (Agent A1-A7)
         </h2>
         <PipelineStrip run={run} graphStatus={graphStatus} hints={hints} />
       </div>
@@ -675,9 +675,37 @@ export function RunWorkspacePage() {
             </ul>
             <div className="rounded-lg border border-zinc-700/60 bg-zinc-950/50 p-3">
               {stateDetail ? (
-                <div className="space-y-3 text-sm">
-                  <img src={thumb(stateDetail.image_id)} alt="" className="max-h-40 rounded border border-zinc-700" />
-                  <p className="text-zinc-300">{stateDetail.state_summary}</p>
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-center gap-4">
+                    <img src={thumb(stateDetail.image_id)} alt="" className="max-h-40 rounded border border-zinc-700" />
+                    <div className="flex-1">
+                      <p className="text-zinc-300 font-medium mb-1">{stateDetail.page_type}</p>
+                      <p className="text-xs text-zinc-500">{stateDetail.state_summary}</p>
+                    </div>
+                  </div>
+
+                  {stateDetail.interaction_groups?.length ? (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Interaction Groups (Agent A1)</p>
+                      <div className="grid gap-2">
+                        {stateDetail.interaction_groups.map(grp => (
+                          <div key={grp.group_id} className="rounded border border-zinc-800 bg-zinc-900/40 p-2">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-zinc-300 text-[11px]">{grp.group_name}</span>
+                              <span className="text-[9px] text-zinc-500 font-mono">{grp.group_id}</span>
+                            </div>
+                            <p className="text-[10px] text-zinc-400 mb-1">{grp.purpose}</p>
+                            <div className="flex flex-wrap gap-1">
+                              {grp.element_ids.map(eid => (
+                                <span key={eid} className="bg-zinc-800 px-1 rounded text-[9px] text-zinc-500">{eid.split('_').pop()}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
                   {(() => {
                     const showRoleCol = stateDetail.ui_elements.some(
                       (el) => el.semantic_role,
@@ -692,7 +720,7 @@ export function RunWorkspacePage() {
                             <th className="px-2 py-1">Role</th>
                           ) : null}
                           <th className="px-2 py-1">Text</th>
-                          <th className="px-2 py-1">Visibility</th>
+                          <th className="px-2 py-1">Group</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-800 text-zinc-400">
@@ -705,7 +733,7 @@ export function RunWorkspacePage() {
                             <td className="px-2 py-1 max-w-[140px] truncate" title={formatElementText(el.text)}>
                               {formatElementText(el.text)}
                             </td>
-                            <td className="px-2 py-1">{el.visibility ?? "—"}</td>
+                            <td className="px-2 py-1 font-mono text-[9px]">{el.interaction_group_id?.split('_').pop() || "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -714,7 +742,7 @@ export function RunWorkspacePage() {
                     );
                   })()}
                 </div>
-              ) : <p className="text-zinc-500 text-sm">Select a state to see elements.</p>}
+              ) : <p className="text-zinc-500 text-sm">Select a state to see elements and interaction groups.</p>}
             </div>
           </div>
         )}
@@ -927,8 +955,9 @@ export function RunWorkspacePage() {
                    {decision.include_in_final_output ? <FiCheckCircle className="text-emerald-500 w-5 h-5 shrink-0" /> : <FiAlertCircle className="text-amber-500 w-5 h-5 shrink-0" />}
                   </div>
                   {sc ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-3">
                       <span>Grounding: {Number(sc.grounding_score).toFixed(2)}</span>
+                      <span>Intent G: {Number(sc.screen_intent_grounding_score).toFixed(2)}</span>
                       <span>Evidence: {Number(sc.evidence_coverage_score).toFixed(2)}</span>
                       <span>BDD: {Number(sc.bdd_structure_score).toFixed(2)}</span>
                       <span>Penalty: {Number(sc.hallucination_penalty).toFixed(2)}</span>

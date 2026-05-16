@@ -28,10 +28,13 @@ const NODE_INDEX: Record<string, number> = Object.fromEntries(
  * Backend `persist_run_graph_progress` uses *_node ids; graph state may use shorter names.
  */
 const PIPELINE_NODE_ALIASES: Record<string, PipelineNodeId> = {
-  ui_state_extraction: "ui_state_extraction_node",
-  behaviour_intent_inference: "behaviour_intent_inference_node",
+  ui_state_evidence_extraction: "ui_state_evidence_extraction_node",
+  screen_intent_extraction_v2: "screen_intent_extraction_v2_node",
+  flow_context_builder: "flow_context_builder_node",
+  intent_aware_flow_discovery: "intent_aware_flow_discovery_node",
+  behaviour_contract_builder: "behaviour_contract_builder_node",
   behaviour_scenario_generation: "behaviour_scenario_generation_node",
-  scenario_validation: "scenario_validation_node",
+  scenario_evidence_audit: "scenario_evidence_audit_node",
 };
 
 export function normalizePipelineNodeId(
@@ -77,13 +80,13 @@ function heuristicActiveIndex(
     return null;
   }
   if (hints.scenarioCount > 0) {
-    return NODE_INDEX["scenario_validation_node"] ?? null;
+    return NODE_INDEX["scenario_evidence_audit_node"] ?? null;
   }
   if (hints.flowCount > 0) {
-    return NODE_INDEX["behaviour_intent_inference_node"] ?? null;
+    return NODE_INDEX["behaviour_contract_builder_node"] ?? null;
   }
   if (hints.uiStateCount > 0) {
-    return NODE_INDEX["llm_flow_discovery_node"] ?? null;
+    return NODE_INDEX["flow_context_builder_node"] ?? null;
   }
   return null;
 }

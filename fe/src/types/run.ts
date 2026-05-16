@@ -155,10 +155,12 @@ export type ModelCallDetailResponse = ModelCallSummary & {
 
 export type PipelinePhaseModelKey =
   | "ui_state_extraction"
-  | "llm_flow_discovery"
-  | "behaviour_intent_inference"
+  | "screen_intent_extraction"
+  | "flow_context_builder"
+  | "intent_aware_flow_discovery"
+  | "behaviour_contract_builder"
   | "bdd_scenario_generation"
-  | "scenario_validation";
+  | "scenario_evidence_audit";
 
 export type ModelConfigResponse = {
   run_id: string;
@@ -215,10 +217,30 @@ export type UIElementRecord = {
   action_type?: string | null;
   semantic_role?: string | null;
   visibility?: string | null;
+  interaction_group_id?: string | null;
+};
+
+export type InteractionGroupRecord = {
+  group_id: string;
+  group_name: string;
+  purpose: string;
+  element_ids: string[];
+};
+
+export type ScreenBehaviourIntentRecord = {
+  intent_id: string;
+  state_id: string;
+  intent_name: string;
+  user_goal: string;
+  business_value: string;
+  interaction_group_ids: string[];
+  intent_type: string;
 };
 
 export type UIStateDetailResponse = UIStateSummary & {
   ui_elements: UIElementRecord[];
+  interaction_groups?: InteractionGroupRecord[];
+  screen_intents?: ScreenBehaviourIntentRecord[];
   feedback_elements: unknown[];
   primary_action_candidates: unknown[];
 };
@@ -277,10 +299,23 @@ export type FlowSummary = {
     page_type: string;
     state_summary: string;
     evidence_element_ids: string[];
+    intent_id?: string;
   }>;
   flow_completeness?: Record<string, boolean>;
   intent_readiness?: IntentReadiness;
   flow_evidence_package?: FlowEvidencePackage;
+};
+
+export type FlowStateCardRecord = {
+  card_id: string;
+  state_id: string;
+  page_type: string;
+  state_summary: string;
+  local_intents: ScreenBehaviourIntentRecord[];
+  interaction_catalog: {
+    groups: InteractionGroupRecord[];
+    standalone_elements: UIElementRecord[];
+  };
 };
 
 export type FlowsListResponse = {
@@ -340,6 +375,7 @@ export type BddStepRecord = {
 
 export type ValidationScores = {
   grounding_score: number;
+  screen_intent_grounding_score?: number | null;
   evidence_coverage_score: number;
   transition_support_score?: number | null;
   bdd_structure_score: number;
