@@ -447,11 +447,15 @@ async def get_model_config(
                 "provider": settings.UI_STATE_EXTRACTION_PROVIDER,
                 "model": settings.UI_STATE_EXTRACTION_MODEL_NAME,
             },
-            "llm_flow_discovery": {
+            "screen_intent_extraction": {
                 "provider": settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
                 "model": settings.LLM_FLOW_DISCOVERY_MODEL_NAME,
             },
-            "behaviour_intent_inference": {
+            "intent_aware_flow_discovery": {
+                "provider": settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
+                "model": settings.LLM_FLOW_DISCOVERY_MODEL_NAME,
+            },
+            "behaviour_contract_builder": {
                 "provider": settings.BEHAVIOUR_INTENT_MODEL_PROVIDER,
                 "model": settings.BEHAVIOUR_INTENT_MODEL_NAME,
             },
@@ -459,14 +463,12 @@ async def get_model_config(
                 "provider": settings.BDD_SCENARIO_GENERATION_MODEL_PROVIDER,
                 "model": settings.BDD_SCENARIO_GENERATION_MODEL_NAME,
             },
-            "scenario_validation": {
+            "scenario_evidence_audit": {
                 "provider": settings.SCENARIO_VALIDATION_MODEL_PROVIDER,
                 "model": settings.SCENARIO_VALIDATION_MODEL_NAME,
             },
         },
         "feature_flags": {
-            "USE_VLM_FOR_QUALITY_CHECK": settings.USE_VLM_FOR_QUALITY_CHECK,
-            "USE_VLM_FOR_DUPLICATE_CHECK": settings.USE_VLM_FOR_DUPLICATE_CHECK,
             "USE_VLM_FOR_UI_STATE_EXTRACTION": settings.USE_VLM_FOR_UI_STATE_EXTRACTION,
             "USE_LLM_FOR_FLOW_DISCOVERY": settings.USE_LLM_FOR_FLOW_DISCOVERY,
             "USE_LLM_FOR_SCENARIO_GENERATION": settings.USE_LLM_FOR_SCENARIO_GENERATION,
