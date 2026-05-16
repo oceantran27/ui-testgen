@@ -39,12 +39,19 @@ class PipelineState(TypedDict, total=False):
     # A1: UI State Extraction
     ui_state_package: Dict[str, Any]
     state_catalog: List[Dict[str, Any]]               # verbatim extracted states (A1 output)
+    interaction_group_catalog: List[Dict[str, Any]]   # V2
     
+    # A2 v2: Screen Behaviour Intent Extraction (NEW)
+    screen_intent_package: Dict[str, Any]
     
-    # A3: UI Flow Discovery
+    # A3: Flow Context Builder (NEW)
+    flow_context_package: Dict[str, Any]
+    
+    # A4: Intent-aware Flow Discovery (previously A3)
     flow_discovery_result: Dict[str, Any]
     
-    # A5: Behaviour Intent Inference
+    # A5: Behaviour Contract Builder (previously A5 Behaviour Intent Inference)
+    behaviour_contract_package: Dict[str, Any]
     intent_package: Dict[str, Any]
     
     # A6: BDD Scenario Generation

@@ -10,11 +10,13 @@ from langgraph.graph import StateGraph, START, END
 
 from app.graph.state.graph_state import PipelineState
 from app.graph.nodes.init_run_context_node import init_run_context_node
-from app.graph.nodes.ui_state_node import ui_state_extraction_node
-from app.graph.nodes.llm_flow_discovery_node import llm_flow_discovery_node
-from app.graph.nodes.behaviour_intent_node import behaviour_intent_inference_node
+from app.graph.nodes.ui_state_evidence_extraction_node import ui_state_evidence_extraction_node
+from app.graph.nodes.screen_intent_extraction_v2_node import screen_intent_extraction_v2_node
+from app.graph.nodes.flow_context_builder_node import flow_context_builder_node
+from app.graph.nodes.intent_aware_flow_discovery_node import intent_aware_flow_discovery_node
+from app.graph.nodes.behaviour_contract_builder_node import behaviour_contract_builder_node
 from app.graph.nodes.scenario_generation_node import behaviour_scenario_generation_node
-from app.graph.nodes.scenario_validation_node import scenario_validation_node
+from app.graph.nodes.scenario_evidence_audit_node import scenario_evidence_audit_node
 from app.graph.nodes.output_assembly_node import output_assembly_node
 from app.graph.nodes.graph_finalizer_node import graph_finalizer_node
 
@@ -31,12 +33,14 @@ def _make_route(next_node: str):
         return next_node
     return _route
 
-_route_after_init = _make_route("ui_state_extraction_node")
-_route_after_ui_state_extraction = _make_route("llm_flow_discovery_node")
-_route_after_llm_flow_discovery = _make_route("behaviour_intent_inference_node")
-_route_after_behaviour_intent_inference = _make_route("behaviour_scenario_generation_node")
-_route_after_behaviour_scenario_generation = _make_route("scenario_validation_node")
-def _route_after_scenario_validation(state: PipelineState) -> str:
+_route_after_init = _make_route("ui_state_evidence_extraction_node")
+_route_after_ui_state_extraction = _make_route("screen_intent_extraction_v2_node")
+_route_after_screen_intent = _make_route("flow_context_builder_node")
+_route_after_flow_context = _make_route("intent_aware_flow_discovery_node")
+_route_after_flow_discovery = _make_route("behaviour_contract_builder_node")
+_route_after_behaviour_contract = _make_route("behaviour_scenario_generation_node")
+_route_after_behaviour_scenario_generation = _make_route("scenario_evidence_audit_node")
+def _route_after_scenario_evidence_audit(state: PipelineState) -> str:
     if state.get("should_stop"):
         return "graph_finalizer_node"
     
@@ -64,20 +68,24 @@ def build_graph(db) -> StateGraph:
 
     # Bind nodes with db
     init_node = functools.partial(init_run_context_node, db=db)
-    ui_state_node = functools.partial(ui_state_extraction_node, db=db)
-    llm_flow_node = functools.partial(llm_flow_discovery_node, db=db)
-    intent_node = functools.partial(behaviour_intent_inference_node, db=db)
+    ui_state_node = functools.partial(ui_state_evidence_extraction_node, db=db)
+    screen_intent_node = functools.partial(screen_intent_extraction_v2_node, db=db)
+    flow_context_node = functools.partial(flow_context_builder_node, db=db)
+    llm_flow_node = functools.partial(intent_aware_flow_discovery_node, db=db)
+    intent_node = functools.partial(behaviour_contract_builder_node, db=db)
     generation_node = functools.partial(behaviour_scenario_generation_node, db=db)
-    validation_node = functools.partial(scenario_validation_node, db=db)
+    validation_node = functools.partial(scenario_evidence_audit_node, db=db)
     assembly_node = functools.partial(output_assembly_node, db=db)
     finalizer_node = functools.partial(graph_finalizer_node, db=db)
 
     graph.add_node("init_run_context_node", init_node)
-    graph.add_node("ui_state_extraction_node", ui_state_node)
-    graph.add_node("llm_flow_discovery_node", llm_flow_node)
-    graph.add_node("behaviour_intent_inference_node", intent_node)
+    graph.add_node("ui_state_evidence_extraction_node", ui_state_node)
+    graph.add_node("screen_intent_extraction_v2_node", screen_intent_node)
+    graph.add_node("flow_context_builder_node", flow_context_node)
+    graph.add_node("intent_aware_flow_discovery_node", llm_flow_node)
+    graph.add_node("behaviour_contract_builder_node", intent_node)
     graph.add_node("behaviour_scenario_generation_node", generation_node)
-    graph.add_node("scenario_validation_node", validation_node)
+    graph.add_node("scenario_evidence_audit_node", validation_node)
     graph.add_node("output_assembly_node", assembly_node)
     graph.add_node("graph_finalizer_node", finalizer_node)
 
@@ -88,33 +96,50 @@ def build_graph(db) -> StateGraph:
         _route_after_init,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "ui_state_extraction_node": "ui_state_extraction_node",
+            "ui_state_evidence_extraction_node": "ui_state_evidence_extraction_node",
         },
     )
     
 
     graph.add_conditional_edges(
-        "ui_state_extraction_node",
+        "ui_state_evidence_extraction_node",
         _route_after_ui_state_extraction,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "llm_flow_discovery_node": "llm_flow_discovery_node"
+            "screen_intent_extraction_v2_node": "screen_intent_extraction_v2_node"
         },
     )
 
-
     graph.add_conditional_edges(
-        "llm_flow_discovery_node",
-        _route_after_llm_flow_discovery,
+        "screen_intent_extraction_v2_node",
+        _route_after_screen_intent,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "behaviour_intent_inference_node": "behaviour_intent_inference_node"
+            "flow_context_builder_node": "flow_context_builder_node"
         },
     )
 
     graph.add_conditional_edges(
-        "behaviour_intent_inference_node",
-        _route_after_behaviour_intent_inference,
+        "flow_context_builder_node",
+        _route_after_flow_context,
+        {
+            "graph_finalizer_node": "graph_finalizer_node",
+            "intent_aware_flow_discovery_node": "intent_aware_flow_discovery_node"
+        },
+    )
+
+    graph.add_conditional_edges(
+        "intent_aware_flow_discovery_node",
+        _route_after_flow_discovery,
+        {
+            "graph_finalizer_node": "graph_finalizer_node",
+            "behaviour_contract_builder_node": "behaviour_contract_builder_node"
+        },
+    )
+
+    graph.add_conditional_edges(
+        "behaviour_contract_builder_node",
+        _route_after_behaviour_contract,
         {
             "graph_finalizer_node": "graph_finalizer_node",
             "behaviour_scenario_generation_node": "behaviour_scenario_generation_node"
@@ -126,13 +151,13 @@ def build_graph(db) -> StateGraph:
         _route_after_behaviour_scenario_generation,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "scenario_validation_node": "scenario_validation_node"
+            "scenario_evidence_audit_node": "scenario_evidence_audit_node"
         },
     )
 
     graph.add_conditional_edges(
-        "scenario_validation_node",
-        _route_after_scenario_validation,
+        "scenario_evidence_audit_node",
+        _route_after_scenario_evidence_audit,
         {
             "graph_finalizer_node": "graph_finalizer_node",
             "behaviour_scenario_generation_node": "behaviour_scenario_generation_node",

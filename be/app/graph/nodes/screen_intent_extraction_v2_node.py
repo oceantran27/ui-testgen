@@ -1,46 +1,42 @@
 """
-LangGraph node for UI Flow Discovery (Agent 3).
+LangGraph node for Screen Intent Extraction (Agent 2).
 """
 from typing import Any, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
-from app.services.llm_flow_discovery_service import run_ui_flow_discovery
+from app.services.screen_intent_service import run_screen_intent_extraction
 from app.core.logging import log_event, logger
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
 from app.services.graph_progress import persist_run_graph_progress
 
-async def llm_flow_discovery_node(state: PipelineState, db: AsyncSession) -> Dict[str, Any]:
+async def screen_intent_extraction_v2_node(state: PipelineState, db: AsyncSession) -> Dict[str, Any]:
     run_id = state["run_id"]
-    node_name = "llm_flow_discovery_node"
+    node_name = "screen_intent_extraction_v2_node"
     await persist_run_graph_progress(run_id, node_name)
     
     if is_active():
         log_node(
             node_name,
             intent_lines=[
-                "Infer user flows and transitions from canonical states.",
-                "routing: behaviour_intent_inference unless error."
+                "Extract local screen intents from interaction groups.",
             ],
-            state_keys=("run_id", "ui_state_package"),
+            state_keys=("run_id",),
             state=state
         )
     
     try:
-        ui_state_package = state.get("ui_state_package")
-        if not ui_state_package:
-            # Fallback for transition compatibility
-            ui_state_package = {"unique_states": state.get("state_catalog", [])}
-
-        result = await run_ui_flow_discovery(
-            db=db,
-            run_id=run_id,
-            canonical_state_set=ui_state_package
-        )
+        state_catalog = state.get("state_catalog", [])
+        if not state_catalog:
+            return {
+                "should_stop": True,
+                "stop_reason": "NO_STATE_CATALOG",
+                "graph_status": "failed"
+            }
+        
+        result = await run_screen_intent_extraction(db=db, run_id=run_id, state_catalog=state_catalog)
 
         out = {
-            "flow_discovery_result": result,
-            "flow_clusters": result.get("candidate_flows", []),
-            "unassigned_state_ids": [], # Schema changed, this is now handled within candidate_flows or clusters
+            "screen_intent_package": result,
             "current_node": node_name,
             "completed_nodes": [node_name],
         }

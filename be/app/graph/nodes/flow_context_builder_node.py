@@ -1,43 +1,49 @@
 """
-LangGraph node for UI State Extraction (Agent 1).
+LangGraph node for Flow Context Builder (Agent 3).
 """
 from typing import Any, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
-from app.services.ui_state_service import run_ui_state_extraction
+from app.services.flow_context_builder_service import run_flow_context_builder
 from app.core.logging import log_event, logger
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
 from app.services.graph_progress import persist_run_graph_progress
 
-async def ui_state_extraction_node(state: PipelineState, db: AsyncSession) -> Dict[str, Any]:
+async def flow_context_builder_node(state: PipelineState, db: AsyncSession) -> Dict[str, Any]:
     run_id = state["run_id"]
-    node_name = "ui_state_extraction_node"
+    node_name = "flow_context_builder_node"
     await persist_run_graph_progress(run_id, node_name)
     
     if is_active():
         log_node(
             node_name,
             intent_lines=[
-                "Extract UI states from canonical screenshots.",
+                "Build Flow State Cards from UI states and Screen Intents.",
             ],
-            state_keys=("run_id", "raw_image_ids"),
+            state_keys=("run_id",),
             state=state
         )
     
     try:
-        image_ids = state.get("raw_image_ids", [])
-        if not image_ids:
+        state_catalog = state.get("state_catalog", [])
+        screen_intent_pkg = state.get("screen_intent_package", {})
+        screen_intent_catalog = screen_intent_pkg.get("screen_intent_catalog", [])
+
+        if not state_catalog:
             return {
                 "should_stop": True,
-                "stop_reason": "NO_IMAGE_IDS",
+                "stop_reason": "NO_STATE_CATALOG",
                 "graph_status": "failed"
             }
         
-        result = await run_ui_state_extraction(db=db, run_id=run_id, image_ids=image_ids)
+        result = await run_flow_context_builder(
+            run_id=run_id, 
+            state_catalog=state_catalog,
+            screen_intent_catalog=screen_intent_catalog
+        )
 
         out = {
-            "ui_state_package": result,
-            "state_catalog": result.get("extracted_states", []),
+            "flow_context_package": result,
             "current_node": node_name,
             "completed_nodes": [node_name],
         }
@@ -46,7 +52,6 @@ async def ui_state_extraction_node(state: PipelineState, db: AsyncSession) -> Di
         return out
     except Exception as e:
         logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
-        await db.rollback()
         return {
             "current_node": node_name,
             "failed_nodes": [node_name],
