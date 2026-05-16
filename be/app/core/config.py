@@ -139,6 +139,8 @@ class Settings(BaseSettings):
     BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
     BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5.4-mini"
     SAVE_BEHAVIOUR_INTENT_REPORT: bool = True
+    # Agent 5: full flow-discovery package → many behaviour_intents; registry default 4096 → finish_reason=length.
+    BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 32768
     
     # Phase 11 — Behaviour Scenario Generation
     ENABLE_BEHAVIOUR_SCENARIO_GENERATION_NODE: bool = True

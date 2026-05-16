@@ -33,6 +33,7 @@ from app.schemas.image import (
 from app.services import run_service, image_service
 from app.services.pipeline_log_service import read_pipeline_log_incremental
 from app.core.errors import RunNotFoundException
+from app.constants.validation_artifacts import SCENARIO_VALIDATION_ARTIFACT_TYPES
 
 router = APIRouter(prefix="/runs", tags=["Runs"])
 
@@ -167,11 +168,10 @@ async def upload_images(
 async def get_run_images(
     run_id: str,
     quality_status: Optional[str] = Query(default=None, description="Filter by quality_status"),
-    is_canonical: Optional[bool] = Query(default=None, description="Filter by is_canonical"),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """List images for a run. Optional quality_status and is_canonical filters."""
-    images = await image_service.get_run_images(db, run_id, quality_status=quality_status, is_canonical=is_canonical)
+    """List images for a run. Optional quality_status filter."""
+    images = await image_service.get_run_images(db, run_id, quality_status=quality_status)
     items = [
         ImageResponse(
             image_id=img.id,
@@ -496,13 +496,17 @@ async def list_ui_states(
     """List all extracted UI states for a run."""
     from app.db.models.ui_state import UIState
     from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
 
     await run_service.get_run(db, run_id)
 
     result = await db.execute(
-        select(UIState).where(UIState.run_id == run_id).order_by(UIState.created_at)
+        select(UIState)
+        .options(selectinload(UIState.image))
+        .where(UIState.run_id == run_id)
+        .order_by(UIState.created_at)
     )
-    states = result.scalars().all()
+    states = result.scalars().unique().all()
 
     return {
         "run_id": run_id,
@@ -511,10 +515,15 @@ async def list_ui_states(
             {
                 "state_id": s.id,
                 "image_id": s.image_id,
+                "original_filename": (s.image.original_filename if s.image else None),
                 "page_type": s.page_type,
+                "screen_type": s.screen_type,
+                "screen_purpose": s.screen_purpose,
+                "domain": s.domain,
                 "state_summary": s.state_summary,
                 "state_signature": s.state_signature,
                 "confidence": s.confidence,
+                "confidence_label": s.confidence_label,
                 "has_form": s.has_form,
                 "has_table": s.has_table,
                 "has_modal": s.has_modal,
@@ -553,18 +562,56 @@ async def get_ui_state(
     )
     elements = result.scalars().all()
 
+    raw_groups = state.interaction_groups_json
+    if not isinstance(raw_groups, list):
+        raw_groups = []
+
+    element_to_group: dict[str, str] = {}
+    interaction_groups: list[dict] = []
+    for g in raw_groups:
+        if not isinstance(g, dict):
+            continue
+        gid = str(g.get("group_id") or "")
+        merged_ids: list[str] = []
+        for key in ("element_ids", "action_ids", "feedback_ids"):
+            for x in g.get(key) or []:
+                sid = str(x)
+                merged_ids.append(sid)
+                element_to_group[sid] = gid
+        group_label = str(g.get("group_label") or "")
+        group_type = str(g.get("group_type") or "")
+        name = group_label or group_type or gid
+        purpose = group_type or group_label or ""
+        interaction_groups.append(
+            {
+                "group_id": gid
+                if gid
+                else f"ig_unknown_{len(interaction_groups)}",
+                "group_name": name,
+                "purpose": purpose,
+                "element_ids": merged_ids,
+                "group_type": group_type or None,
+                "group_label": group_label or None,
+            }
+        )
+
     return {
         "state_id": state.id,
         "image_id": state.image_id,
         "page_type": state.page_type,
+        "screen_type": state.screen_type,
+        "screen_purpose": state.screen_purpose,
+        "domain": state.domain,
         "state_summary": state.state_summary,
         "state_signature": state.state_signature,
         "confidence": state.confidence,
+        "confidence_label": state.confidence_label,
         "has_form": state.has_form,
         "has_table": state.has_table,
         "has_modal": state.has_modal,
         "has_feedback": state.has_feedback,
         "extraction_status": state.extraction_status,
+        "interaction_groups": interaction_groups,
         "ui_elements": [
             {
                 "element_id": e.id,
@@ -574,8 +621,11 @@ async def get_ui_state(
                 "bbox": [e.bbox_ymin, e.bbox_xmin, e.bbox_ymax, e.bbox_xmax],
                 "actionable": e.actionable,
                 "is_feedback": e.is_feedback,
+                "feedback_type": e.feedback_type,
+                "action_type": e.action_type,
                 "semantic_role": e.semantic_role,
                 "visibility": e.visibility,
+                "interaction_group_id": element_to_group.get(e.id),
             }
             for e in elements
         ],
@@ -933,30 +983,25 @@ async def get_scenario_validation(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return the full scenario validation result (Agent 7)."""
-    from app.db.models.artifact import Artifact
-    from app.services.storage_service import storage_service
-    from sqlalchemy import select
-    import json
+    """Return Agent 7 scenario validation package (artifact: scenario_evidence_audit_report or legacy)."""
 
-    result = await db.execute(
-        select(Artifact).where(
-            Artifact.run_id == run_id, 
-            Artifact.artifact_type == "scenario_validation_report"
-        )
-    )
-    artifact = result.scalar_one_or_none()
-    if not artifact:
+    await run_service.get_run(db, run_id)
+
+    from app.services.validation_report_loader import load_latest_scenario_validation_payload
+
+    payload = await load_latest_scenario_validation_payload(db, run_id)
+    if not payload:
         raise HTTPException(
             status_code=404,
             detail={
                 "error_code": "SCENARIO_VALIDATION_REPORT_NOT_FOUND",
-                "message": f"No scenario_validation_report artifact for run '{run_id}'.",
+                "message": (
+                    f"No scenario validation artifact for run '{run_id}' "
+                    f"(expected {', '.join(SCENARIO_VALIDATION_ARTIFACT_TYPES)})."
+                ),
             },
         )
-
-    content = storage_service.download_file(artifact.storage_uri)
-    return json.loads(content)
+    return payload
 
 
 @router.get("/{run_id}/research-output")
@@ -964,30 +1009,20 @@ async def get_research_output(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return final validated scenario package as the research output."""
-    import json
-    from app.db.models.artifact import Artifact
-    from app.services.storage_service import storage_service
-    from sqlalchemy import select
+    """Return validated scenario package JSON (same artifact as GET /scenario-validation)."""
 
     await run_service.get_run(db, run_id)
 
-    result = await db.execute(
-        select(Artifact).where(
-            Artifact.run_id == run_id, 
-            Artifact.artifact_type == "scenario_validation_report"
-        )
-    )
-    artifact = result.scalar_one_or_none()
-    if not artifact or not artifact.storage_uri:
+    from app.services.validation_report_loader import load_latest_scenario_validation_payload
+
+    payload = await load_latest_scenario_validation_payload(db, run_id)
+    if not payload:
         raise HTTPException(
             status_code=404,
             detail={
                 "error_code": "RESEARCH_OUTPUT_NOT_FOUND",
-                "message": f"No final validated output for run '{run_id}'.",
+                "message": f"No scenario validation artifact for run '{run_id}'.",
             },
         )
-
-    raw = storage_service.download_file(artifact.storage_uri)
-    return json.loads(raw)
+    return payload
 
