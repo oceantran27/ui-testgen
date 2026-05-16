@@ -8,13 +8,9 @@ Public API:
     model_adapter.call_pairwise_vision(...)
 
     log_model_call  — persist ModelResponse to DB
-
-    SCHEMA_REGISTRY — dict of output schema classes
-    get_schema      — look up a schema by name
 """
 from app.model_providers.registry import model_adapter, ModelProviderAdapter, ProviderRegistry
 from app.model_providers.usage_logger import log_model_call
-from app.model_providers.schemas import SCHEMA_REGISTRY, get_schema
 from app.model_providers.base import (
     ModelRequest,
     ModelResponse,
@@ -35,8 +31,6 @@ __all__ = [
     "ModelProviderAdapter",
     "ProviderRegistry",
     "log_model_call",
-    "SCHEMA_REGISTRY",
-    "get_schema",
     "ModelRequest",
     "ModelResponse",
     "ImageInput",

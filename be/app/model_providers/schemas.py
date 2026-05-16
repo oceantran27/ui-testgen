@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Dict, Any, Union, Type
+from typing import List, Optional, Any, Union
 from pydantic import BaseModel, Field
 
 
@@ -23,32 +23,8 @@ class VisualDeltaRef(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A1: UI State Extraction (ui_state_extraction.txt)
+# A1: UI State Extraction V2 (prompt: prompt_ui_state_evidence_extraction_v2)
 # ──────────────────────────────────────────────
-
-class UIElementA1(_PromptOutputBase):
-    element_type: str
-    text: List[str] = Field(default_factory=list)
-
-
-class UIActionA1(_PromptOutputBase):
-    action_type: str
-    text: List[str] = Field(default_factory=list)
-
-
-class UIFeedbackA1(_PromptOutputBase):
-    feedback_type: str
-    text: List[str] = Field(default_factory=list)
-
-
-class UIStateExtractionResult(_PromptOutputBase):
-    state_id: str
-    screen_purpose: str
-    screen_type: str
-    domain: str
-    visible_elements: List[UIElementA1] = Field(default_factory=list)
-    available_actions: List[UIActionA1] = Field(default_factory=list)
-    visible_feedback: List[UIFeedbackA1] = Field(default_factory=list)
 
 
 class UIElementA1V2(_PromptOutputBase):
@@ -161,7 +137,7 @@ class ScreenIntentExtractionV2Result(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A3: UI Flow Discovery (llm_flow_discovery.txt)
+# A3: UI Flow Discovery / intent-aware flows (prompt: prompt_intent_aware_flow_discovery)
 # ──────────────────────────────────────────────
 
 class FlowTransitionTriggerA3(_PromptOutputBase):
@@ -243,7 +219,7 @@ class UIFlowDiscoveryResult(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A4: Behaviour Intent Inference (behaviour_intent.txt)
+# A4–A5: Behaviour contract / intent inference (prompt: prompt_behaviour_contract_builder)
 # ──────────────────────────────────────────────
 
 class IntentReadinessA3(_PromptOutputBase):
@@ -391,7 +367,7 @@ class BDDScenarioGenerationResult(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A7: Scenario Validation (scenario_validation.txt)
+# A7: Scenario evidence audit (prompt: prompt_scenario_evidence_audit; shares shape with legacy validation)
 # ──────────────────────────────────────────────
 
 class StepAuditSupportingEvidenceA7(_PromptOutputBase):
@@ -477,49 +453,3 @@ class ScenarioValidationResult(_PromptOutputBase):
     final_output_summary: FinalOutputSummaryA7
     package_warnings: List[str] = Field(default_factory=list)
 
-
-# ──────────────────────────────────────────────
-# Baseline: Single-Agent (baseline_single_agent.txt)
-# ──────────────────────────────────────────────
-
-class BaselineScenarioStep(_PromptOutputBase):
-    keyword: str  # Given | When | Then | And
-    text: str
-
-
-class BaselineScenario(_PromptOutputBase):
-    scenario_name: str
-    scenario_type: str
-    steps: List[BaselineScenarioStep] = Field(default_factory=list)
-    assumptions: List[str] = Field(default_factory=list)
-
-
-class BaselineGenerationResult(_PromptOutputBase):
-    scenarios: List[BaselineScenario] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
-
-
-# ──────────────────────────────────────────────
-# Registry & Helper
-# ──────────────────────────────────────────────
-
-
-SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
-    "ui_state_extraction": UIStateExtractionResult,
-    "ui_state_extraction_v2": UIStateExtractionV2Result,
-    "screen_intent_extraction_v2": ScreenIntentExtractionV2Result,
-    "ui_flow_discovery": UIFlowDiscoveryResult,
-    "intent_aware_flow_discovery": UIFlowDiscoveryResult,
-    "behaviour_intent_inference": BehaviourIntentInferenceResult,
-    "behaviour_contract_builder": BehaviourIntentInferenceResult,
-    "behaviour_scenario_generation": BDDScenarioGenerationResult,
-    "scenario_validation": ScenarioValidationResult,
-    "scenario_evidence_audit": ScenarioValidationResult,
-}
-
-
-def get_schema(name: str) -> Type[BaseModel]:
-    """Look up a schema class by name."""
-    if name not in SCHEMA_REGISTRY:
-        raise ValueError(f"Schema '{name}' not found in SCHEMA_REGISTRY.")
-    return SCHEMA_REGISTRY[name]
