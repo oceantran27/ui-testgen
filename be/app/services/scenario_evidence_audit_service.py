@@ -52,6 +52,62 @@ async def _persist_scenario_validation_report(
     )
     await db.commit()
 
+def _pre_audit_grounding(test_scenarios: List[Dict[str, Any]], ui_state_package: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Deterministically check if scenario text exists in UI evidence.
+    Injects pre_audit_results into each scenario object.
+    """
+    states_map = {s["state_id"]: s for s in ui_state_package.get("extracted_states", [])}
+    
+    for scn in test_scenarios:
+        grounding_report = {
+            "trigger_action_found": False,
+            "evidence_found_count": 0,
+            "evidence_total_count": 0,
+            "evidence_matches": []
+        }
+        
+        # 1. Check Trigger Action Grounding
+        start_state_id = scn.get("start_state")
+        trigger_text_list = scn.get("trigger_action", {}).get("text", [])
+        if start_state_id in states_map and trigger_text_list:
+            st = states_map[start_state_id]
+            source_pool = []
+            for group in ["visible_elements", "available_actions", "visible_feedback"]:
+                for item in st.get(group, []):
+                    source_pool.extend([t.lower() for t in item.get("text", [])])
+            
+            for t in trigger_text_list:
+                if t.lower() in source_pool:
+                    grounding_report["trigger_action_found"] = True
+                    break
+        
+        # 2. Check UI Evidence Grounding
+        end_state_id = scn.get("end_state")
+        assertions = scn.get("assertions", [])
+        if end_state_id in states_map and assertions:
+            st = states_map[end_state_id]
+            target_pool = []
+            for group in ["visible_elements", "available_actions", "visible_feedback"]:
+                for item in st.get(group, []):
+                    target_pool.extend([t.lower() for t in item.get("text", [])])
+            
+            grounding_report["evidence_total_count"] = len(assertions)
+            for ass in assertions:
+                expected_text = ass.get("expected", "").lower()
+                match_found = False
+                for pool_text in target_pool:
+                    if expected_text in pool_text or pool_text in expected_text:
+                        match_found = True
+                        break
+                if match_found:
+                    grounding_report["evidence_found_count"] += 1
+                    grounding_report["evidence_matches"].append(ass.get("expected"))
+
+        scn["pre_audit_results"] = grounding_report
+    return test_scenarios
+
+
 async def run_scenario_evidence_audit(
     db: AsyncSession,
     run_id: str,
@@ -73,6 +129,10 @@ async def run_scenario_evidence_audit(
         ).model_dump()
         await _persist_scenario_validation_report(db, run_id, empty)
         return empty
+
+    # Pre-process grounding in Python
+    if ui_state_package:
+        test_scenarios = _pre_audit_grounding(test_scenarios, ui_state_package)
 
     system_instruction = prompt_manager.get_prompt("prompt_scenario_evidence_audit")
 
@@ -112,7 +172,10 @@ async def run_scenario_evidence_audit(
             )
 
         user_instruction = batch_header + (
-            "Audit the following scenario draft package against the UI evidence and pipeline context:\n"
+            "Audit the following scenario draft package against the UI evidence and pipeline context.\n"
+            "NOTE: Each scenario contains a 'pre_audit_results' field calculated by the backend. "
+            "If 'trigger_action_found' is true or 'evidence_found_count' matches 'evidence_total_count', "
+            "this indicates strong verbatim grounding confirmed by Python. Trust these results.\n"
             f"{json.dumps(validation_input, indent=2)}"
         )
 
