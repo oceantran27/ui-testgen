@@ -4,7 +4,7 @@ Stores local user intents inferred from interaction groups on a single screen.
 """
 import datetime
 from typing import Any, Optional
-from sqlalchemy import String, ForeignKey, Float, JSON, DateTime, Boolean
+from sqlalchemy import String, ForeignKey, JSON, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -21,12 +21,16 @@ class ScreenBehaviourIntent(Base):
     intent_kind: Mapped[str] = mapped_column(String)
     local_user_goal: Mapped[str] = mapped_column(String)
     
-    primary_action_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
-    required_input_groups_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
-    evidence_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    primary_action_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    selection_options_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    commit_action_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    secondary_actions_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    local_action_sequence_templates_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    required_input_groups_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    evidence_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     
     confidence: Mapped[str] = mapped_column(String, default="low")
-    raw_result_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    raw_result_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
