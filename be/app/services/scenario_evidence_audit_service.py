@@ -17,9 +17,10 @@ from app.core.prompt_manager import prompt_manager
 from app.db.models.behaviour_scenario import BehaviourScenario
 from app.model_providers import model_adapter
 from app.model_providers.schemas import FinalOutputSummaryA7, ScenarioValidationResult, ValidatedScenarioA7
+from app.constants.validation_artifacts import SCENARIO_EVIDENCE_AUDIT_REPORT_ARTIFACT
 from app.services.json_report_artifact import save_json_report_artifact
 
-_SCENARIO_VALIDATION_ARTIFACT = "scenario_evidence_audit_report"
+_SCENARIO_VALIDATION_ARTIFACT = SCENARIO_EVIDENCE_AUDIT_REPORT_ARTIFACT
 _SCENARIO_VALIDATION_SUBPATH = "validation/scenario_evidence_audit_report.json"
 
 

@@ -15,6 +15,7 @@ from app.db.session import AsyncSessionLocal
 from app.db.models.run import Run
 from app.graph.runner.graph_runner import build_graph
 from app.graph.state.graph_state import PipelineState
+from app.model_providers.db_session_context import model_call_db_session, model_call_job_id
 
 
 def _be_root() -> Path:
@@ -95,84 +96,90 @@ class GraphExecutionService:
             try:
                 # We open a DB session to pass to the graph nodes
                 async with AsyncSessionLocal() as db:
-                    graph = build_graph(db=db)
-                    t0 = time.perf_counter()
+                    db_tok = model_call_db_session.set(db)
+                    job_tok = model_call_job_id.set(job_id)
+                    try:
+                        graph = build_graph(db=db)
+                        t0 = time.perf_counter()
 
-                    # Use checkpointer if enabled
-                    if settings.ENABLE_GRAPH_CHECKPOINT:
-                        try:
-                            t_cp0 = time.perf_counter()
-                            async with AsyncPostgresSaver.from_conn_string(CHECKPOINT_URI) as checkpointer:
-                                await checkpointer.setup()
-                                t_cp1 = time.perf_counter()
-                                ms = int((t_cp1 - t_cp0) * 1000)
-                                logger.debug(
-                                    "graph_checkpoint_ready_ms=%d run_id=%s",
-                                    ms,
-                                    run_id,
+                        # Use checkpointer if enabled
+                        if settings.ENABLE_GRAPH_CHECKPOINT:
+                            try:
+                                t_cp0 = time.perf_counter()
+                                async with AsyncPostgresSaver.from_conn_string(CHECKPOINT_URI) as checkpointer:
+                                    await checkpointer.setup()
+                                    t_cp1 = time.perf_counter()
+                                    ms = int((t_cp1 - t_cp0) * 1000)
+                                    logger.debug(
+                                        "graph_checkpoint_ready_ms=%d run_id=%s",
+                                        ms,
+                                        run_id,
+                                    )
+                                    _timing_file("graph_checkpoint_ready", ms=ms, run_id=run_id)
+                                    graph.checkpointer = checkpointer
+                                    compiled = graph.compile()
+                                    t_inv0 = time.perf_counter()
+                                    final_state = await compiled.ainvoke(initial_state, config=config)
+                                    t_inv1 = time.perf_counter()
+                                    ms_inv = int((t_inv1 - t_inv0) * 1000)
+                                    logger.debug(
+                                        "graph_ainvoke_ms=%d run_id=%s",
+                                        ms_inv,
+                                        run_id,
+                                    )
+                                    _timing_file("graph_ainvoke", ms=ms_inv, run_id=run_id)
+                            except Exception as cp_err:
+                                from app.core import pipeline_run_log as prl
+
+                                msg = (
+                                    "Failed to initialize PostgreSQL checkpointer, "
+                                    f"falling back to MemorySaver: {cp_err}"
                                 )
-                                _timing_file("graph_checkpoint_ready", ms=ms, run_id=run_id)
+                                if prl.is_active():
+                                    prl.console_warn(msg)
+                                else:
+                                    logger.warning(msg)
+                                t_fb0 = time.perf_counter()
+                                from langgraph.checkpoint.memory import MemorySaver
+
+                                checkpointer = MemorySaver()
                                 graph.checkpointer = checkpointer
                                 compiled = graph.compile()
-                                t_inv0 = time.perf_counter()
                                 final_state = await compiled.ainvoke(initial_state, config=config)
-                                t_inv1 = time.perf_counter()
-                                ms_inv = int((t_inv1 - t_inv0) * 1000)
+                                t_fb1 = time.perf_counter()
+                                ms_fb = int((t_fb1 - t_fb0) * 1000)
                                 logger.debug(
-                                    "graph_ainvoke_ms=%d run_id=%s",
-                                    ms_inv,
+                                    "graph_ainvoke_memory_checkpoint_ms=%d run_id=%s",
+                                    ms_fb,
                                     run_id,
                                 )
-                                _timing_file("graph_ainvoke", ms=ms_inv, run_id=run_id)
-                        except Exception as cp_err:
-                            from app.core import pipeline_run_log as prl
-
-                            msg = (
-                                "Failed to initialize PostgreSQL checkpointer, "
-                                f"falling back to MemorySaver: {cp_err}"
-                            )
-                            if prl.is_active():
-                                prl.console_warn(msg)
-                            else:
-                                logger.warning(msg)
-                            t_fb0 = time.perf_counter()
-                            from langgraph.checkpoint.memory import MemorySaver
-
-                            checkpointer = MemorySaver()
-                            graph.checkpointer = checkpointer
+                                _timing_file("graph_ainvoke_memory_checkpoint", ms=ms_fb, run_id=run_id)
+                        else:
                             compiled = graph.compile()
+                            t_inv0 = time.perf_counter()
                             final_state = await compiled.ainvoke(initial_state, config=config)
-                            t_fb1 = time.perf_counter()
-                            ms_fb = int((t_fb1 - t_fb0) * 1000)
+                            t_inv1 = time.perf_counter()
+                            ms_nc = int((t_inv1 - t_inv0) * 1000)
                             logger.debug(
-                                "graph_ainvoke_memory_checkpoint_ms=%d run_id=%s",
-                                ms_fb,
+                                "graph_ainvoke_no_checkpoint_ms=%d run_id=%s",
+                                ms_nc,
                                 run_id,
                             )
-                            _timing_file("graph_ainvoke_memory_checkpoint", ms=ms_fb, run_id=run_id)
-                    else:
-                        compiled = graph.compile()
-                        t_inv0 = time.perf_counter()
-                        final_state = await compiled.ainvoke(initial_state, config=config)
-                        t_inv1 = time.perf_counter()
-                        ms_nc = int((t_inv1 - t_inv0) * 1000)
+                            _timing_file("graph_ainvoke_no_checkpoint", ms=ms_nc, run_id=run_id)
+
+                        total_ms = int((time.perf_counter() - t0) * 1000)
                         logger.debug(
-                            "graph_ainvoke_no_checkpoint_ms=%d run_id=%s",
-                            ms_nc,
+                            "graph_execute_total_ms=%d run_id=%s",
+                            total_ms,
                             run_id,
                         )
-                        _timing_file("graph_ainvoke_no_checkpoint", ms=ms_nc, run_id=run_id)
+                        _timing_file("graph_execute_total", ms=total_ms, run_id=run_id)
 
-                    total_ms = int((time.perf_counter() - t0) * 1000)
-                    logger.debug(
-                        "graph_execute_total_ms=%d run_id=%s",
-                        total_ms,
-                        run_id,
-                    )
-                    _timing_file("graph_execute_total", ms=total_ms, run_id=run_id)
-
-                    log_event("pipeline_execution_completed", run_id=run_id, job_id=job_id)
-                    return final_state
+                        log_event("pipeline_execution_completed", run_id=run_id, job_id=job_id)
+                        return final_state
+                    finally:
+                        model_call_db_session.reset(db_tok)
+                        model_call_job_id.reset(job_tok)
 
             except Exception as e:
                 if pipeline_log_active:

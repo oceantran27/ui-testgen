@@ -20,11 +20,49 @@ You MUST create a transition from State X to State Y if:
 1. State X has a `screen_behaviour_intent` (e.g., "Submit Login Form").
 2. State Y represents a logical resolution of that intent (e.g., a Dashboard, or an Error message).
 
-**Traceability is Critical**: You MUST identify WHICH interaction group and WHICH screen intent on State X caused the transition to State Y.
+**Complex Sequences**: Analyze `local_action_sequence_templates` and `secondary_actions` in the screen intents to understand how multi-step interactions on a single screen lead to new states.
+
+**Traceability is Critical**: For every `transition` and every `alternative_outcome`, you MUST identify the source interaction group and screen intent on State X.
 - **`source_group_id`**: The ID of the interaction group on State X where the user took action.
 - **`source_screen_intent_id`**: The ID of the local intent on State X that describes this action.
 
-## 3.2 Evidence Levels
+## 3.2 Relation Types
+- **direct_transition**: The primary success path or expected next step.
+- **alternative_outcome**: A valid branching path (e.g., "Cancel" or "Edit").
+- **negative_outcome**: A failure or validation error path (e.g., "Incorrect Password").
+
+## 3.3 Non-transition Rules
+
+**Bucket Exclusivity Rule**: Each source action MUST be assigned to EXACTLY one bucket:
+1. `transitions` (for valid observable cross-state changes)
+2. `alternative_outcomes` (for valid branching paths)
+3. `local_interactions` (for same-screen actions or missing destination navigation)
+4. `uncertain_relations` (for weak or semantic-only links)
+
+Never put the same source_screen_intent_id + trigger_action into more than one bucket.
+
+Do NOT create a transition or alternative outcome when:
+1. The action has no observable target state in the provided state cards.
+2. from_state == to_state AND there is no distinct visible state variant (e.g., no new modal, error alert, success message, or selected-state variant).
+3. The action is navigation/recovery (e.g. Back, Home) but its destination screen is NOT included in the input.
+
+If an action is valid but missing a destination state, put it ONLY into `local_interactions`.
+
+## 3.4 Observable Transition Criteria
+
+A transition is valid only if the target state is present in the input state cards and visually represents a logical resolution of the trigger action. Do NOT fabricate same-state transitions for missing screens.
+
+**Recovery Rule**: Recovery or retry actions (e.g., "Choose another time", "Retry", "Edit", "Back to selection") MAY transition to an earlier state in the same candidate flow if:
+1. The action text indicates recovery or change.
+2. A previous state in the input cards has a `screen_purpose` or `screen_type` matching the recovery target.
+3. This transition is logical and represents a return to a known previous step.
+
+**Evidence Separation**:
+- **`*_visible_evidence`**: MUST contain only verbatim strings visible in the UI (elements, actions, feedback text).
+- **`source_evidence` / `target_evidence`**: Can contain semantic clues, group labels, and reasoning summaries.
+- **Traceability**: Always link to `source_group_id` and `source_screen_intent_id`.
+
+## 3.5 Evidence Levels
 
 - **Strong**: Explicit textual match between intent goal and target state feedback/purpose.
 - **Medium**: Logical resolution of an intent.
@@ -53,7 +91,7 @@ Return ONLY a valid JSON object.
         {
           "from_state": "state_id",
           "to_state": "state_id",
-          "relation_type": "direct_transition",
+          "relation_type": "direct_transition | alternative_outcome | negative_outcome",
           "trigger_action": {
             "action_type": "string",
             "text": ["string"]
@@ -64,6 +102,8 @@ Return ONLY a valid JSON object.
           "reasoning_pattern": "string",
           "source_evidence": ["string"],
           "target_evidence": ["string"],
+          "source_visible_evidence": ["verbatim visible text only"],
+          "target_visible_evidence": ["verbatim visible text only"],
           "assumptions": ["string"],
           "warnings": ["string"]
         }
@@ -71,10 +111,28 @@ Return ONLY a valid JSON object.
       "alternative_outcomes": [
         {
           "source_state": "state_id",
-          "trigger_action": { "action_type": "string", "text": ["string"] },
+          "source_group_id": "string",
+          "source_screen_intent_id": "string",
+          "trigger_action": {
+            "action_type": "string",
+            "text": ["string"]
+          },
           "outcome_states": ["state_id"],
-          "reason": "string",
-          "evidence_level": "strong | medium"
+          "visible_evidence": ["verbatim visible text only"],
+          "evidence_level": "strong | medium",
+          "reason": "string"
+        }
+      ],
+      "local_interactions": [
+        {
+          "source_state": "state_id",
+          "source_group_id": "string",
+          "source_screen_intent_id": "string",
+          "trigger_action": {
+            "action_type": "string",
+            "text": ["string"]
+          },
+          "reason": "Same-screen/local interaction without observable target state"
         }
       ]
     }

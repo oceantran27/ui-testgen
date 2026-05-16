@@ -45,11 +45,30 @@ async def run_screen_intent_extraction(
             groups = state.get("interaction_groups", [])
             if not groups:
                 return None
+            
+            # Enrich groups with full metadata from state catalog
+            # We build a lookup map: id -> full_object
+            lookup: Dict[str, Dict[str, Any]] = {}
+            for el in state.get("visible_elements", []):
+                lookup[el["element_id"]] = el
+            for ac in state.get("available_actions", []):
+                lookup[ac["action_id"]] = ac
+            for fb in state.get("visible_feedback", []):
+                lookup[fb["feedback_id"]] = fb
+
+            enriched_groups = []
+            for g in groups:
+                eg = g.copy()
+                # Inject full objects instead of just IDs for the LLM to see text/type
+                eg["elements_metadata"] = [lookup.get(eid) for eid in g.get("element_ids", []) if eid in lookup]
+                eg["actions_metadata"] = [lookup.get(aid) for aid in g.get("action_ids", []) if aid in lookup]
+                eg["feedback_metadata"] = [lookup.get(fid) for fid in g.get("feedback_ids", []) if fid in lookup]
+                enriched_groups.append(eg)
                 
             user_instruction = (
                 f"Extract Screen Behaviour Intents for this screen: {state['state_id']}\n"
                 f"Purpose: {state.get('screen_purpose')}\n"
-                f"Interaction Groups: {json.dumps(groups, indent=2)}\n"
+                f"Interaction Groups (Enriched): {json.dumps(enriched_groups, indent=2)}\n"
             )
 
             return await model_adapter.call_text_structured(
@@ -113,6 +132,20 @@ async def run_screen_intent_extraction(
                     if intent.primary_action is not None
                     else None
                 ),
+                selection_options_json=[
+                    o.model_dump() for o in intent.selection_options
+                ],
+                commit_action_json=(
+                    intent.commit_action.model_dump()
+                    if intent.commit_action is not None
+                    else None
+                ),
+                secondary_actions_json=[
+                    a.model_dump() for a in intent.secondary_actions
+                ],
+                local_action_sequence_templates_json=[
+                    s.model_dump() for s in intent.local_action_sequence_templates
+                ],
                 required_input_groups_json=intent.required_input_groups,
                 evidence_json=intent.evidence,
                 confidence=intent.confidence,

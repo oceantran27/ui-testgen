@@ -12,15 +12,36 @@ Your objective is to produce `behaviour_intents` that formalize the contract bet
 # 3. Instructions
 
 ## 3.1 Core Principles
-1. Convert ONLY verified `candidate_flows` into `behaviour_intents`.
-2. Every intent must have a clear `start_state`, `end_state`, and verbatim `trigger_action`.
-3. Preserve strict traceability to the `source_group_id` and `source_screen_intent_id`.
+1. Convert verified `candidate_flows` AND `alternative_outcomes` into `behaviour_intents`.
+2. **Mutual Exclusivity**: A source branch MUST be assigned to EXACTLY one bucket: either `behaviour_intents` OR `unresolved_flow_items`. Never both.
+3. Every intent must have a clear `start_state`, `end_state`, and verbatim `trigger_action`.
+4. **Alternative Branching**: If an `alternative_outcome` represents a valid user path (e.g. Cancel, Edit, Error), generate a `BehaviourIntent` with `medium` or `low` confidence.
+5. **Outcome Filter**: Do NOT convert a branch (transition or alternative outcome) if:
+   - `outcome_states` is empty.
+   - `outcome_states` contains only the `source_state` (and no visible state variant like a modal/error is present).
+   - Warnings indicate the "destination screen not included" or "no distinct target state".
+   Move những nhánh này vào `unresolved_flow_items`.
+6. **Strict UI Evidence**: `expected_ui_evidence` MUST contain ONLY verbatim visible UI text.
+   - For `transitions`: Copy only from `source_visible_evidence` and `target_visible_evidence`.
+   - For `alternative_outcomes`: Copy only from `visible_evidence`.
+   - **Exclusion**: Remove all internal labels, group labels, semantic summaries, and reasoning phrases. If a string is not verbatim text in `visible_elements.text`, `available_actions.text`, or `visible_feedback.text`, it MUST NOT be included.
 
-## 3.2 Traceability Mapping
-For every generated behaviour intent, you MUST copy these fields exactly from the source transition:
-- `source_group_id`: The `source_group_id` of the first transition in the sequence.
-- `source_screen_intent_id`: The `source_screen_intent_id` of the first transition.
-- `source_transition_ids`: A list of any unique transition IDs (or index strings if no ID exists) involved in this behaviour.
+## 3.2 Transition Conversion Filter
+Do NOT convert a transition into a behaviour_intent if:
+1. `from_state` == `to_state`, AND `relation_type` is NOT `negative_outcome`, AND there is no visible feedback/modal/success/error/selected-state variant proving a real state change.
+2. The transition is navigation (e.g., Back, Home) but the target destination state is NOT provided in the input.
+3. The transition represents a local interaction (e.g., selecting an option) unless the resulting visual state is represented by a distinct state card.
+
+## 3.3 Traceability Mapping
+For behaviour intents generated from `transitions`:
+- Copy `source_group_id`, `source_screen_intent_id`, and `trigger_action` from that EXACT transition.
+- `source_transition_ids`: A list of unique transition IDs or index strings involved.
+
+For behaviour intents generated from `alternative_outcomes`:
+- Copy `source_group_id`, `source_screen_intent_id`, and `trigger_action` from that EXACT `alternative_outcome`.
+- `source_transition_ids`: A list containing the index or ID of the alternative outcome.
+
+Never reuse traceability fields from a different transition or branch.
 
 # 4. Output Format
 

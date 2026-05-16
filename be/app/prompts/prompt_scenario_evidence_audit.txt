@@ -48,7 +48,15 @@ If the scenario references a missing screen intent or group:
 - 0.5: Weak match or missing action detail.
 - 0.0: Hallucinated screen intent.
 
-### Final Reliability
+## 3.3 Hallucination Audit
+1. **Control Hallucination**: If a scenario uses action text (e.g., "OK", "Acknowledge", "Dismiss") that is NOT present in the `ui_state_evidence` for that state:
+   - mark `element_hallucination` as true
+   - **increase** `hallucination_penalty` by 0.5
+   - if the core trigger action is hallucinated, validation status must be `rejected`.
+
+2. **Evidence Hallucination**: If `expected_ui_evidence` contains text that is NOT present in `visible_elements.text`, `available_actions.text`, or `visible_feedback.text` of the target state:
+   - mark `evidence_grounding_score` lower (e.g., 0.0 or 0.2).
+   - If the evidence is an **internal semantic label** (e.g., `group_label`, `group_type`, `screen_purpose`, `intent_name`), do NOT treat it as valid UI evidence.
 
 Calculate:
 final_reliability =
@@ -66,6 +74,10 @@ Clamp final reliability to [0, 1].
 
 Return ONLY a valid JSON object matching the `ScenarioValidationResult` schema, incorporating `screen_intent_grounding_score` into `scores`.
 
+**Acceptance Rule**:
+- If `validation_status` is `needs_revision` or `rejected`, `include_in_final_output` MUST be `false`.
+- If a scenario has a missing destination state (e.g., end_state == start_state without variant), status should be `needs_revision` or `low_confidence`, NOT `validated`.
+
 ```json
 {
   "validated_scenarios": [
@@ -81,6 +93,10 @@ Return ONLY a valid JSON object matching the `ScenarioValidationResult` schema, 
         "bdd_structure_score": 0.0,
         "data_and_assertion_quality_score": 0.0,
         "hallucination_penalty": 0.0
+      },
+      "acceptance_decision": {
+        "include_in_final_output": "boolean",
+        "reason": "string"
       },
       "step_audits": []
     }

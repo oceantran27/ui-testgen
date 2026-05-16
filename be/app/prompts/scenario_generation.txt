@@ -389,7 +389,10 @@ The service layer will generate Gherkin programmatically. You do NOT need to inc
 
 Every generated scenario must include:
 
-- `source_intent_id`
+- `source_intent_id` (Behaviour Intent ID)
+- `source_screen_intent_id` (Original Screen Intent ID)
+- `source_group_id` (Source UI Group ID)
+- `source_transition_ids` (List of transition IDs)
 - `source_flow_id`
 - `source_transition_indexes`
 - `start_state`
@@ -476,6 +479,9 @@ The output must strictly follow this schema:
       "scenario_name": "string",
       "scenario_type": "happy_path | negative_path | validation_path | navigation_path | recovery_path | registration_path | access_control_path | data_entry_path | unknown_path",
       "source_intent_id": "string",
+      "source_screen_intent_id": "string",
+      "source_group_id": "string",
+      "source_transition_ids": ["string"],
       "source_flow_id": "string",
       "source_flow_name": "string",
       "source_flow_type": "single_step_outcome | ordered_sequence | branching_flow",

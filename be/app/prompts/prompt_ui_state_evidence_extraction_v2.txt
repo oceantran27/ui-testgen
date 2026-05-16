@@ -18,6 +18,7 @@ You MUST follow these formulas and definitions strictly.
 - **`state_id`**: Set to `state_<image_id>`.
 - **`screen_purpose`**: MUST follow the formula: `[verb] + [object] (optional)` (e.g., "login", "view cart").
 - **`screen_type`**: Select EXACTLY one from: `landing`, `auth`, `listing`, `detail`, `cart`, `checkout`, `profile`, `settings`, `dashboard`, `form`, `search`, `error`, `success`, `modal`, `wizard`, `notification`, `empty_state`, `loading`, `table`, `other`.
+- **`outcome_state_type`**: Describe the current outcome of the screen. Select EXACTLY one from: `normal`, `validation_error`, `failure`, `success`, `warning`, `confirmation`, `review`, `empty_state`, `modal`, `unknown`.
 - **`domain`**: EXACTLY one word describing the business context (e.g., `authentication`, `ecommerce`, `banking`, `healthcare`).
 
 ### Elements, Actions, and Feedback
@@ -34,7 +35,7 @@ You must assign a unique ID to every item.
   - **`visual_region`**: Select from: `header`, `footer`, `sidebar`, `main_content`, `modal`, `toast`.
 
 - **`available_actions`**:
-  - **`action_type`**: Choose from: `click`, `type`, `hover`, `select`, `submit`.
+  - **`action_type`**: Choose from: `click`, `type`, `hover`, `select`, `submit`, `scroll`.
   - **`text`**: Verbatim list.
   - **`action_priority`**: `primary`, `secondary`, or `tertiary`.
   - **`visual_region`**: (same as above).
@@ -71,6 +72,7 @@ Return ONLY valid JSON.
   "state_id": "string",
   "screen_purpose": "string",
   "screen_type": "string",
+  "outcome_state_type": "string",
   "domain": "string",
   "visible_elements": [
     {

@@ -76,6 +76,56 @@ def _persist_intent_row(
     )
 
 
+def _pre_filter_flows(flow_discovery_result: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Deterministically filter out transitions and outcomes that should NOT be converted to scenarios.
+    Ensures mutual exclusivity and prevents same-state scenarios.
+    """
+    for flow in flow_discovery_result.get("candidate_flows", []):
+        # 1. Filter transitions
+        valid_transitions = []
+        for t in flow.get("transitions", []):
+            from_st = t.get("from_state")
+            to_st = t.get("to_state")
+            rel = t.get("relation_type", "direct_transition")
+            warnings = " ".join(t.get("warnings", [])).lower()
+
+            # Skip same-state navigation (unless it's a negative outcome with feedback)
+            if from_st == to_st and rel != "negative_outcome":
+                continue
+            
+            # Skip if destination is explicitly missing
+            if "destination state not included" in warnings or "no distinct target state" in warnings:
+                continue
+            
+            valid_transitions.append(t)
+        flow["transitions"] = valid_transitions
+
+        # 2. Filter alternative outcomes
+        valid_outcomes = []
+        for o in flow.get("alternative_outcomes", []):
+            src = o.get("source_state")
+            outcomes = o.get("outcome_states", [])
+            warnings = " ".join(o.get("warnings", [])).lower()
+
+            # Skip empty outcomes
+            if not outcomes:
+                continue
+            
+            # Skip same-state outcomes
+            if len(outcomes) == 1 and outcomes[0] == src:
+                continue
+            
+            # Skip if destination is explicitly missing
+            if "destination state not included" in warnings or "no distinct target state" in warnings:
+                continue
+
+            valid_outcomes.append(o)
+        flow["alternative_outcomes"] = valid_outcomes
+
+    return flow_discovery_result
+
+
 async def run_behaviour_contract_builder(
     db: AsyncSession,
     run_id: str,
@@ -83,6 +133,9 @@ async def run_behaviour_contract_builder(
 ) -> Dict[str, Any]:
     start_time = time.time()
     log_event("behaviour_contract_builder_started", run_id=run_id)
+
+    # Apply deterministic pre-filtering before passing to LLM
+    flow_discovery_result = _pre_filter_flows(flow_discovery_result)
 
     candidate_flows = flow_discovery_result.get("candidate_flows", [])
     if not candidate_flows:

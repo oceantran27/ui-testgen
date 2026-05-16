@@ -5,6 +5,7 @@ Builds a UIStatePackage (extracted_states) for semantic canonicalization per pro
 """
 import asyncio
 import json
+import re
 import time
 import uuid
 from typing import Any, Dict, List, Optional
@@ -25,8 +26,18 @@ from app.model_providers.schemas import UIElementA1V2, UIActionA1V2, UIFeedbackA
 from app.services.storage_service import storage_service
 
 
-def _generate_state_id() -> str:
-    return f"st_{uuid.uuid4().hex[:12]}"
+def _sanitize_filename_for_state_id(name: str, max_len: int = 64) -> str:
+    """Human-readable image label safe for primary keys and logs."""
+    base = name.replace("\\", "/").split("/")[-1].strip()
+    base = re.sub(r"[^a-zA-Z0-9._-]+", "_", base)
+    base = base.strip("._") or "image"
+    return base[:max_len]
+
+
+def _generate_state_id(image: Image) -> str:
+    """Unique id with filename suffix so run logs correlate states to uploads."""
+    label = _sanitize_filename_for_state_id(image.original_filename or image.id)
+    return f"st_{uuid.uuid4().hex[:12]}_{label}"
 
 
 def _generate_artifact_id() -> str:
@@ -191,7 +202,7 @@ async def run_ui_state_evidence_extraction(
             failed_extractions_count += 1
             failed_items.append(img.id)
             failed_state = UIState(
-                id=_generate_state_id(),
+                id=_generate_state_id(img),
                 run_id=run_id,
                 image_id=img.id,
                 page_type="unknown_page",
@@ -206,7 +217,7 @@ async def run_ui_state_evidence_extraction(
             failed_extractions_count += 1
             failed_items.append(img.id)
             failed_state = UIState(
-                id=_generate_state_id(),
+                id=_generate_state_id(img),
                 run_id=run_id,
                 image_id=img.id,
                 page_type="unknown_page",
@@ -224,7 +235,7 @@ async def run_ui_state_evidence_extraction(
         if not result_data.screen_purpose or result_data.screen_purpose == "null":
             extraction_status = "failed"
 
-        state_id = _generate_state_id()
+        state_id = _generate_state_id(img)
         conf = _confidence_from_extraction(extraction_status, None)
         conf_label = _confidence_label(conf)
         
@@ -247,6 +258,7 @@ async def run_ui_state_evidence_extraction(
             image_id=img.id,
             page_type=result_data.screen_type,
             screen_type=result_data.screen_type,
+            outcome_state_type=result_data.outcome_state_type,
             screen_purpose=result_data.screen_purpose,
             domain=result_data.domain,
             state_summary=result_data.screen_purpose,
@@ -277,7 +289,14 @@ async def run_ui_state_evidence_extraction(
             )
             result_data.interaction_groups = [fallback_group]
 
-        # Prepend state_id to all interaction group reference IDs to make them globally unique
+        # Prepend state_id to all items and interaction group reference IDs to make them globally unique
+        for el in result_data.visible_elements:
+            el.element_id = f"{state_id}_{el.element_id}"
+        for ac in result_data.available_actions:
+            ac.action_id = f"{state_id}_{ac.action_id}"
+        for fb in result_data.visible_feedback:
+            fb.feedback_id = f"{state_id}_{fb.feedback_id}"
+
         for ig in result_data.interaction_groups:
             ig.group_id = f"{state_id}_{ig.group_id}"
             ig.element_ids = [f"{state_id}_{eid}" for eid in ig.element_ids]
@@ -293,7 +312,7 @@ async def run_ui_state_evidence_extraction(
         # 1. Visible Elements
         for idx, el_data in enumerate(result_data.visible_elements):
             db_el = UIElement(
-                id=f"{state_id}_{el_data.element_id}",
+                id=el_data.element_id,
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -312,7 +331,7 @@ async def run_ui_state_evidence_extraction(
         # 2. Available Actions
         for idx, act_data in enumerate(result_data.available_actions):
             db_el = UIElement(
-                id=f"{state_id}_{act_data.action_id}",
+                id=act_data.action_id,
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -333,7 +352,7 @@ async def run_ui_state_evidence_extraction(
         # 3. Visible Feedback
         for idx, fb_data in enumerate(result_data.visible_feedback):
             db_el = UIElement(
-                id=f"{state_id}_{fb_data.feedback_id}",
+                id=fb_data.feedback_id,
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -357,6 +376,7 @@ async def run_ui_state_evidence_extraction(
             "source_image_id": img.id,
             "page_type": result_data.screen_type,
             "screen_type": result_data.screen_type,
+            "outcome_state_type": result_data.outcome_state_type,
             "screen_purpose": result_data.screen_purpose,
             "domain": result_data.domain,
             "state_summary": result_data.screen_purpose,
