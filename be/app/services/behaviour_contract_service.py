@@ -26,6 +26,7 @@ def _generate_behaviour_intent_id(run_id: str) -> str:
 
 
 def _map_test_path(intent_type: str) -> str:
+    normalized = (intent_type or "").strip().lower()
     mapping = {
         "positive": "happy_path",
         "negative": "negative_path",
@@ -36,7 +37,7 @@ def _map_test_path(intent_type: str) -> str:
         "access_control": "access_control_path",
         "data_entry": "data_entry_path",
     }
-    return mapping.get(intent_type, "unknown_path")
+    return mapping.get(normalized, "unknown_path")
 
 
 def _persist_intent_row(
