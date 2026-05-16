@@ -28,7 +28,7 @@ async def test_mock_adapter_direct():
     os.environ["DEFAULT_MODEL_PROVIDER"] = "mock"
 
     from app.model_providers import model_adapter
-    from app.model_providers.schemas import UIStateExtractionResult
+    from app.model_providers.schemas import UIStateExtractionV2Result
     from app.model_providers.base import ImageInput
 
     # --- Text structured ---
@@ -38,7 +38,7 @@ async def test_mock_adapter_direct():
         node_name="test_node",
         system_instruction="You are a test assistant.",
         user_instruction="Classify this input.",
-        output_schema=UIStateExtractionResult,
+        output_schema=UIStateExtractionV2Result,
         prompt_name="test_prompt",
         prompt_version="v1",
     )
@@ -56,7 +56,7 @@ async def test_mock_adapter_direct():
         system_instruction="You are a UI analyst.",
         user_instruction="Describe this screenshot.",
         image_inputs=[ImageInput(image_id="img_test", image_bytes=b"fake_image_bytes")],
-        output_schema=UIStateExtractionResult,
+        output_schema=UIStateExtractionV2Result,
         prompt_name="test_vision_prompt",
         prompt_version="v1",
     )
@@ -71,7 +71,7 @@ async def test_mock_adapter_direct():
         instruction="Are these two screenshots showing the same UI state?",
         image_a=ImageInput(image_id="img_a", image_bytes=b"image_a_bytes"),
         image_b=ImageInput(image_id="img_b", image_bytes=b"image_b_bytes"),
-        output_schema=UIStateExtractionResult,
+        output_schema=UIStateExtractionV2Result,
         prompt_name="semantic_duplicate_verification_prompt",
         prompt_version="v1",
     )
@@ -83,6 +83,8 @@ async def test_mock_adapter_direct():
 
 async def test_via_api():
     """Test Phase 5 API endpoints."""
+    from app.core.config import settings
+
     async with httpx.AsyncClient(base_url=BASE, timeout=30.0) as client:
         # Create run
         r = await client.post("/runs")
@@ -95,7 +97,11 @@ async def test_via_api():
         cfg = r.json()
         check("model-config has default_provider", "default_model_provider" in cfg)
         check("model-config has feature_flags", "feature_flags" in cfg)
-        check("model-config has gemini models", cfg["gemini_text_model"] == "gemini-2.0-flash")
+        check(
+            "model-config gemini text matches settings",
+            cfg["gemini_text_model"] == settings.GEMINI_TEXT_MODEL,
+            cfg["gemini_text_model"],
+        )
         print(f"   default_provider={cfg['default_model_provider']}, gemini_vision={cfg['gemini_vision_model']}")
 
         # model-calls list (empty initially)
