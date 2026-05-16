@@ -7,11 +7,13 @@ from app.db.models.run import Run
 # Must match `fe/src/constants/pipeline.ts` and LangGraph `graph_runner.py` order
 PIPELINE_NODE_ORDER = [
     "init_run_context_node",
-    "ui_state_extraction_node",
-    "llm_flow_discovery_node",
-    "behaviour_intent_inference_node",
+    "ui_state_evidence_extraction_node",
+    "screen_intent_extraction_v2_node",
+    "flow_context_builder_node",
+    "intent_aware_flow_discovery_node",
+    "behaviour_contract_builder_node",
     "behaviour_scenario_generation_node",
-    "scenario_validation_node",
+    "scenario_evidence_audit_node",
     "output_assembly_node",
     "graph_finalizer_node",
 ]
@@ -19,10 +21,13 @@ PIPELINE_NODE_ORDER = [
 
 # LangGraph state sometimes uses short `NODE_NAME`; DB/UI expect *_node ids.
 _PIPELINE_NODE_ALIASES: dict[str, str] = {
-    "ui_state_extraction": "ui_state_extraction_node",
-    "behaviour_intent_inference": "behaviour_intent_inference_node",
+    "ui_state_evidence_extraction": "ui_state_evidence_extraction_node",
+    "screen_intent_extraction_v2": "screen_intent_extraction_v2_node",
+    "flow_context_builder": "flow_context_builder_node",
+    "intent_aware_flow_discovery": "intent_aware_flow_discovery_node",
+    "behaviour_contract_builder": "behaviour_contract_builder_node",
     "behaviour_scenario_generation": "behaviour_scenario_generation_node",
-    "scenario_validation": "scenario_validation_node",
+    "scenario_evidence_audit": "scenario_evidence_audit_node",
 }
 
 

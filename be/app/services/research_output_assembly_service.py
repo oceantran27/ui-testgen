@@ -23,6 +23,8 @@ async def run_research_output_assembly(
     log_event("research_output_assembly_started", run_id=run_id)
 
     # 1. Gather all data from state
+    screen_intent_pkg = state.get("screen_intent_package", {})
+    flow_context_pkg = state.get("flow_context_package", {})
     intent_pkg = state.get("intent_package", {})
     scenario_pkg = state.get("scenario_draft_package", {})
     validation_pkg = state.get("validated_scenario_package", {})
@@ -41,11 +43,12 @@ async def run_research_output_assembly(
         },
         "state_catalog": state.get("state_catalog", []),
         "flow_discovery": {
-            "method": "llm_structured_reasoning",
+            "method": "intent_aware_structured_reasoning",
             "candidate_flows": state.get("flow_discovery_result", {}).get("candidate_flows", []),
             "warnings": state.get("flow_discovery_result", {}).get("discovery_warnings", [])
         },
-        "behaviour_intents": intent_pkg.get("behaviour_intents", []),
+        "screen_behaviour_intents": screen_intent_pkg.get("screen_intent_catalog", []),
+        "behaviour_contracts": intent_pkg.get("behaviour_intents", []),
         "behaviour_scenarios": scenario_pkg.get("test_scenarios", []),
         "validation": {
             "validated_scenarios": validation_pkg.get("validated_scenarios", []),
@@ -70,6 +73,7 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
     """Calculate research metrics."""
     unique_states = state.get("state_catalog", [])
     flow_discovery = state.get("flow_discovery_result", {})
+    screen_intent_pkg = state.get("screen_intent_package", {})
     intent_pkg = state.get("intent_package", {})
     scenario_pkg = state.get("scenario_draft_package", {})
     validation_pkg = state.get("validated_scenario_package", {})
@@ -88,7 +92,8 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
         "exact_duplicate_group_count": len(state.get("exact_duplicate_groups", [])),
         "canonical_state_count": len(unique_states),
         "flow_count": len(flow_discovery.get("candidate_flows", [])),
-        "intent_count": len(intent_pkg.get("behaviour_intents", [])),
+        "screen_intent_count": len(screen_intent_pkg.get("screen_intent_catalog", [])),
+        "behaviour_contract_count": len(intent_pkg.get("behaviour_intents", [])),
         "scenario_count": len(scenario_pkg.get("test_scenarios", [])),
         "validated_scenario_count": len(validated_scenarios),
         "average_grounding_score": avg_grounding_score,

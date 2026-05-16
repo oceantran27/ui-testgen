@@ -1,6 +1,6 @@
 """
-UI Flow Discovery Service — Agent 3.
-Discovers user behavior flows using structured LLM reasoning.
+Intent-Aware Flow Discovery Service — Agent 4 (was Agent 3).
+Discovers user behavior flows using Intent-aware Flow Context Data.
 """
 import json
 import time
@@ -34,72 +34,54 @@ def _hypothesized_action_from_a3_trigger(trigger: FlowTransitionTriggerA3) -> Op
     return None
 
 
-
-async def run_ui_flow_discovery(
+async def run_intent_aware_flow_discovery(
     db: AsyncSession, 
     run_id: str, 
-    canonical_state_set: Dict[str, Any]
+    flow_context_package: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
-    Groups canonical states into behavior flows and infers transitions.
+    Groups canonical states into behavior flows and infers transitions based on screen intents.
     """
     start_time = time.time()
-    log_event("ui_flow_discovery_started", run_id=run_id)
+    log_event("intent_aware_flow_discovery_started", run_id=run_id)
 
-    unique_states_raw = (
-        canonical_state_set.get("unique_states") 
-        or canonical_state_set.get("extracted_states") 
-        or []
-    )
-    if not unique_states_raw:
+    flow_state_cards = flow_context_package.get("flow_state_cards", [])
+    if not flow_state_cards:
         return UIFlowDiscoveryResult(
             flow_discovery_result_id=f"fdr_{run_id[-6:]}_{uuid.uuid4().hex[:8]}",
-            source_canonical_state_set_id=canonical_state_set.get("ui_state_package_id") or canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            source_canonical_state_set_id=flow_context_package.get("flow_context_package_id", "unknown_set"),
             candidate_flows=[],
             semantic_clusters=[],
             uncertain_relations=[],
-            discovery_warnings=["NO_UNIQUE_STATES"],
+            discovery_warnings=["NO_FLOW_STATE_CARDS"],
         ).model_dump()
 
-    # Normalization: ensure states are flat (handle A2 nested output)
-    unique_states = []
-    for s in unique_states_raw:
-        if isinstance(s, dict) and "data" in s and isinstance(s["data"], dict):
-            # A2 nested format: { "canonical_id": ..., "data": { ... } }
-            flat = s["data"].copy()
-            if "canonical_id" in s:
-                flat["canonical_id"] = s["canonical_id"]
-            unique_states.append(flat)
-        else:
-            # A1 flat format or unknown
-            unique_states.append(s)
-
-    system_instruction = prompt_manager.get_prompt("llm_flow_discovery")
+    system_instruction = prompt_manager.get_prompt("prompt_intent_aware_flow_discovery")
 
     user_instruction = (
-        f"Group the following {len(unique_states)} canonical UI states into behaviour flows "
-        f"and infer ordered transitions:\n"
-        f"{json.dumps(unique_states, indent=2)}\n"
+        f"Group the following {len(flow_state_cards)} Flow State Cards into behaviour flows "
+        f"and infer intent-aware transitions:\n"
+        f"{json.dumps(flow_state_cards, indent=2)}\n"
     )
 
     response = await model_adapter.call_text_structured(
-        task_name="ui_flow_discovery",
+        task_name="intent_aware_flow_discovery",
         run_id=run_id,
-        node_name="llm_flow_discovery_node",
+        node_name="intent_aware_flow_discovery_node",
         system_instruction=system_instruction,
         user_instruction=user_instruction,
         output_schema=UIFlowDiscoveryResult,
-        prompt_name="llm_flow_discovery_prompt",
+        prompt_name="prompt_intent_aware_flow_discovery",
         prompt_version="v1",
         provider_override=settings.LLM_FLOW_DISCOVERY_MODEL_PROVIDER,
         model_name_override=settings.LLM_FLOW_DISCOVERY_MODEL_NAME,
     )
 
     if response.status.value != "success" or not response.parsed_output:
-        logger.error(f"UI Flow Discovery failed: {response.error}")
+        logger.error(f"Intent-Aware Flow Discovery failed: {response.error}")
         err = UIFlowDiscoveryResult(
             flow_discovery_result_id=f"fdr_{run_id[-6:]}_{uuid.uuid4().hex[:8]}",
-            source_canonical_state_set_id=canonical_state_set.get("ui_state_package_id") or canonical_state_set.get("canonical_state_set_id", "unknown_set"),
+            source_canonical_state_set_id=flow_context_package.get("flow_context_package_id", "unknown_set"),
             candidate_flows=[],
             semantic_clusters=[],
             uncertain_relations=[],
@@ -124,11 +106,11 @@ async def run_ui_flow_discovery(
             name=flow_data.flow_name,
             flow_type=flow_data.flow_type,
             flow_label=flow_data.flow_name,
-            input_level="AGENT_3_FLOW_DISCOVERY",
+            input_level="AGENT_4_INTENT_AWARE_FLOW_DISCOVERY",
             entry_state_id=flow_data.ordered_states[0] if flow_data.ordered_states else None,
             ordered_state_ids_json={"ids": flow_data.ordered_states},
             user_goal=flow_data.user_goal,
-            confidence=0.0,  # Calculated downstream or kept as 0.0
+            confidence=0.0,
         )
         db.add(flow_row)
 
@@ -143,6 +125,8 @@ async def run_ui_flow_discovery(
                 flow_id=db_flow_id,
                 from_state_id=tr_data.from_state,
                 to_state_id=tr_data.to_state,
+                source_group_id=tr_data.source_group_id,
+                source_screen_intent_id=tr_data.source_screen_intent_id,
                 transition_type="direct_transition",
                 trigger_json=tr_data.trigger_action.model_dump(),
                 hypothesized_action=_hypothesized_action_from_a3_trigger(tr_data.trigger_action),
@@ -192,13 +176,6 @@ async def run_ui_flow_discovery(
         old_fid = flow_dict.get("flow_id")
         if old_fid in flow_id_map:
             flow_dict["flow_id"] = flow_id_map[old_fid]
-        
-        for tr_dict in flow_dict.get("transitions") or []:
-            # Note: transition IDs are no longer in the new prompt output, 
-            # we generated them during DB insertion. 
-            # If we need them in the output, we should add them to the dict.
-            # For now, let's just ensure the flow_id is correct.
-            pass
 
     report = {
         "candidate_flow_count": len(result.candidate_flows),
@@ -208,7 +185,7 @@ async def run_ui_flow_discovery(
     }
 
     duration_ms = int((time.time() - start_time) * 1000)
-    log_event("ui_flow_discovery_completed", run_id=run_id, duration_ms=duration_ms)
+    log_event("intent_aware_flow_discovery_completed", run_id=run_id, duration_ms=duration_ms)
 
     out["report"] = report
     return out

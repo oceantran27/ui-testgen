@@ -21,7 +21,7 @@ from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
 from app.model_providers import model_adapter
 from app.model_providers.base import ImageInput
-from app.model_providers.schemas import UIElementA1, UIActionA1, UIFeedbackA1, UIStateExtractionResult
+from app.model_providers.schemas import UIElementA1V2, UIActionA1V2, UIFeedbackA1V2, UIStateExtractionV2Result, InteractionGroupA1V2
 from app.services.storage_service import storage_service
 
 
@@ -66,7 +66,7 @@ def _confidence_label(conf: float) -> str:
     return "low"
 
 
-def _generate_state_signature(page_type: str, elements: List[UIElementA1], actions: List[UIActionA1], feedback_list: List[UIFeedbackA1]) -> str:
+def _generate_state_signature(page_type: str, elements: List[UIElementA1V2], actions: List[UIActionA1V2], feedback_list: List[UIFeedbackA1V2]) -> str:
     inputs: List[str] = []
     action_labels: List[str] = []
     fb_type = "none"
@@ -88,7 +88,7 @@ def _generate_state_signature(page_type: str, elements: List[UIElementA1], actio
     return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(action_labels[:5]) or 'none'}|feedback:{fb_type}"
 
 
-def _flags_from_elements(elements: List[UIElementA1], actions: List[UIActionA1], feedback_list: List[UIFeedbackA1]) -> tuple[bool, bool, bool, bool]:
+def _flags_from_elements(elements: List[UIElementA1V2], actions: List[UIActionA1V2], feedback_list: List[UIFeedbackA1V2]) -> tuple[bool, bool, bool, bool]:
     has_form = any(
         el.element_type in ("input", "textarea", "select", "checkbox", "radio")
         for el in elements
@@ -107,7 +107,7 @@ def _safe_element_db_id(state_id: str, element_id: str, idx: int) -> str:
     return raw
 
 
-async def run_ui_state_extraction(
+async def run_ui_state_evidence_extraction(
     db: AsyncSession, run_id: str, image_ids: List[str]
 ) -> Dict[str, Any]:
     start_time = time.time()
@@ -129,7 +129,7 @@ async def run_ui_state_extraction(
     ordered_images = [by_id[cid] for cid in image_ids if cid in by_id]
 
     images_for_vision = [img for img in ordered_images if img.storage_uri]
-    system_instruction = prompt_manager.get_prompt("ui_state_extraction")
+    system_instruction = prompt_manager.get_prompt("prompt_ui_state_evidence_extraction_v2")
 
     semaphore = asyncio.Semaphore(settings.UI_STATE_EXTRACTION_MAX_CONCURRENCY)
 
@@ -148,8 +148,8 @@ async def run_ui_state_extraction(
                 system_instruction=system_instruction,
                 user_instruction=user_instruction,
                 image_inputs=[image_input],
-                output_schema=UIStateExtractionResult,
-                prompt_name="ui_state_extraction_prompt",
+                output_schema=UIStateExtractionV2Result,
+                prompt_name="prompt_ui_state_evidence_extraction_v2",
                 prompt_version="v1",
                 provider_override=settings.UI_STATE_EXTRACTION_PROVIDER,
                 model_name_override=settings.UI_STATE_EXTRACTION_MODEL_NAME,
@@ -216,7 +216,7 @@ async def run_ui_state_extraction(
             db.add(failed_state)
             continue
 
-        result_data: UIStateExtractionResult = response.parsed_output
+        result_data: UIStateExtractionV2Result = response.parsed_output
         
         extraction_status = "success" if (result_data.visible_elements or result_data.available_actions) else "partial"
         state_quality_payload: Dict[str, Any] = {}
@@ -262,12 +262,38 @@ async def run_ui_state_extraction(
         )
         db.add(db_state)
 
+        # Interaction Groups Fallback
+        if not result_data.interaction_groups and (result_data.visible_elements or result_data.available_actions or result_data.visible_feedback):
+            fallback_group = InteractionGroupA1V2(
+                group_id="ig_fallback",
+                group_type="screen",
+                group_label=f"Screen {result_data.screen_purpose}",
+                element_ids=[el.element_id for el in result_data.visible_elements],
+                action_ids=[ac.action_id for ac in result_data.available_actions],
+                feedback_ids=[fb.feedback_id for fb in result_data.visible_feedback],
+                primary_action_id=result_data.available_actions[0].action_id if result_data.available_actions else None,
+                group_evidence=["auto-generated fallback group"],
+                group_confidence="low"
+            )
+            result_data.interaction_groups = [fallback_group]
+
+        # Prepend state_id to all interaction group reference IDs to make them globally unique
+        for ig in result_data.interaction_groups:
+            ig.group_id = f"{state_id}_{ig.group_id}"
+            ig.element_ids = [f"{state_id}_{eid}" for eid in ig.element_ids]
+            ig.action_ids = [f"{state_id}_{aid}" for aid in ig.action_ids]
+            ig.feedback_ids = [f"{state_id}_{fid}" for fid in ig.feedback_ids]
+            if ig.primary_action_id:
+                ig.primary_action_id = f"{state_id}_{ig.primary_action_id}"
+
+        db_state.interaction_groups_json = [ig.model_dump() for ig in result_data.interaction_groups]
+
         total_elements_in_state = 0
         
         # 1. Visible Elements
         for idx, el_data in enumerate(result_data.visible_elements):
             db_el = UIElement(
-                id=_safe_element_db_id(state_id, f"el_{idx}", idx),
+                id=f"{state_id}_{el_data.element_id}",
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -286,7 +312,7 @@ async def run_ui_state_extraction(
         # 2. Available Actions
         for idx, act_data in enumerate(result_data.available_actions):
             db_el = UIElement(
-                id=_safe_element_db_id(state_id, f"act_{idx}", idx),
+                id=f"{state_id}_{act_data.action_id}",
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -307,7 +333,7 @@ async def run_ui_state_extraction(
         # 3. Visible Feedback
         for idx, fb_data in enumerate(result_data.visible_feedback):
             db_el = UIElement(
-                id=_safe_element_db_id(state_id, f"fb_{idx}", idx),
+                id=f"{state_id}_{fb_data.feedback_id}",
                 state_id=state_id,
                 run_id=run_id,
                 image_id=img.id,
@@ -338,6 +364,7 @@ async def run_ui_state_extraction(
             "visible_elements": [e.model_dump() for e in result_data.visible_elements],
             "available_actions": [a.model_dump() for a in result_data.available_actions],
             "visible_feedback": [f.model_dump() for f in result_data.visible_feedback],
+            "interaction_groups": [ig.model_dump() for ig in result_data.interaction_groups],
             "state_quality": state_quality_payload,
         }
         extracted_states.append(state_row)
@@ -386,5 +413,8 @@ async def run_ui_state_extraction(
         "ui_state_package_id": ui_pkg_id,
         "extracted_states": extracted_states,
         "state_catalog": extracted_states,
+        "interaction_group_catalog": [ig for state in extracted_states for ig in state.get("interaction_groups", [])],
         "report": report,
     }
+
+run_ui_state_extraction = run_ui_state_evidence_extraction

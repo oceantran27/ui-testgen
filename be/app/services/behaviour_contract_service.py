@@ -1,6 +1,6 @@
 """
-Behaviour Intent Inference Service — Agent 5.
-Infers user intentions and outcomes from validated UI flows.
+Behaviour Contract Builder Service — Agent 5.
+Infers behaviour contracts (Test Intents) from validated intent-aware UI flows.
 """
 import json
 import time
@@ -20,10 +20,8 @@ from app.model_providers.schemas import (
 from app.core.prompt_manager import prompt_manager
 
 
-
 def _generate_behaviour_intent_id(run_id: str) -> str:
     """behaviour_intents.id is a global PK — never persist LLM ids directly."""
-    # Combine bi_ prefix, a slice of run_id, and a random part
     return f"bi_{run_id[-6:]}_{uuid.uuid4().hex[:8]}"
 
 
@@ -54,6 +52,9 @@ def _persist_intent_row(
         source_flow_type=intent.source_flow_type,
         source_transition_indexes_json={"indexes": intent.source_transition_indexes},
         source_outcome_state=intent.source_outcome_state,
+        source_group_id=intent.source_group_id,
+        source_screen_intent_id=intent.source_screen_intent_id,
+        source_transition_ids_json={"ids": intent.source_transition_ids},
         behaviour_name=intent.behaviour_name,
         intent_type=intent.intent_type,
         test_path=test_path,
@@ -75,13 +76,13 @@ def _persist_intent_row(
     )
 
 
-async def run_behaviour_intent_inference(
+async def run_behaviour_contract_builder(
     db: AsyncSession,
     run_id: str,
     flow_discovery_result: Dict[str, Any],
 ) -> Dict[str, Any]:
     start_time = time.time()
-    log_event("behaviour_intent_inference_started", run_id=run_id)
+    log_event("behaviour_contract_builder_started", run_id=run_id)
 
     candidate_flows = flow_discovery_result.get("candidate_flows", [])
     if not candidate_flows:
@@ -95,28 +96,28 @@ async def run_behaviour_intent_inference(
             },
         ).model_dump()
 
-    system_instruction = prompt_manager.get_prompt("behaviour_intent")
+    system_instruction = prompt_manager.get_prompt("prompt_behaviour_contract_builder")
 
     user_instruction = (
-        "Infer behaviour intents from the following UI flow package:\n"
+        "Infer behaviour contracts from the following Intent-aware UI flow package:\n"
         f"{json.dumps(flow_discovery_result, indent=2)}"
     )
 
     response = await model_adapter.call_text_structured(
-        task_name="behaviour_intent_inference",
+        task_name="behaviour_contract_builder",
         run_id=run_id,
-        node_name="behaviour_intent_inference_node",
+        node_name="behaviour_contract_builder_node",
         system_instruction=system_instruction,
         user_instruction=user_instruction,
         output_schema=BehaviourIntentInferenceResult,
         provider_override=settings.BEHAVIOUR_INTENT_MODEL_PROVIDER,
         model_name_override=settings.BEHAVIOUR_INTENT_MODEL_NAME,
-        prompt_name="behaviour_intent_inference_prompt",
+        prompt_name="prompt_behaviour_contract_builder",
         prompt_version="v1",
     )
 
     if response.status.value != "success" or not response.parsed_output:
-        logger.error(f"Behaviour Intent Inference failed: {response.error}")
+        logger.error(f"Behaviour Contract Builder failed: {response.error}")
         err = BehaviourIntentInferenceResult(
             behaviour_intents=[],
             unresolved_flow_items=[],
@@ -131,7 +132,6 @@ async def run_behaviour_intent_inference(
 
     result: BehaviourIntentInferenceResult = response.parsed_output
 
-    # Generate a unique DB ID for every intent record to prevent collisions
     for intent in result.behaviour_intents:
         intent.intent_id = _generate_behaviour_intent_id(run_id)
         db.add(_persist_intent_row(run_id, intent))
@@ -139,11 +139,11 @@ async def run_behaviour_intent_inference(
     try:
         await db.commit()
     except Exception as e:
-        logger.error(f"Failed to commit behaviour intents for run {run_id}: {e}")
+        logger.error(f"Failed to commit behaviour contracts for run {run_id}: {e}")
         await db.rollback()
         raise
 
     duration_ms = int((time.time() - start_time) * 1000)
-    log_event("behaviour_intent_inference_completed", run_id=run_id, duration_ms=duration_ms)
+    log_event("behaviour_contract_builder_completed", run_id=run_id, duration_ms=duration_ms)
 
     return result.model_dump()
