@@ -24,6 +24,9 @@ class FlowTransition(Base):
     transition_type: Mapped[str] = mapped_column(String)
     hypothesized_action: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
+    source_group_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_screen_intent_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
     trigger_element_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     trigger_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     

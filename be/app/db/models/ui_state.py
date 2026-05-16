@@ -39,6 +39,7 @@ class UIState(Base):
     raw_extraction_artifact_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     state_quality: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    interaction_groups_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
     
     created_at: Mapped[datetime.datetime] = mapped_column(

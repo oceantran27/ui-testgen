@@ -21,6 +21,10 @@ class BehaviourIntent(Base):
     source_flow_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     source_transition_indexes_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     source_outcome_state: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    source_group_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_screen_intent_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_transition_ids_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     # Core Intent
     behaviour_name: Mapped[str] = mapped_column(String, index=True)
