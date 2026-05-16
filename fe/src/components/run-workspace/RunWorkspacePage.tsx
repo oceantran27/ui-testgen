@@ -47,12 +47,15 @@ import type {
   UIStateDetailResponse,
   UIStateSummary,
   ScenarioValidationResult,
+  ValidatedScenarioRecord,
+  ValidationScores,
   IntentReadiness,
 } from "../../types/run";
 import { useRunPolling } from "../../hooks/useRunPolling";
 import { PipelineStrip } from "./PipelineStrip";
 import { RunProgressModal } from "../runs/RunProgressModal";
 import type { PipelineHints } from "../../utils/pipelineUi";
+import { formatStateLabel } from "../../utils/stateLabels";
 
 function formatElementText(text: string[] | string | null | undefined): string {
   if (text == null) return "—";
@@ -104,6 +107,39 @@ function defaultIntentReadiness(): IntentReadiness {
     reason: "",
     usable_for_primary_scenario: false,
   };
+}
+
+function validationScenarioIncluded(vs: ValidatedScenarioRecord): boolean {
+  if (vs.acceptance_decision != null) {
+    return vs.acceptance_decision.include_in_final_output;
+  }
+  return vs.validation_status === "validated";
+}
+
+function formatScore(n: number | null | undefined): string {
+  if (n == null || Number.isNaN(Number(n))) return "—";
+  return Number(n).toFixed(2);
+}
+
+/** Merge legacy and Agent 7 score field names for display. */
+function displayValidationScores(sc: ValidationScores | undefined): Array<{
+  label: string;
+  value: string;
+}> {
+  if (!sc) return [];
+  const rows: Array<{ label: string; value: string }> = [];
+  const add = (label: string, n: number | null | undefined) => {
+    if (n == null || Number.isNaN(Number(n))) return;
+    rows.push({ label, value: formatScore(n) });
+  };
+  add("Flow grounding", sc.flow_grounding_score ?? sc.grounding_score ?? null);
+  add("Screen intent", sc.screen_intent_grounding_score ?? null);
+  add("Evidence", sc.evidence_grounding_score ?? sc.evidence_coverage_score ?? null);
+  add("BDD structure", sc.bdd_structure_score ?? null);
+  add("Intent align", sc.intent_alignment_score ?? null);
+  add("Data / assertions", sc.data_and_assertion_quality_score ?? null);
+  add("Hallucination penalty", sc.hallucination_penalty ?? null);
+  return rows;
 }
 
 function normalizeFlowRow(raw: Record<string, unknown>): FlowSummary {
@@ -194,6 +230,33 @@ function normalizeFlowDetailPayload(raw: Record<string, unknown>): FlowDetailRes
   };
 }
 
+function RunThumbnail({
+  src,
+  className = "",
+}: {
+  src: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-zinc-800 text-zinc-500 text-[10px] ${className}`}
+      >
+        —
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      className={className}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 type TabId =
   | "overview"
   | "images"
@@ -222,6 +285,10 @@ const TABS: { id: TabId; label: string; icon?: ComponentType<{ className?: strin
 export function RunWorkspacePage() {
   const { runId = "" } = useParams<{ runId: string }>();
   const decodedId = decodeURIComponent(runId);
+
+  useEffect(() => {
+    setImages(null);
+  }, [decodedId]);
 
   const { run, graphStatus, refresh, isTerminal } = useRunPolling(decodedId, {
     enabled: !!decodedId,
@@ -256,6 +323,10 @@ export function RunWorkspacePage() {
   const [stateDetail, setStateDetail] = useState<UIStateDetailResponse | null>(
     null,
   );
+  const stateById = useMemo(() => {
+    if (!states?.length) return new Map<string, UIStateSummary>();
+    return new Map(states.map((s) => [s.state_id, s]));
+  }, [states]);
   const [flows, setFlows] = useState<FlowSummary[] | null>(null);
   const [flowDetail, setFlowDetail] = useState<FlowDetailResponse | null>(
     null,
@@ -272,6 +343,8 @@ export function RunWorkspacePage() {
   const [modelConfig, setModelConfig] = useState<ModelConfigResponse | null>(
     null,
   );
+  const [modelCallsError, setModelCallsError] = useState<string | null>(null);
+  const [modelConfigError, setModelConfigError] = useState<string | null>(null);
   const [validationAuditOpenId, setValidationAuditOpenId] = useState<
     string | null
   >(null);
@@ -424,16 +497,24 @@ export function RunWorkspacePage() {
         const res = await listUIStates(decodedId);
         setStates(res.states);
       } else if (tab === "flows") {
-        const res = await listFlows(decodedId);
+        const [res, st] = await Promise.all([
+          listFlows(decodedId),
+          listUIStates(decodedId),
+        ]);
         setFlows(
           res.flows.map((f) =>
             normalizeFlowRow(f as unknown as Record<string, unknown>),
           ),
         );
+        setStates(st.states);
         setFlowDetail(null);
       } else if (tab === "intents") {
-        const res = await listBehaviourIntents(decodedId);
+        const [res, st] = await Promise.all([
+          listBehaviourIntents(decodedId),
+          listUIStates(decodedId),
+        ]);
         setIntents(res.intents);
+        setStates(st.states);
       } else if (tab === "scenarios") {
         const res = await listScenarios(decodedId);
         setScenarios(
@@ -458,12 +539,32 @@ export function RunWorkspacePage() {
           setValidationResult(null);
         }
       } else if (tab === "models") {
-        const [calls, cfg] = await Promise.all([
-          listModelCalls(decodedId),
-          getModelConfig(decodedId),
+        setModelCalls(null);
+        setModelConfig(null);
+        setModelCallsError(null);
+        setModelConfigError(null);
+        await Promise.all([
+          listModelCalls(decodedId)
+            .then((c) => {
+              setModelCalls(c);
+            })
+            .catch((err) => {
+              setModelCalls(null);
+              const msg = extractApiError(err);
+              setModelCallsError(msg);
+              toast.error(`Could not load model calls: ${msg}`);
+            }),
+          getModelConfig(decodedId)
+            .then((c) => {
+              setModelConfig(c);
+            })
+            .catch((err) => {
+              setModelConfig(null);
+              const msg = extractApiError(err);
+              setModelConfigError(msg);
+              toast.error(`Could not load model configuration: ${msg}`);
+            }),
         ]);
-        setModelCalls(calls);
-        setModelConfig(cfg);
       } else if (tab === "artifacts") {
         setArtifacts(await getArtifacts(decodedId));
       } else if (tab === "overview") {
@@ -475,6 +576,9 @@ export function RunWorkspacePage() {
         }
       }
     } catch (e) {
+      if (tab === "images") {
+        setImages(null);
+      }
       toast.error(extractApiError(e));
     } finally {
       setTabLoading(false);
@@ -512,10 +616,117 @@ export function RunWorkspacePage() {
     }
   };
 
+  const validationScenarioCard = (vs: ValidatedScenarioRecord) => {
+    const decision = vs.acceptance_decision ?? {
+      reason: "",
+      include_in_final_output: false,
+    };
+    const scoreRows = displayValidationScores(vs.scores);
+    const hf = vs.hallucination_flags ?? {};
+    const hfEntries = Object.entries(hf).filter(([, v]) => v === true);
+    const auditsOpen = validationAuditOpenId === vs.scenario_id;
+    const audits = vs.step_audits ?? [];
+    return (
+      <div
+        key={vs.scenario_id}
+        className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4 space-y-3"
+      >
+        <div className="flex flex-wrap items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-zinc-200 truncate">
+              {vs.scenario_name ?? vs.scenario_id}
+            </p>
+            <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+              {vs.scenario_id}
+            </p>
+            <p className="text-xs text-zinc-500 mt-2">{decision.reason}</p>
+            {vs.validation_warnings?.length ? (
+              <ul className="mt-2 text-[10px] text-amber-500/90 list-disc pl-4">
+                {vs.validation_warnings.map((w, wi) => (
+                  <li key={wi}>{w}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-lg font-bold text-cyan-400">
+              {((vs.final_reliability ?? 0) * 100).toFixed(0)}%
+            </p>
+            <span
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                vs.validation_status === "validated"
+                  ? "bg-emerald-950/30 text-emerald-400"
+                  : "bg-amber-950/30 text-amber-400"
+              }`}
+            >
+              {(vs.validation_status ?? "unknown").toUpperCase()}
+            </span>
+          </div>
+          {decision.include_in_final_output ? (
+            <FiCheckCircle className="text-emerald-500 w-5 h-5 shrink-0" />
+          ) : (
+            <FiAlertCircle className="text-amber-500 w-5 h-5 shrink-0" />
+          )}
+        </div>
+        {scoreRows.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-3">
+            {scoreRows.map((row) => (
+              <span key={row.label}>
+                {row.label}: {row.value}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {hfEntries.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {hfEntries.map(([k]) => (
+              <span
+                key={k}
+                className="rounded bg-red-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-300 border border-red-900/50"
+              >
+                {k.replace(/_/g, " ")}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {audits.length > 0 ? (
+          <div>
+            <button
+              type="button"
+              className="text-[10px] font-semibold text-cyan-400 hover:underline"
+              onClick={() =>
+                setValidationAuditOpenId(auditsOpen ? null : vs.scenario_id)
+              }
+            >
+              {auditsOpen ? "Hide step audits" : "View step audits"}
+            </button>
+            {auditsOpen ? (
+              <ul className="mt-2 space-y-2 max-h-48 overflow-y-auto text-[10px]">
+                {audits.map((a) => (
+                  <li
+                    key={a.step_number}
+                    className="rounded border border-zinc-800 bg-black/30 p-2"
+                  >
+                    <span className="font-mono text-zinc-500">#{a.step_number}</span>{" "}
+                    <span className="text-zinc-300">{a.keyword}</span>
+                    <span className="ml-2 text-amber-400/90">
+                      {a.step_support_status}
+                    </span>
+                    <p className="text-zinc-500 mt-1">{a.audit_reason}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
   const subtitle = useMemo(
     () =>
       run?.project_name
-        ? `${run.project_name} · 10-Node Granular Pipeline Workspace`
+        ? `${run.project_name} · LangGraph run workspace`
         : "Run workspace",
     [run?.project_name],
   );
@@ -572,9 +783,13 @@ export function RunWorkspacePage() {
       </div>
 
       <div className="card-dark mb-6">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-500">
-          Sequential 10-Node Pipeline (Agent A1-A7)
+        <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-zinc-500">
+          Pipeline (10 steps)
         </h2>
+        <p className="mb-3 text-[11px] text-zinc-500">
+          A1 UI evidence → A2 screen intents → flow context → intent-aware discovery → A5 behaviour
+          contracts → scenarios → evidence audit → output assembly → finalize
+        </p>
         <PipelineStrip run={run} graphStatus={graphStatus} hints={hints} />
       </div>
 
@@ -647,19 +862,35 @@ export function RunWorkspacePage() {
           </div>
         )}
 
-        {tab === "images" && images && (
-          <ul className="space-y-2">
-            {images.map((img) => (
-              <li key={img.image_id} className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/40 p-2">
-                <img src={thumb(img.image_id)} alt="" className="h-14 w-14 rounded border border-zinc-700 object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-zinc-200">{img.original_filename}</p>
-                  <p className="font-mono text-xs text-zinc-500">{img.image_id}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        {tab === "images" && !tabLoading ? (
+          images === null ? (
+            <p className="text-sm text-amber-400/90">
+              Could not load images for this run. Check the API or try Refresh.
+            </p>
+          ) : images.length === 0 ? (
+            <p className="text-sm text-zinc-500">No images uploaded for this run.</p>
+          ) : (
+            <ul className="space-y-2">
+              {images.map((img) => (
+                <li
+                  key={img.image_id}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/40 p-2"
+                >
+                  <RunThumbnail
+                    src={thumb(img.image_id)}
+                    className="h-14 w-14 shrink-0 rounded border border-zinc-700 object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-zinc-200">
+                      {img.original_filename}
+                    </p>
+                    <p className="font-mono text-xs text-zinc-500">{img.image_id}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : null}
 
         {tab === "states" && states && (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -667,7 +898,12 @@ export function RunWorkspacePage() {
               {states.map((s) => (
                 <li key={s.state_id}>
                   <button type="button" onClick={() => void openState(s.state_id)} className="flex w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-left text-sm hover:border-zinc-600">
-                    <span className="truncate text-zinc-200">{s.page_type} · {s.state_summary}</span>
+                    <span className="truncate text-zinc-200">
+                      {s.screen_purpose || s.state_summary || s.page_type}
+                      {s.screen_type ? (
+                        <span className="text-zinc-500"> · {s.screen_type}</span>
+                      ) : null}
+                    </span>
                     <FiChevronRight className="shrink-0 text-zinc-500" />
                   </button>
                 </li>
@@ -677,9 +913,20 @@ export function RunWorkspacePage() {
               {stateDetail ? (
                 <div className="space-y-4 text-sm">
                   <div className="flex items-center gap-4">
-                    <img src={thumb(stateDetail.image_id)} alt="" className="max-h-40 rounded border border-zinc-700" />
-                    <div className="flex-1">
-                      <p className="text-zinc-300 font-medium mb-1">{stateDetail.page_type}</p>
+                    <RunThumbnail
+                      src={thumb(stateDetail.image_id)}
+                      className="max-h-40 max-w-[200px] rounded border border-zinc-700 object-contain"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-zinc-300 font-medium mb-1">
+                        {stateDetail.screen_type || stateDetail.page_type}
+                        {stateDetail.domain ? (
+                          <span className="text-zinc-500 font-normal"> · {stateDetail.domain}</span>
+                        ) : null}
+                      </p>
+                      {stateDetail.screen_purpose ? (
+                        <p className="text-sm text-zinc-200 mb-1">{stateDetail.screen_purpose}</p>
+                      ) : null}
                       <p className="text-xs text-zinc-500">{stateDetail.state_summary}</p>
                     </div>
                   </div>
@@ -784,12 +1031,40 @@ export function RunWorkspacePage() {
                           t.trigger.text?.length > 0
                             ? t.trigger.text.join(" ")
                             : t.trigger.action_type || "—";
+                        const fromL = formatStateLabel(
+                          t.from_state_id,
+                          stateById.get(t.from_state_id),
+                        );
+                        const toL = formatStateLabel(
+                          t.to_state_id,
+                          stateById.get(t.to_state_id),
+                        );
                         return (
                         <li key={t.transition_id} className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono text-[10px]">{t.from_state_id.slice(-6)}</span>
-                            <FiChevronRight className="text-zinc-600 shrink-0" />
-                            <span className="bg-zinc-800 px-1.5 py-0.5 rounded font-mono text-[10px]">{t.to_state_id.slice(-6)}</span>
+                            <div className="flex flex-col min-w-0 max-w-[min(46vw,220px)]">
+                              <span
+                                className="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] text-zinc-100 truncate"
+                                title={fromL.title}
+                              >
+                                {fromL.shortLabel}
+                              </span>
+                              <span className="font-mono text-[9px] text-zinc-500 truncate" title={fromL.title}>
+                                {fromL.shortId}
+                              </span>
+                            </div>
+                            <FiChevronRight className="text-zinc-600 shrink-0 self-center" />
+                            <div className="flex flex-col min-w-0 max-w-[min(46vw,220px)]">
+                              <span
+                                className="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] text-zinc-100 truncate"
+                                title={toL.title}
+                              >
+                                {toL.shortLabel}
+                              </span>
+                              <span className="font-mono text-[9px] text-zinc-500 truncate" title={toL.title}>
+                                {toL.shortId}
+                              </span>
+                            </div>
                             <div className="ml-auto flex items-center gap-2 shrink-0">
                               <span className="text-cyan-400 font-bold text-[10px] uppercase" title={triggerLabel}>{t.trigger.action_type}</span>
                               <span className={`text-[10px] font-bold px-1.5 rounded uppercase ${
@@ -843,9 +1118,28 @@ export function RunWorkspacePage() {
                    <span className="bg-zinc-900 px-2 py-0.5 rounded text-[10px] text-zinc-400 uppercase font-bold">{i.intent_type}</span>
                    <span className="bg-zinc-900 px-2 py-0.5 rounded text-[10px] text-zinc-400 uppercase font-bold">{i.test_path}</span>
                 </div>
-                <p className="text-[10px] font-mono text-zinc-500">
-                  {i.start_state.slice(-8)} → {i.end_state.slice(-8)}
-                </p>
+                {(() => {
+                  const sL = formatStateLabel(
+                    i.start_state,
+                    stateById.get(i.start_state),
+                  );
+                  const eL = formatStateLabel(i.end_state, stateById.get(i.end_state));
+                  const fullTitle = `${sL.title} → ${eL.title}`;
+                  return (
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-zinc-300 truncate" title={fullTitle}>
+                        <span className="text-zinc-500">States:</span> {sL.shortLabel} →{" "}
+                        {eL.shortLabel}
+                      </p>
+                      <p
+                        className="text-[9px] font-mono text-zinc-500 truncate"
+                        title={fullTitle}
+                      >
+                        {sL.shortId} → {eL.shortId}
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -901,9 +1195,11 @@ export function RunWorkspacePage() {
                       <div className="rounded border border-zinc-800 bg-zinc-900/30 p-2 text-[10px] text-zinc-400">
                         <p className="font-bold text-zinc-500 uppercase mb-1">Validation scores</p>
                         <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
-                          <span>G: {Number(scenarioDetail.validation.scores.grounding_score).toFixed(2)}</span>
-                          <span>E: {Number(scenarioDetail.validation.scores.evidence_coverage_score).toFixed(2)}</span>
-                          <span>BDD: {Number(scenarioDetail.validation.scores.bdd_structure_score).toFixed(2)}</span>
+                          {displayValidationScores(scenarioDetail.validation.scores).map((row) => (
+                            <span key={row.label}>
+                              {row.label}: {row.value}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     ) : null}
@@ -914,94 +1210,45 @@ export function RunWorkspacePage() {
         )}
 
         {tab === "validation" && !tabLoading && (
-          validationResult == null || !Array.isArray(validationResult.validated_scenarios) ? (
+          validationResult == null ||
+          !Array.isArray(validationResult.validated_scenarios) ? (
             <p className="text-sm text-zinc-500">
               Scenario validation report is not available yet.
             </p>
           ) : validationResult.validated_scenarios.length === 0 ? (
             <p className="text-sm text-zinc-500">No validated scenarios in this report.</p>
           ) : (
-           <div className="space-y-4">
-              {validationResult.validated_scenarios.map((vs) => {
-                const decision = vs.acceptance_decision ?? { reason: "", include_in_final_output: false };
-                const sc = vs.scores;
-                const hf = vs.hallucination_flags ?? {};
-                const hfEntries = Object.entries(hf).filter(([, v]) => v === true);
-                const auditsOpen = validationAuditOpenId === vs.scenario_id;
-                const audits = vs.step_audits ?? [];
+            <div className="space-y-8">
+              {(() => {
+                const items = validationResult.validated_scenarios;
+                const included = items.filter(validationScenarioIncluded);
+                const flagged = items.filter((v) => !validationScenarioIncluded(v));
                 return (
-                <div key={vs.scenario_id} className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4 space-y-3">
-                  <div className="flex flex-wrap items-start gap-4">
-                   <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-200 truncate">
-                        {vs.scenario_name ?? vs.scenario_id}
-                      </p>
-                      <p className="text-[10px] font-mono text-zinc-500 mt-0.5">{vs.scenario_id}</p>
-                      <p className="text-xs text-zinc-500 mt-2">{decision.reason}</p>
-                      {vs.validation_warnings?.length ? (
-                        <ul className="mt-2 text-[10px] text-amber-500/90 list-disc pl-4">
-                          {vs.validation_warnings.map((w, wi) => (
-                            <li key={wi}>{w}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                   </div>
-                   <div className="text-right shrink-0">
-                      <p className="text-lg font-bold text-cyan-400">{((vs.final_reliability ?? 0) * 100).toFixed(0)}%</p>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${vs.validation_status === 'validated' ? 'bg-emerald-950/30 text-emerald-400' : 'bg-amber-950/30 text-amber-400'}`}>
-                        {(vs.validation_status ?? 'unknown').toUpperCase()}
-                      </span>
-                   </div>
-                   {decision.include_in_final_output ? <FiCheckCircle className="text-emerald-500 w-5 h-5 shrink-0" /> : <FiAlertCircle className="text-amber-500 w-5 h-5 shrink-0" />}
-                  </div>
-                  {sc ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-3">
-                      <span>Grounding: {Number(sc.grounding_score).toFixed(2)}</span>
-                      <span>Intent G: {Number(sc.screen_intent_grounding_score).toFixed(2)}</span>
-                      <span>Evidence: {Number(sc.evidence_coverage_score).toFixed(2)}</span>
-                      <span>BDD: {Number(sc.bdd_structure_score).toFixed(2)}</span>
-                      <span>Penalty: {Number(sc.hallucination_penalty).toFixed(2)}</span>
-                    </div>
-                  ) : null}
-                  {hfEntries.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {hfEntries.map(([k]) => (
-                        <span key={k} className="rounded bg-red-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-300 border border-red-900/50">
-                          {k.replace(/_/g, " ")}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  {audits.length > 0 ? (
-                    <div>
-                      <button
-                        type="button"
-                        className="text-[10px] font-semibold text-cyan-400 hover:underline"
-                        onClick={() =>
-                          setValidationAuditOpenId(auditsOpen ? null : vs.scenario_id)
-                        }
-                      >
-                        {auditsOpen ? "Hide step audits" : "View step audits"}
-                      </button>
-                      {auditsOpen ? (
-                        <ul className="mt-2 space-y-2 max-h-48 overflow-y-auto text-[10px]">
-                          {audits.map((a) => (
-                            <li key={a.step_number} className="rounded border border-zinc-800 bg-black/30 p-2">
-                              <span className="font-mono text-zinc-500">#{a.step_number}</span>
-                              {" "}
-                              <span className="text-zinc-300">{a.keyword}</span>
-                              <span className="ml-2 text-amber-400/90">{a.step_support_status}</span>
-                              <p className="text-zinc-500 mt-1">{a.audit_reason}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              );
-              })}
-           </div>
+                  <>
+                    {included.length > 0 ? (
+                      <section className="space-y-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-emerald-500/90">
+                          Included in final output ({included.length})
+                        </h3>
+                        <div className="space-y-4">
+                          {included.map((vs) => validationScenarioCard(vs))}
+                        </div>
+                      </section>
+                    ) : null}
+                    {flagged.length > 0 ? (
+                      <section className="space-y-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-amber-500/90">
+                          Rejected or flagged ({flagged.length})
+                        </h3>
+                        <div className="space-y-4">
+                          {flagged.map((vs) => validationScenarioCard(vs))}
+                        </div>
+                      </section>
+                    ) : null}
+                  </>
+                );
+              })()}
+            </div>
           )
         )}
 
@@ -1023,6 +1270,11 @@ export function RunWorkspacePage() {
 
         {tab === "models" && (
           <div className="space-y-6">
+            {modelConfigError ? (
+              <p className="text-sm text-amber-600 dark:text-amber-400/90">
+                Model configuration could not be loaded: {modelConfigError}
+              </p>
+            ) : null}
             {modelConfig?.pipeline_phase_models &&
             Object.keys(modelConfig.pipeline_phase_models).length > 0 ? (
               <div>
@@ -1048,12 +1300,25 @@ export function RunWorkspacePage() {
                   )}
                 </ul>
               </div>
+            ) : !modelConfigError && modelConfig ? (
+              <p className="text-sm text-zinc-500">No per-phase model overrides for this run.</p>
+            ) : null}
+            {modelCallsError ? (
+              <p className="text-sm text-amber-600 dark:text-amber-400/90">
+                Model calls could not be loaded: {modelCallsError}
+              </p>
             ) : null}
             {modelCalls ? (
               <div>
                 <h3 className="text-xs font-bold uppercase text-zinc-500 mb-2">
                   Model calls
+                  {modelCalls.total != null ? (
+                    <span className="font-normal text-zinc-600 ml-2">({modelCalls.total})</span>
+                  ) : null}
                 </h3>
+                {modelCalls.model_calls.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No model calls recorded for this run yet.</p>
+                ) : (
                 <ul className="space-y-2">
                   {modelCalls.model_calls.map((c) => (
                     <li
@@ -1071,10 +1336,11 @@ export function RunWorkspacePage() {
                     </li>
                   ))}
                 </ul>
+                )}
               </div>
-            ) : (
-              <p className="text-sm text-zinc-500">No model calls loaded.</p>
-            )}
+            ) : !modelCallsError ? (
+              <p className="text-sm text-zinc-500">Loading model calls…</p>
+            ) : null}
           </div>
         )}
 

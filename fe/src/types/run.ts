@@ -184,6 +184,8 @@ export type ModelConfigResponse = {
 export type UIStateSummary = {
   state_id: string;
   image_id: string;
+  /** Source upload name when provided by list states API */
+  original_filename?: string | null;
   page_type?: string | null;
   screen_type?: string | null;
   screen_purpose?: string | null;
@@ -191,6 +193,7 @@ export type UIStateSummary = {
   state_summary?: string | null;
   state_signature?: string | null;
   confidence?: number | null;
+  confidence_label?: string | null;
   has_form?: boolean;
   has_table?: boolean;
   has_modal?: boolean;
@@ -222,9 +225,13 @@ export type UIElementRecord = {
 
 export type InteractionGroupRecord = {
   group_id: string;
+  /** Display title (API maps v2 `group_label` / `group_type` here). */
   group_name: string;
   purpose: string;
+  /** Member element/action/feedback ids (prefixed) in this group. */
   element_ids: string[];
+  group_type?: string | null;
+  group_label?: string | null;
 };
 
 export type ScreenBehaviourIntentRecord = {
@@ -374,12 +381,19 @@ export type BddStepRecord = {
 };
 
 export type ValidationScores = {
-  grounding_score: number;
-  screen_intent_grounding_score?: number | null;
-  evidence_coverage_score: number;
+  /** Legacy / older payloads */
+  grounding_score?: number;
+  evidence_coverage_score?: number;
   transition_support_score?: number | null;
-  bdd_structure_score: number;
-  hallucination_penalty: number;
+  /** Shared */
+  screen_intent_grounding_score?: number | null;
+  bdd_structure_score?: number;
+  hallucination_penalty?: number;
+  /** Agent 7 — scenario evidence audit */
+  intent_alignment_score?: number;
+  flow_grounding_score?: number;
+  evidence_grounding_score?: number;
+  data_and_assertion_quality_score?: number;
 };
 
 export type StepAuditSupportingEvidence = {
