@@ -20,25 +20,27 @@ You receive:
 ## 4.1 Intent Decomposition
 If a group contains multiple actions with distinct goals (e.g., "Submit" and "Cancel"), generate separate `ScreenBehaviourIntent` objects. Do not merge them into generic names like "Manage form".
 
-## 4.2 Pattern Recognition
-- **Selection**: When a group has selectable options (radio, checkbox, cards, tabs, filters).
-- **Commit**: The primary action that finalizes or advances the task (Save, Submit, Book, Delete, Continue).
-- **Secondary**: Supportive actions (Back, Cancel, Close).
-- **No Merging**: If a group contains both a commit/proceed action (e.g., "Continue") and a back/cancel action (e.g., "Back"), generate SEPARATE `ScreenBehaviourIntent` objects. Do not combine them into a single intent like "Navigate Back or Continue".
+## 4.2 Intent Separation Rules (NO MERGING)
 
-## 4.3 Intent Classification (intent_kind)
-Select EXACTLY one from this HCI-grounded taxonomy:
-- `navigation`: Move to different views/sections (Menu, Tabs, "View details").
-- `data_entry`: Provide new input (Form fields, Search input).
-- `submission`: Commit/Save data (Submit, Save, Create, Book).
-- `selection`: Choose from options (Pick date, Choose plan, Apply filter).
-- `confirmation`: Affirm a decision or prompt (Confirm booking, Accept terms).
-- `cancellation`: Abort/reverse process (Cancel, Dismiss, Close, Go back).
-- `editing`: Modify existing persisted data (Edit profile, Update quantity).
-- `deletion`: Remove items/records (Delete account, Clear cart, Remove item).
-- `search`: Initiate lookup for info (Search bar + Search action).
-- `feedback_acknowledgement`: Dismiss/acknowledge system feedback (Close error, OK on success).
-- `informative`: Read-only info with no meaningful action.
+- **Mutually Exclusive Actions**: If a group contains logically opposite or distinct actions, you MUST generate SEPARATE `ScreenBehaviourIntent` objects. 
+- **Opposite Pairs**: (Submit vs Cancel), (Save vs Discard), (Accept vs Decline), (Continue vs Back), (Book vs Cancel). 
+- **Navigation vs Task**: Do NOT merge navigation (Home, Menu, Tabs) with task-specific actions.
+- **Rule of One**: Each intent must represent exactly ONE distinct user goal. Never use generic names like "Manage form" or "Account actions" for groups with multiple actions.
+
+## 4.3 Intent Taxonomy (intent_kind)
+
+Select EXACTLY one:
+- `navigation`: Move views/sections (Menu, Tabs, "View details").
+- `data_entry`: Provide input (Form fields, Search input).
+- `submission`: Commit/Save (Submit, Save, Create, Book).
+- `selection`: Choose options (Pick date, Choose plan, Filter).
+- `confirmation`: Affirm decision/prompt (Confirm booking, Accept terms).
+- `cancellation`: Abort/Reverse (Cancel, Dismiss, Close, Back).
+- `editing`: Modify existing data (Edit profile, Update qty).
+- `deletion`: Remove items (Delete, Clear cart).
+- `search`: Initiate lookup (Search action).
+- `feedback_acknowledgement`: Dismiss system info (Close error, OK on success).
+- `informative`: Read-only info with no actionable goal.
 
 # 5. Output Format
 
@@ -107,10 +109,11 @@ Return ONLY a valid JSON object.
 }
 ```
 
-# 6. Constraints
-- Return JSON only. No markdown or explanations.
-- Do not invent IDs; use only provided ones.
-- **NO HALLUCINATED LABELS**: Do NOT invent action labels such as OK, Acknowledge, Dismiss, Close, Retry, Continue, Submit, Confirm, or Cancel unless the exact text is present in `actions_metadata` or visible element text.
-- **Feedback Acknowledgement Rule**: Only classify an intent as `feedback_acknowledgement` when there is visible action text or metadata indicating acknowledgement (e.g., "OK", "Dismiss", "Got it"). If actions are task-specific (e.g., "Choose another time"), classify them according to their actual text.
-- If evidence is weak or action text is missing for a critical group, move to `unresolved_screen_groups`.
-- Use placeholder `sbi_temp_N` for IDs.
+# 6. Strict Constraints
+
+1. **Verbatim Grounding**: Every intent MUST be grounded in the provided `text` array (which may contain verbatim text or AI-synthesized labels for icons).
+2. **Action Fallback**: Do NOT move a group to `unresolved_screen_groups` just because action text is synthesized (e.g., "Search Glass"). Use the synthesized label as valid evidence.
+3. **NO HALLUCINATION**: Do NOT invent labels (e.g. OK, Acknowledge, Submit, Cancel) if not present in the input `text` arrays or metadata.
+4. **Feedback Acknowledgement Rule**: Only use `feedback_acknowledgement` if there is explicit text like "OK", "Dismiss", or "Got it".
+5. **IDs**: Use provided IDs only. Use `sbi_temp_N` for new intent IDs.
+6. **Output**: Return ONLY JSON. No explanations.

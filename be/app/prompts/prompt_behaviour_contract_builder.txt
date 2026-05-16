@@ -11,37 +11,29 @@ Your objective is to produce `behaviour_intents` that formalize the contract bet
 
 # 3. Instructions
 
-## 3.1 Core Principles
-1. Convert verified `candidate_flows` AND `alternative_outcomes` into `behaviour_intents`.
-2. **Mutual Exclusivity**: A source branch MUST be assigned to EXACTLY one bucket: either `behaviour_intents` OR `unresolved_flow_items`. Never both.
-3. Every intent must have a clear `start_state`, `end_state`, and verbatim `trigger_action`.
-4. **Alternative Branching**: If an `alternative_outcome` represents a valid user path (e.g. Cancel, Edit, Error), generate a `BehaviourIntent` with `medium` or `low` confidence.
-5. **Outcome Filter**: Do NOT convert a branch (transition or alternative outcome) if:
-   - `outcome_states` is empty.
-   - `outcome_states` contains only the `source_state` (and no visible state variant like a modal/error is present).
-   - Warnings indicate the "destination screen not included" or "no distinct target state".
-   Move những nhánh này vào `unresolved_flow_items`.
-6. **Strict UI Evidence**: `expected_ui_evidence` MUST contain ONLY verbatim visible UI text.
-   - For `transitions`: Copy only from `source_visible_evidence` and `target_visible_evidence`.
-   - For `alternative_outcomes`: Copy only from `visible_evidence`.
-   - **Exclusion**: Remove all internal labels, group labels, semantic summaries, and reasoning phrases. If a string is not verbatim text in `visible_elements.text`, `available_actions.text`, or `visible_feedback.text`, it MUST NOT be included.
+## 3.1 Behaviour Contract Principles
 
-## 3.2 Transition Conversion Filter
-Do NOT convert a transition into a behaviour_intent if:
-1. `from_state` == `to_state`, AND `relation_type` is NOT `negative_outcome`, AND there is no visible feedback/modal/success/error/selected-state variant proving a real state change.
-2. The transition is navigation (e.g., Back, Home) but the target destination state is NOT provided in the input.
-3. The transition represents a local interaction (e.g., selecting an option) unless the resulting visual state is represented by a distinct state card.
+1. **Conversion Logic**: Convert verified `candidate_flows` and `alternative_outcomes` into formal `behaviour_intents`.
+2. **Mutual Exclusivity**: A source branch MUST be assigned to EXACTLY one bucket: either `behaviour_intents` OR `unresolved_flow_items`. Never both.
+3. **Traceability**: Every intent MUST link to `source_group_id`, `source_screen_intent_id`, and `source_transition_ids`.
+4. **Strict UI Evidence**: `expected_ui_evidence` MUST contain ONLY verbatim UI text.
+    - Copy ONLY from `source_visible_evidence` and `target_visible_evidence` (for transitions) or `visible_evidence` (for alternative outcomes).
+    - **Note**: These input arrays already contain valid verbatim strings and AI-synthesized labels for icons. You MUST copy them exactly as they are.
+    - **Exclusion**: Do NOT copy from `source_evidence`, `target_evidence`, or any reasoning fields. Strip out any semantic analysis or internal group labels.
+
+## 3.2 Conversion Filters (Negative Constraints)
+
+Do NOT generate a `BehaviourIntent` if any of the following apply (move to `unresolved_flow_items` instead):
+1. **Empty Outcomes**: `outcome_states` is empty or destination is missing.
+2. **Same State Navigation**: `start_state == end_state` without a visible UI change (modal, toast, feedback, or error).
+3. **Missing Context**: Warnings indicate "destination screen not included" or "no distinct target state".
+4. **Local Only**: The transition represents a local UI update (e.g., toggle) not resulting in a new state card.
 
 ## 3.3 Traceability Mapping
-For behaviour intents generated from `transitions`:
-- Copy `source_group_id`, `source_screen_intent_id`, and `trigger_action` from that EXACT transition.
-- `source_transition_ids`: A list of unique transition IDs or index strings involved.
 
-For behaviour intents generated from `alternative_outcomes`:
-- Copy `source_group_id`, `source_screen_intent_id`, and `trigger_action` from that EXACT `alternative_outcome`.
-- `source_transition_ids`: A list containing the index or ID of the alternative outcome.
-
-Never reuse traceability fields from a different transition or branch.
+- **Transitions**: Copy `source_group_id`, `source_screen_intent_id`, and `trigger_action` from the transition object. Use transition indexes for `source_transition_ids`.
+- **Alternative Outcomes**: Copy mapping data from the `alternative_outcome` object. 
+- **Confidence**: `high` for direct transitions, `medium/low` for alternative or negative outcomes.
 
 # 4. Output Format
 

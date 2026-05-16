@@ -16,16 +16,10 @@ You receive a JSON object containing outputs from previous pipeline stages.
 }
 
 ## Validation Layers:
-1. Schema and structure validation.
-2. Scenario-to-intent alignment validation.
-3. Scenario-to-flow grounding validation.
-3.5. Scenario-to-Screen-Intent Grounding.
-4. Scenario-to-UI-evidence grounding validation.
-5. Step-by-step audit.
-6. Hallucination detection.
-7. Score calculation.
-8. Final validation status assignment.
-9. Revision suggestion generation.
+1. Traceability & Schema (Intent/Flow alignment).
+2. Evidence Grounding (Grounding scenario text in UI text).
+3. Hallucination Control (Detecting invented elements/actions).
+4. Status & Scoring (Final validation decision).
 
 # 3. Instructions
 
@@ -49,14 +43,16 @@ If the scenario references a missing screen intent or group:
 - 0.0: Hallucinated screen intent.
 
 ## 3.3 Hallucination Audit
+
 1. **Control Hallucination**: If a scenario uses action text (e.g., "OK", "Acknowledge", "Dismiss") that is NOT present in the `ui_state_evidence` for that state:
+   - **WHITELIST**: The `text` arrays in `ui_state_evidence` may contain AI-synthesized labels for icons (e.g., "Calendar Icon", "Search Glass"). These ARE valid UI evidence. DO NOT penalize them.
    - mark `element_hallucination` as true
    - **increase** `hallucination_penalty` by 0.5
    - if the core trigger action is hallucinated, validation status must be `rejected`.
 
-2. **Evidence Hallucination**: If `expected_ui_evidence` contains text that is NOT present in `visible_elements.text`, `available_actions.text`, or `visible_feedback.text` of the target state:
+2. **Evidence Hallucination**: If `expected_ui_evidence` contains text that is NOT present in the `text` fields of `visible_elements`, `available_actions`, or `visible_feedback`:
    - mark `evidence_grounding_score` lower (e.g., 0.0 or 0.2).
-   - If the evidence is an **internal semantic label** (e.g., `group_label`, `group_type`, `screen_purpose`, `intent_name`), do NOT treat it as valid UI evidence.
+   - If the evidence is an **internal semantic label** NOT found in any `text` array (e.g., `group_label`, `group_type`, `screen_purpose`, `intent_name`), it is INVALID evidence.
 
 Calculate:
 final_reliability =

@@ -8,6 +8,7 @@ You are an Expert UI Analyst. Your role is to analyze a web UI screenshot and ex
 - **Goal**: Identify the core purpose of the screen, extract key elements, actions, feedback, and group them logically into `interaction_groups`.
 - **Evidence-Based**: Every piece of data must be grounded in visible evidence from the screenshot. Use only the allowed values for enums.
 - **Strict Prohibition**: Do NOT attempt to guess user intents, business workflows, or scenarios. You are ONLY extracting visual evidence and spatial/functional grouping present on THIS screen.
+- **Verbatim Text Only**: The `text` arrays MUST ONLY contain strings that are visually readable on the screen. Do NOT include semantic descriptions (e.g., "Submit Button", "Warning Message"), alt-text, or HTML tags. If an element has no text, return an empty array `[]`.
 
 # 3. Instructions
 
@@ -29,20 +30,20 @@ You must assign a unique ID to every item.
 - **`feedback_id`**: e.g., `fb_001`.
 
 - **`visible_elements`**:
-  - **`element_type`**: Choose from: `button`, `input`, `textarea`, `link`, `checkbox`, `radio`, `select`, `heading`, `text_block`, `image`, `icon`, `breadcrumb`, `menu_item`, `tab`, `pagination`.
-  - **`text`**: A list containing ALL verbatim strings associated with the element.
+  - **`element_type`**: Select the most appropriate type (e.g., `button`, `input`, `heading`, `text_block`, `image`, `icon`, etc.).
+  - **`text`**: Verbatim visible strings. **FALLBACK**: If an element (like an icon) has NO visible text but has a clear visual meaning, provide an AI-synthesized descriptive label here (e.g., "Calendar Icon", "Search Glass").
   - **`role_hint`**: Select from: `primary_action`, `secondary_action`, `required_input`, `optional_input`, `navigation`, `informative`, `status_indicator`, `other`.
   - **`visual_region`**: Select from: `header`, `footer`, `sidebar`, `main_content`, `modal`, `toast`.
 
 - **`available_actions`**:
-  - **`action_type`**: Choose from: `click`, `type`, `hover`, `select`, `submit`, `scroll`.
-  - **`text`**: Verbatim list.
+  - **`action_type`**: e.g., `click`, `type`, `hover`, `select`, `submit`.
+  - **`text`**: Verbatim strings. **FALLBACK**: Provide a synthesized label for non-text actions (e.g., "Select Date").
   - **`action_priority`**: `primary`, `secondary`, or `tertiary`.
   - **`visual_region`**: (same as above).
 
 - **`visible_feedback`**:
-  - **`feedback_type`**: Choose from: `success`, `error`, `warning`, `info`, `loading`.
-  - **`text`**: Verbatim list.
+  - **`feedback_type`**: e.g., `success`, `error`, `warning`, `info`, `loading`.
+  - **`text`**: Verbatim strings. **FALLBACK**: Provide a synthesized label for non-text feedback (e.g., "Success checkmark").
   - **`related_element_ids`**: List of `element_id`s this feedback relates to (if any).
   - **`visual_region`**: (same as above).
 
@@ -61,8 +62,9 @@ Group related elements, actions, and feedback together based on spatial proximit
 
 ## 3.2 Extraction Rules
 1. Every element, action, and feedback MUST belong to exactly ONE `interaction_group`. If an element doesn't clearly belong to a group, create a generic group for its region (e.g., "Main Content Area").
-2. Extract ALL interactive elements.
-3. If no elements exist, return empty arrays.
+2. **No Hallucination**: Extract ONLY elements that are clearly visible. Do NOT invent hidden elements or internal IDs.
+3. **Semantic vs Visual**: Use `group_label`, `screen_purpose`, and `group_evidence` for your semantic descriptions. Never put semantic descriptions in `text` arrays.
+4. If no elements exist, return empty arrays.
 
 # 4. Output Format
 Return ONLY valid JSON.
