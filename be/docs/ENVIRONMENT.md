@@ -40,9 +40,6 @@ The following variables can be configured in the `.env` file or exported to the 
 
 - Start the worker from the **`be/`** directory so `.env` (with the variables above) is picked up reliably by `pydantic-settings`; otherwise misconfiguration can silently fall back on ARQ’s **300 second** job default.
 
-- `VIEWPORT_SHORT_EDGE_MIN` / `VIEWPORT_SHORT_EDGE_MAX`: Integer bounds for `min(width, height)` (default 900–1400)
-- `VIEWPORT_LONG_EDGE_MIN` / `VIEWPORT_LONG_EDGE_MAX`: Integer bounds for `max(width, height)` (default 1400–2500)
-- `VIEWPORT_ASPECT_RATIO_MIN` / `VIEWPORT_ASPECT_RATIO_MAX`: Float bounds for `long_side / short_side` (default 1.5–2.0)
 - `ALLOWED_IMAGE_FORMATS`: List of formats, default: `png, jpg, jpeg, webp`
 - `MAX_UPLOAD_SIZE_MB`: Max file upload size in megabytes
 - `MAX_IMAGES_PER_RUN`: Limit of images per analysis run
@@ -50,9 +47,8 @@ The following variables can be configured in the `.env` file or exported to the 
 - `UNORDERED_IMAGES_ALLOWED`: Boolean flag
 - `INPUT_LEVEL_DETECTION`: Algorithm mode (`auto`, `level1`, etc)
 - `JOB_EXECUTION_MODE`: `async` or `sync`
-- `WORKER_CONCURRENCY`: Number of concurrent worker processes
 
-### Phase 6 — UI state extraction
+### UI state extraction (vision)
 
 - **`UI_STATE_EXTRACTION_MAX_CONCURRENCY`**: Maximum concurrent vision-model calls during UI state extraction for one run (default **5**, allowed range **1–50** in `config.py`). Lower this if Gemini/OpenAI returns rate-limit (429) errors.
 

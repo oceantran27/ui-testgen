@@ -1,40 +1,32 @@
-from typing import Optional, List
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 class Settings(BaseSettings):
     # App config
     PROJECT_NAME: str = "UI TestGen API"
-    ENVIRONMENT: str = "local" # local, dev, staging, prod
+    ENVIRONMENT: str = "local"  # local, dev, staging, prod
     API_V1_STR: str = "/api/v1"
-    
+
     # Storage config (MinIO / S3)
     STORAGE_ENDPOINT: str = "http://localhost:9000"
     STORAGE_ACCESS_KEY: str = "minioadmin"
     STORAGE_SECRET_KEY: str = "minioadmin"
     STORAGE_BUCKET_NAME: str = "ui-testgen-local"
     STORAGE_SECURE: bool = False
-    
+
     # Database config (Docker compose maps host 5433 → Postgres 5432 in container)
     DATABASE_URL: str = "postgresql+asyncpg://testgen_user:testgen_password@localhost:5433/testgen_db"
-    
+
     # Queue / Redis config
     REDIS_URL: str = "redis://localhost:6379/0"
     # ARQ worker: max wall time for entire process_run job.
-    # If ARQ_JOB_NO_TIMEOUT is True or ARQ_JOB_TIMEOUT_SECONDS <= 0, worker uses timedelta.max (no practical wall limit).
     ARQ_JOB_NO_TIMEOUT: bool = True
-    ARQ_JOB_TIMEOUT_SECONDS: int = 14400  # 4 hours; ARQ default without wiring is 300s.
-    # If True (default): value exactly 300s is treated as ambiguous (matches ARQ library default) and rewritten to ARQ_JOB_LONG_PIPELINE_FALLBACK_SECONDS for process_run.
+    ARQ_JOB_TIMEOUT_SECONDS: int = 14400  # 4 hours
     ARQ_INTERPRET_300S_AS_LONG_JOB: bool = True
     ARQ_JOB_LONG_PIPELINE_FALLBACK_SECONDS: int = 14400
-    
-    # Phase 2 — Image viewport bands (orientation-invariant)
-    VIEWPORT_SHORT_EDGE_MIN: int = 900
-    VIEWPORT_SHORT_EDGE_MAX: int = 1400
-    VIEWPORT_LONG_EDGE_MIN: int = 1400
-    VIEWPORT_LONG_EDGE_MAX: int = 2500
-    VIEWPORT_ASPECT_RATIO_MIN: float = 1.5
-    VIEWPORT_ASPECT_RATIO_MAX: float = 2.0
+
+    # Uploads & run input policy
     ALLOWED_IMAGE_FORMATS: List[str] = ["png", "jpg", "jpeg", "webp"]
     MAX_UPLOAD_SIZE_MB: int = 10
     MAX_IMAGES_PER_RUN: int = 50
@@ -42,178 +34,83 @@ class Settings(BaseSettings):
     UNORDERED_IMAGES_ALLOWED: bool = True
     INPUT_LEVEL_DETECTION: str = "auto"
     JOB_EXECUTION_MODE: str = "async"
-    WORKER_CONCURRENCY: int = 2
-    
-    
-    # Phase 4 — Graph Configuration
+
+    # LangGraph
     ENABLE_GRAPH_CHECKPOINT: bool = True
-    ENABLE_GRAPH_ARTIFACT_SNAPSHOT: bool = True
-    ENABLE_FUTURE_AI_NODES: bool = False
-    
-    # Phase 5 — Model Provider
+
+    # Model providers
     DEFAULT_MODEL_PROVIDER: str = "openai"
-    
-    # Per-provider model names (override per node via config or env)
     GEMINI_TEXT_MODEL: str = "gemini-2.5-flash"
     GEMINI_VISION_MODEL: str = "gemini-2.5-flash"
     OPENAI_TEXT_MODEL: str = "gpt-5-mini"
     OPENAI_VISION_MODEL: str = "gpt-5-mini"
-    
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    
-    MODEL_DEFAULT_TIMEOUT_SECONDS: int = 60
+
     VISION_MODEL_TIMEOUT_SECONDS: int = 90
     TEXT_MODEL_TIMEOUT_SECONDS: int = 60
-    
+
     MODEL_MAX_RETRIES: int = 2
     MODEL_RETRY_BACKOFF_SECONDS: float = 2.0
-    # When True: do not wrap provider.generate() in asyncio.wait_for (no asyncio-level call deadline).
     DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT: bool = True
-    # When True: open HTTP timeouts as wide as SDK allows (OS/TCP/network may still stall or drop).
     DISABLE_MODEL_HTTP_TIMEOUT: bool = True
-    
+
     ENABLE_MODEL_FALLBACK: bool = False
     FALLBACK_MODEL_PROVIDER: str = "gemini"
-    
+
     USE_VLM_FOR_UI_STATE_EXTRACTION: bool = True
     USE_LLM_FOR_FLOW_DISCOVERY: bool = True
     USE_LLM_FOR_SCENARIO_GENERATION: bool = True
     USE_LLM_FOR_SCENARIO_VALIDATION: bool = True
-    
+
     ENABLE_MODEL_RAW_RESPONSE_ARTIFACT: bool = True
-    ENABLE_MODEL_REQUEST_SUMMARY_ARTIFACT: bool = False
-    
-    MOCK_MODEL_MODE: str = "success"      # success | schema_mismatch | timeout | provider_error
-    
-    # Phase 6 — UI State Understanding
-    ENABLE_UI_STATE_EXTRACTION_NODE: bool = True
-    USE_OCR_FOR_UI_TEXT_EXTRACTION: bool = False  # Set False for MVP as requested
-    SAVE_UI_STATE_RAW_EXTRACTION: bool = True
-    SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
-    
-    # Provider for Phase 6 (overrideable)
+
+    MOCK_MODEL_MODE: str = "success"  # success | schema_mismatch | timeout | provider_error
+
+    # UI state extraction (vision)
     UI_STATE_EXTRACTION_PROVIDER: str = "openai"
     UI_STATE_EXTRACTION_MODEL_NAME: str = "gpt-5.4-mini"
     UI_STATE_EXTRACTION_TIMEOUT_SECONDS: int = 120
-    UI_STATE_EXTRACTION_MAX_RETRIES: int = 2
-    # Phase 6 JSON can be very large (many ui_elements); default 4096 often truncates mid-string.
     UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS: int = 16384
-    # Max parallel vision API calls per run during UI state extraction (asyncio-limited).
     UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
+    SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
 
-    # Phase 7 — Input Level Detection
-    ENABLE_INPUT_LEVEL_DETECTION_NODE: bool = True
-    LEVEL3_GROUP_SEPARATION_THRESHOLD: float = 0.70
-    LEVEL2_COHERENCE_THRESHOLD: float = 0.60
-    LOW_CONFIDENCE_STATE_PENALTY: float = 0.10
-    AMBIGUITY_PENALTY: float = 0.15
-    USE_LLM_FOR_INPUT_LEVEL_DETECTION: bool = False
-    SAVE_INPUT_LEVEL_DETECTION_REPORT: bool = True
-
-    # Phase 8 — Flow Discovery
-    ENABLE_FLOW_DISCOVERY_NODE: bool = True
-    TRANSITION_STRONG_THRESHOLD: float = 0.85
-    TRANSITION_ACCEPT_THRESHOLD: float = 0.65
-    TRANSITION_WEAK_THRESHOLD: float = 0.45
-    FLOW_CLUSTERING_THRESHOLD: float = 0.60
-    USE_LLM_FOR_FLOW_DISCOVERY: bool = False
-    SAVE_FLOW_DISCOVERY_REPORT: bool = True
-    
-    # Phase 9 — Missing Step Analysis
-    ENABLE_MISSING_STEP_ANALYSIS_NODE: bool = True
-    CRITICAL_MISSING_STEP_PENALTY: float = 0.40
-    HIGH_MISSING_STEP_PENALTY: float = 0.25
-    MEDIUM_MISSING_STEP_PENALTY: float = 0.15
-    LOW_MISSING_STEP_PENALTY: float = 0.05
-    MAX_MISSING_STEP_TOTAL_PENALTY: float = 0.70
-    MIN_USABLE_FLOW_CONFIDENCE_AFTER_PENALTY: float = 0.30
-    USE_LLM_FOR_MISSING_STEP_ANALYSIS: bool = False
-    SAVE_MISSING_STEP_ANALYSIS_REPORT: bool = True
-    
-    # Phase 10 — Behaviour Intent Inference
-    ENABLE_BEHAVIOUR_INTENT_INFERENCE_NODE: bool = True
-    MIN_INTENT_CONFIDENCE_TO_GENERATE: float = 0.40
-    MIN_INTENT_CONFIDENCE_FOR_GROUNDED: float = 0.65
-    USE_LLM_FOR_BEHAVIOUR_INTENT_INFERENCE: bool = True # Enabled as per user request
-    BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
-    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5.4-mini"
-    SAVE_BEHAVIOUR_INTENT_REPORT: bool = True
-    # Agent 5: full flow-discovery package → many behaviour_intents; registry default 4096 → finish_reason=length.
-    BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 32768
-    
-    # Phase 11 — Behaviour Scenario Generation
-    ENABLE_BEHAVIOUR_SCENARIO_GENERATION_NODE: bool = True
-    USE_LLM_FOR_SCENARIO_GENERATION: bool = True
-    ALLOW_INFERRED_ONLY_SCENARIOS: bool = True
-    SAVE_SCENARIO_GENERATION_REPORT: bool = True
-    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "openai"
-    BDD_SCENARIO_GENERATION_MODEL_NAME: str = "gpt-5.4-nano"
-    # BDD packages can be large (many intents × Gherkin); 4096 completion often truncates mid-JSON.
-    BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 16384
-
-    # Phase 12 — Scenario Grounding & Validation
-    ENABLE_SCENARIO_GROUNDING_VALIDATION_NODE: bool = True
-    USE_LLM_FOR_SCENARIO_VALIDATION: bool = True
-    VALIDATED_GROUNDING_SCORE_THRESHOLD: float = 0.75
-    LOW_CONFIDENCE_GROUNDING_SCORE_THRESHOLD: float = 0.50
-    SAVE_SCENARIO_VALIDATION_REPORT: bool = True
-    SCENARIO_VALIDATION_MODEL_PROVIDER: str = "openai"
-    SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4"
-    # Agent 7: many scenarios × step_audits; truncation mid-JSON → JSONDecodeError. Reasoning models may consume budget.
-    SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 65536
-    # Wall-clock for large completions (registry uses TEXT_MODEL_TIMEOUT_SECONDS by default = 60s).
-    SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 600
-    # Max scenarios per LLM call; smaller batches avoid finish_reason=length on huge step_audits JSON.
-    SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
-
-    # Phase 13 — Scenario Curation
-    ENABLE_SCENARIO_CURATION_NODE: bool = True
-    USE_LLM_FOR_SCENARIO_CURATION: bool = True
-    SAVE_SCENARIO_CURATION_REPORT: bool = True
-    
-    # Phase 14 — Output Assembly
-    ENABLE_OUTPUT_ASSEMBLY_NODE: bool = True
-    SAVE_FINAL_OUTPUT_JSON: bool = True
-    SAVE_GHERKIN_EXPORT: bool = True
-    # Research Model-First Mode (Technical Specification v1)
-    RESEARCH_MODEL_FIRST_MODE: bool = True
-
-
-    ENABLE_LLM_FLOW_DISCOVERY: bool = True
-    
-    # Overrides for Flow Discovery
+    # Screen intent extraction v2 + intent-aware flow discovery (shared provider defaults)
     LLM_FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
     LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
-    # Large structured JSON (flows/transitions); mirrors UI_STATE_EXTRACTION ceiling.
     LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
     LLM_FLOW_DISCOVERY_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
 
-    # Baseline Research Settings
-    BASELINE_MODEL_PROVIDER: str = "openai"
-    BASELINE_MODEL_NAME: str = "gpt-5.4-mini"
-    BASELINE_MAX_OUTPUT_TOKENS: int = 16384
+    # Behaviour contract builder (env names retain legacy “behaviour intent” wording)
+    BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
+    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5.4-mini"
+    BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 32768
 
-    MAX_STATE_PAIR_COMPARISONS: int = 200
+    # BDD scenario generation
+    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "openai"
+    BDD_SCENARIO_GENERATION_MODEL_NAME: str = "gpt-5.4-nano"
+    BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 16384
 
-    MAX_STATES_PER_FLOW_DISCOVERY_CALL: int = 25
+    # Scenario evidence audit (env names retain legacy “scenario validation” wording)
+    SCENARIO_VALIDATION_MODEL_PROVIDER: str = "openai"
+    SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4"
+    SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 65536
+    SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 600
+    SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
 
-    SAVE_LLM_FLOW_DISCOVERY_REPORT: bool = True
     SAVE_RESEARCH_FINAL_OUTPUT: bool = True
 
-    # Pipeline session logs (per run execution on worker): console + steps/*.json + raw/
     PIPELINE_RUN_LOG_ENABLED: bool = True
     PIPELINE_RUN_LOG_ROOT: str = "var/pipeline_run_logs"
 
-    # HTTP 4xx/5xx detail files (API process) — separate from pipeline run folders
     API_ERROR_LOG_ENABLED: bool = True
     API_ERROR_LOG_ROOT: str = "var/api_error_logs"
 
     model_config = SettingsConfigDict(
-        env_file=".env", 
-        env_file_encoding="utf-8", 
+        env_file=".env",
+        env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="ignore"
+        extra="ignore",
     )
 
 settings = Settings()
