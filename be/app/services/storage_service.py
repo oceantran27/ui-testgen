@@ -1,10 +1,8 @@
 import boto3
+from typing import List, Optional
+
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from fastapi import UploadFile
-from typing import Optional, List
-import io
-import os
 from app.core.config import settings
 from app.core.logging import logger
 

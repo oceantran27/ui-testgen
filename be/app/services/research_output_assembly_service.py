@@ -4,7 +4,7 @@ Compiles all data into final_output.json and metrics.
 """
 import time
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -12,9 +12,9 @@ from app.core.logging import log_event
 from app.services.storage_service import storage_service
 
 async def run_research_output_assembly(
-    db: AsyncSession, 
-    run_id: str, 
-    state: Dict[str, Any]
+    _db: AsyncSession,
+    run_id: str,
+    state: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
     Assembles final_output.json and calculates metrics.
@@ -28,6 +28,12 @@ async def run_research_output_assembly(
     intent_pkg = state.get("intent_package", {})
     scenario_pkg = state.get("scenario_draft_package", {})
     validation_pkg = state.get("validated_scenario_package", {})
+
+    validation_report = validation_pkg.get("report")
+    if not isinstance(validation_report, dict):
+        validation_report = {}
+
+    audit_suggestions_flat = state.get("audit_revision_suggestions") or []
 
     final_output = {
         "run_id": run_id,
@@ -50,9 +56,16 @@ async def run_research_output_assembly(
         "screen_behaviour_intents": screen_intent_pkg.get("screen_intent_catalog", []),
         "behaviour_contracts": intent_pkg.get("behaviour_intents", []),
         "behaviour_scenarios": scenario_pkg.get("test_scenarios", []),
+        "scenario_generation": {
+            "mode": (scenario_pkg.get("report") or {}).get("mode", "deterministic_python"),
+            "auto_revision_retry": False,
+        },
         "validation": {
             "validated_scenarios": validation_pkg.get("validated_scenarios", []),
-            "summary": validation_pkg.get("final_output_summary", {})
+            "summary": validation_pkg.get("final_output_summary", {}),
+            "audit_revision_suggestions": audit_suggestions_flat,
+            "revision_suggestions_apply_mode": "manual_or_future_pipeline",
+            "audit_pipeline_report": validation_report,
         },
         "metrics": _calculate_metrics(state),
         "system_warnings": state.get("warnings", [])

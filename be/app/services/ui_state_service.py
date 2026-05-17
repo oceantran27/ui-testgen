@@ -8,7 +8,7 @@ import json
 import re
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,8 +22,16 @@ from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
 from app.model_providers import model_adapter
 from app.model_providers.base import ImageInput
-from app.model_providers.schemas import UIElementA1V2, UIActionA1V2, UIFeedbackA1V2, UIStateExtractionV2Result, InteractionGroupA1V2
+from app.model_providers.schemas import (
+    GroupEvidenceA1V2,
+    UIElementA1V2,
+    UIActionA1V2,
+    UIFeedbackA1V2,
+    UIStateExtractionV2Result,
+    InteractionGroupA1V2,
+)
 from app.services.storage_service import storage_service
+from app.constants.ui_screen_taxonomy import normalize_screen_type
 
 
 def _sanitize_filename_for_state_id(name: str, max_len: int = 64) -> str:
@@ -83,7 +91,7 @@ def _generate_state_signature(page_type: str, elements: List[UIElementA1V2], act
     fb_type = "none"
     
     for el in elements:
-        if el.element_type in ("input", "textarea", "checkbox", "radio", "select", "dropdown"):
+        if el.element_type in ("input", "textarea", "checkbox", "radio", "select", "switch", "date_picker"):
             t = " ".join(el.text) if el.text else ""
             if t:
                 inputs.append(t[:20])
@@ -99,14 +107,24 @@ def _generate_state_signature(page_type: str, elements: List[UIElementA1V2], act
     return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(action_labels[:5]) or 'none'}|feedback:{fb_type}"
 
 
-def _flags_from_elements(elements: List[UIElementA1V2], actions: List[UIActionA1V2], feedback_list: List[UIFeedbackA1V2]) -> tuple[bool, bool, bool, bool]:
+def _flags_from_elements(
+    elements: List[UIElementA1V2],
+    actions: List[UIActionA1V2],
+    feedback_list: List[UIFeedbackA1V2],
+    presentation_scope: str,
+) -> tuple[bool, bool, bool, bool]:
     has_form = any(
         el.element_type in ("input", "textarea", "select", "checkbox", "radio")
         for el in elements
     ) or any(act.action_type == "submit" for act in actions)
-    
+
     has_table = any(el.element_type == "table" for el in elements)
-    has_modal = any(el.element_type == "modal" for el in elements)
+    overlay_regions = frozenset({"dialog", "drawer", "popover", "toast", "overlay"})
+    has_modal = presentation_scope in ("modal", "drawer", "popover") or any(
+        el.visual_region in overlay_regions for el in elements
+    ) or any(ac.visual_region in overlay_regions for ac in actions) or any(
+        fb.visual_region in overlay_regions for fb in feedback_list
+    )
     has_feedback = len(feedback_list) > 0
     return has_form, has_table, has_modal, has_feedback
 
@@ -197,7 +215,7 @@ async def run_ui_state_evidence_extraction(
                 "UI Extraction failed for image %s: %s",
                 img.id,
                 response,
-                exc_info=response,
+                exc_info=(type(response), response, response.__traceback__),
             )
             failed_extractions_count += 1
             failed_items.append(img.id)
@@ -228,7 +246,9 @@ async def run_ui_state_evidence_extraction(
             continue
 
         result_data: UIStateExtractionV2Result = response.parsed_output
-        
+
+        canonical_screen_type = normalize_screen_type(result_data.screen_type)
+
         extraction_status = "success" if (result_data.visible_elements or result_data.available_actions) else "partial"
         state_quality_payload: Dict[str, Any] = {}
         # result_data no longer has extraction_warnings, but we can check if it's empty
@@ -240,13 +260,14 @@ async def run_ui_state_evidence_extraction(
         conf_label = _confidence_label(conf)
         
         has_form, has_table, has_modal, has_feedback = _flags_from_elements(
-            result_data.visible_elements, 
-            result_data.available_actions, 
-            result_data.visible_feedback
+            result_data.visible_elements,
+            result_data.available_actions,
+            result_data.visible_feedback,
+            result_data.presentation_scope,
         )
         
         signature = _generate_state_signature(
-            result_data.screen_type, 
+            canonical_screen_type,
             result_data.visible_elements,
             result_data.available_actions,
             result_data.visible_feedback
@@ -256,8 +277,9 @@ async def run_ui_state_evidence_extraction(
             id=state_id,
             run_id=run_id,
             image_id=img.id,
-            page_type=result_data.screen_type,
-            screen_type=result_data.screen_type,
+            page_type=canonical_screen_type,
+            screen_type=canonical_screen_type,
+            presentation_scope=result_data.presentation_scope,
             outcome_state_type=result_data.outcome_state_type,
             screen_purpose=result_data.screen_purpose,
             domain=result_data.domain,
@@ -278,14 +300,19 @@ async def run_ui_state_evidence_extraction(
         if not result_data.interaction_groups and (result_data.visible_elements or result_data.available_actions or result_data.visible_feedback):
             fallback_group = InteractionGroupA1V2(
                 group_id="ig_fallback",
-                group_type="screen",
+                group_type="content_section",
                 group_label=f"Screen {result_data.screen_purpose}",
                 element_ids=[el.element_id for el in result_data.visible_elements],
                 action_ids=[ac.action_id for ac in result_data.available_actions],
                 feedback_ids=[fb.feedback_id for fb in result_data.visible_feedback],
                 primary_action_id=result_data.available_actions[0].action_id if result_data.available_actions else None,
-                group_evidence=["auto-generated fallback group"],
-                group_confidence="low"
+                group_evidence=[
+                    GroupEvidenceA1V2(
+                        evidence_type="explicit_container",
+                        description="auto-generated fallback group covering full screen evidence",
+                    )
+                ],
+                group_confidence="low",
             )
             result_data.interaction_groups = [fallback_group]
 
@@ -373,9 +400,11 @@ async def run_ui_state_evidence_extraction(
         state_row = {
             "extraction_status": extraction_status,
             "state_id": state_id,
+            "upload_order": img.upload_order,
             "source_image_id": img.id,
-            "page_type": result_data.screen_type,
-            "screen_type": result_data.screen_type,
+            "page_type": canonical_screen_type,
+            "screen_type": canonical_screen_type,
+            "presentation_scope": result_data.presentation_scope,
             "outcome_state_type": result_data.outcome_state_type,
             "screen_purpose": result_data.screen_purpose,
             "domain": result_data.domain,
@@ -389,7 +418,7 @@ async def run_ui_state_evidence_extraction(
         }
         extracted_states.append(state_row)
         extracted_states_count += 1
-        page_type_distribution[result_data.screen_type] = page_type_distribution.get(result_data.screen_type, 0) + 1
+        page_type_distribution[canonical_screen_type] = page_type_distribution.get(canonical_screen_type, 0) + 1
 
     await db.commit()
 
@@ -433,7 +462,11 @@ async def run_ui_state_evidence_extraction(
         "ui_state_package_id": ui_pkg_id,
         "extracted_states": extracted_states,
         "state_catalog": extracted_states,
-        "interaction_group_catalog": [ig for state in extracted_states for ig in state.get("interaction_groups", [])],
+        "interaction_group_catalog": [
+            {**ig, "source_state_id": state["state_id"]}
+            for state in extracted_states
+            for ig in state.get("interaction_groups", [])
+        ],
         "report": report,
     }
 

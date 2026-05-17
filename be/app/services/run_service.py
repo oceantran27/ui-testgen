@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Optional, List
 
 from botocore.exceptions import ClientError
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings

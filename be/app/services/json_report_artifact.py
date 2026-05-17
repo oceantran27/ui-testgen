@@ -25,7 +25,7 @@ async def save_json_report_artifact(
     payload: Mapping[str, Any] | Any,
     metadata_json: Optional[dict[str, Any]] = None,
 ) -> Artifact:
-    """Upload JSON and insert Artifact. Caller commits the session."""
+    """Upload JSON, insert Artifact row via db.add(); caller commits the AsyncSession."""
     body = dict(payload) if isinstance(payload, Mapping) else payload
     report_bytes = json.dumps(body, indent=2, default=str).encode("utf-8")
     report_key = f"artifacts/{run_id}/{storage_subpath}"
