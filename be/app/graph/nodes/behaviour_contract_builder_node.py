@@ -5,7 +5,7 @@ from typing import Any, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
 from app.services.behaviour_contract_service import run_behaviour_contract_builder
-from app.core.logging import log_event, logger
+from app.core.logging import logger
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
 from app.services.graph_progress import persist_run_graph_progress
 
@@ -26,6 +26,8 @@ async def behaviour_contract_builder_node(state: PipelineState, db: AsyncSession
     
     try:
         flow_discovery_result = state.get("flow_discovery_result", {})
+        state_catalog = state.get("state_catalog", [])
+        
         if not flow_discovery_result:
             return {
                 "should_stop": True,
@@ -33,11 +35,15 @@ async def behaviour_contract_builder_node(state: PipelineState, db: AsyncSession
                 "graph_status": "failed"
             }
         
-        result = await run_behaviour_contract_builder(db=db, run_id=run_id, flow_discovery_result=flow_discovery_result)
+        result = await run_behaviour_contract_builder(
+            db=db, 
+            run_id=run_id, 
+            flow_discovery_result=flow_discovery_result,
+            state_catalog=state_catalog
+        )
 
         out = {
             "intent_package": result,
-            "behaviour_contract_package": result,
             "current_node": node_name,
             "completed_nodes": [node_name],
         }

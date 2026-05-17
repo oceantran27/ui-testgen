@@ -5,7 +5,7 @@ from typing import Any, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
 from app.services.flow_context_builder_service import run_flow_context_builder
-from app.core.logging import log_event, logger
+from app.core.logging import logger
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
 from app.services.graph_progress import persist_run_graph_progress
 
@@ -13,7 +13,7 @@ async def flow_context_builder_node(state: PipelineState, db: AsyncSession) -> D
     run_id = state["run_id"]
     node_name = "flow_context_builder_node"
     await persist_run_graph_progress(run_id, node_name)
-    
+
     if is_active():
         log_node(
             node_name,
@@ -23,11 +23,10 @@ async def flow_context_builder_node(state: PipelineState, db: AsyncSession) -> D
             state_keys=("run_id",),
             state=state
         )
-    
+
     try:
         state_catalog = state.get("state_catalog", [])
-        screen_intent_pkg = state.get("screen_intent_package", {})
-        screen_intent_catalog = screen_intent_pkg.get("screen_intent_catalog", [])
+        screen_intent_pkg = state.get("screen_intent_package") or {}
 
         if not state_catalog:
             return {
@@ -35,11 +34,11 @@ async def flow_context_builder_node(state: PipelineState, db: AsyncSession) -> D
                 "stop_reason": "NO_STATE_CATALOG",
                 "graph_status": "failed"
             }
-        
+
         result = await run_flow_context_builder(
-            run_id=run_id, 
+            run_id=run_id,
             state_catalog=state_catalog,
-            screen_intent_catalog=screen_intent_catalog
+            screen_intents=screen_intent_pkg,
         )
 
         out = {

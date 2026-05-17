@@ -51,7 +51,6 @@ class PipelineState(TypedDict, total=False):
     flow_discovery_result: Dict[str, Any]
     
     # Behaviour contract builder (structured behaviour intents + persistence)
-    behaviour_contract_package: Dict[str, Any]
     intent_package: Dict[str, Any]
     
     # BDD scenario generation
@@ -79,7 +78,6 @@ class PipelineState(TypedDict, total=False):
     should_stop: bool                                 # set True to halt pipeline early
     stop_reason: Optional[str]                        # e.g. "NO_VALID_IMAGES"
 
-    # Feedback Loop Control
-    scenario_revision_round: int                      # 0 = first pass, 1 = retry (max)
-    revision_suggestions: List[Dict[str, Any]]        # audit revision hints for scenario regeneration
+    # Scenario evidence audit (Agent 7) — suggestions are report/UI only (no automatic regeneration).
+    audit_revision_suggestions: List[Dict[str, Any]]
 

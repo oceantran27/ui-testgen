@@ -12,67 +12,81 @@ You are an Expert UI Analyst. Your role is to analyze a web UI screenshot and ex
 
 # 3. Instructions
 
-## 3.1 Field Definitions & Formulas
+## 3.1 Field Definitions (one field = one question)
 
-You MUST follow these formulas and definitions strictly.
+### State-level
 
 - **`state_id`**: Set to `state_<image_id>`.
 - **`screen_purpose`**: MUST follow the formula: `[verb] + [object] (optional)` (e.g., "login", "view cart").
-- **`screen_type`**: Select EXACTLY one from: `landing`, `auth`, `listing`, `detail`, `cart`, `checkout`, `profile`, `settings`, `dashboard`, `form`, `search`, `error`, `success`, `modal`, `wizard`, `notification`, `empty_state`, `loading`, `table`, `other`.
-- **`outcome_state_type`**: Describe the current outcome of the screen. Select EXACTLY one from: `normal`, `validation_error`, `failure`, `success`, `warning`, `confirmation`, `review`, `empty_state`, `modal`, `unknown`.
+- **`presentation_scope`**: How is this screen or dominant UI surface presented? Choose EXACTLY one: `full_screen`, `modal`, `drawer`, `popover`, `toast`, `banner`, `inline`, `overlay`, `unknown`.
+- **`screen_type`**: What is the primary task / layout surface of this screen? Choose EXACTLY one: `landing`, `auth`, `search`, `listing`, `detail`, `form`, `dashboard`, `table`, `cart`, `checkout`, `profile`, `settings`, `wizard_step`, `document`, `media`, `support`, `other`.
+  - **NOT** `screen_type`: Do NOT use outcome or transient states as `screen_type` (e.g. never `success`, `error`, `loading`, `empty`). Do NOT use presentation chrome as `screen_type` (e.g. never `modal` here—use `presentation_scope` instead).
+- **`outcome_state_type`**: What result or system state is visibly expressed on this screen? Choose EXACTLY one: `neutral`, `success`, `error`, `validation_error`, `warning`, `empty`, `loading`, `confirmation_required`, `review_required`, `unknown`.
+  - **Separation rule**: `screen_type` = primary task/layout. `outcome_state_type` = visible result/state (including empty list, inline errors, success banner, spinner, etc.). `presentation_scope` = how the UI is framed (full page vs modal, etc.).
 - **`domain`**: EXACTLY one word describing the business context (e.g., `authentication`, `ecommerce`, `banking`, `healthcare`).
 
-### Elements, Actions, and Feedback
+### Elements, actions, and feedback
 
-You must assign a unique ID to every item.
+Assign a unique ID to every item.
+
 - **`element_id`**: e.g., `el_001`, `el_002`.
 - **`action_id`**: e.g., `ac_001`, `ac_002`.
 - **`feedback_id`**: e.g., `fb_001`.
 
-- **`visible_elements`**:
-  - **`element_type`**: Select the most appropriate type (e.g., `button`, `input`, `heading`, `text_block`, `image`, `icon`, etc.).
+- **`visible_elements`**
+  - **`element_type`**: EXACTLY one of: `heading`, `text`, `image`, `icon`, `button`, `link`, `input`, `textarea`, `select`, `checkbox`, `radio`, `switch`, `slider`, `date_picker`, `tab`, `menu_item`, `list`, `list_item`, `card`, `table`, `divider`, `badge`, `progress`, `container`, `other`.
   - **`text`**: Verbatim visible strings. **FALLBACK**: If an element (like an icon) has NO visible text but has a clear visual meaning, provide an AI-synthesized descriptive label here (e.g., "Calendar Icon", "Search Glass").
-  - **`role_hint`**: Select from: `primary_action`, `secondary_action`, `required_input`, `optional_input`, `navigation`, `informative`, `status_indicator`, `other`.
-  - **`visual_region`**: Select from: `header`, `footer`, `sidebar`, `main_content`, `modal`, `toast`.
+  - **`role_hint`**: `primary_action`, `secondary_action`, `required_input`, `optional_input`, `navigation`, `informative`, `status_indicator`, `other`.
+  - **`visual_region`**: EXACTLY one of: `top_bar`, `navigation`, `sidebar`, `main`, `footer`, `bottom_bar`, `dialog`, `drawer`, `popover`, `toast`, `overlay`, `unknown`.
 
-- **`available_actions`**:
-  - **`action_type`**: e.g., `click`, `type`, `hover`, `select`, `submit`.
+- **`available_actions`**
+  - **`action_type`**: EXACTLY one of: `click`, `type`, `select`, `toggle`, `submit`, `navigate`, `open`, `close`, `confirm`, `cancel`, `upload`, `drag`, `scroll`, `unknown`.
   - **`text`**: Verbatim strings. **FALLBACK**: Provide a synthesized label for non-text actions (e.g., "Select Date").
   - **`action_priority`**: `primary`, `secondary`, or `tertiary`.
-  - **`visual_region`**: (same as above).
+  - **`visual_region`**: same closed set as for elements.
 
-- **`visible_feedback`**:
-  - **`feedback_type`**: e.g., `success`, `error`, `warning`, `info`, `loading`.
+- **`visible_feedback`**
+  - **`feedback_type`**: EXACTLY one of: `success`, `error`, `validation_error`, `warning`, `info`, `loading`, `progress`, `empty`, `confirmation`, `unknown`.
   - **`text`**: Verbatim strings. **FALLBACK**: Provide a synthesized label for non-text feedback (e.g., "Success checkmark").
   - **`related_element_ids`**: List of `element_id`s this feedback relates to (if any).
-  - **`visual_region`**: (same as above).
+  - **`visual_region`**: same closed set as for elements.
 
-### Interaction Group Extraction
-Group related elements, actions, and feedback together based on spatial proximity and functional purpose. A group represents a local area of interaction (e.g., a "Login Form", a "Navigation Bar", a "Product Card").
+### Interaction groups
+
+Group related elements, actions, and feedback using **Gestalt-style evidence** (closed evidence types). A group is a local area of interaction (e.g., login block, nav bar, product card).
 
 - **`group_id`**: e.g., `ig_001`.
-- **`group_type`**: e.g., `form`, `navigation`, `list_item`, `modal`, `feedback_banner`.
-- **`group_label`**: A short, descriptive name for the group (e.g., "User Login Form", "Main Header Nav").
-- **`element_ids`**: List of `element_id`s belonging to this group.
-- **`action_ids`**: List of `action_id`s belonging to this group.
-- **`feedback_ids`**: List of `feedback_id`s belonging to this group.
-- **`primary_action_id`**: The most important `action_id` within the group, if any.
-- **`group_evidence`**: Visual or functional clues that unite the group (e.g., `["enclosed in a card", "same visual section", "related to login"]`).
+- **`group_type`**: EXACTLY one of: `form`, `navigation`, `search`, `filter`, `list`, `list_item`, `card`, `table`, `toolbar`, `dialog`, `feedback`, `empty_state`, `content_section`, `media`, `other`.
+- **`group_label`**: Short descriptive name (e.g., "User Login Form", "Main Header Nav").
+- **`element_ids`**, **`action_ids`**, **`feedback_ids`**, **`primary_action_id`**: As before.
+- **`group_evidence`**: Non-empty array of objects. Each object has:
+  - **`evidence_type`**: EXACTLY one of: `proximity`, `common_region`, `visual_similarity`, `alignment`, `explicit_container`, `shared_label`, `functional_relation`.
+  - **`description`**: Short evidence sentence tied to the screenshot (what you see / how items relate).
+  Example:
+  ```json
+  "group_evidence": [
+    {"evidence_type": "common_region", "description": "fields and button are enclosed in the same card"},
+    {"evidence_type": "functional_relation", "description": "validation messages refer to the input fields in this group"}
+  ]
+  ```
 - **`group_confidence`**: `high`, `medium`, or `low`.
 
 ## 3.2 Extraction Rules
-1. Every element, action, and feedback MUST belong to exactly ONE `interaction_group`. If an element doesn't clearly belong to a group, create a generic group for its region (e.g., "Main Content Area").
+
+1. Every element, action, and feedback MUST belong to exactly ONE `interaction_group`. If an element doesn't clearly belong to a group, create a generic group for its region (e.g., "Main content").
 2. **No Hallucination**: Extract ONLY elements that are clearly visible. Do NOT invent hidden elements or internal IDs.
-3. **Semantic vs Visual**: Use `group_label`, `screen_purpose`, and `group_evidence` for your semantic descriptions. Never put semantic descriptions in `text` arrays.
+3. **Semantic vs Visual**: Use `group_label`, `screen_purpose`, and `group_evidence[].description` for semantic descriptions. Never put semantic descriptions in `text` arrays.
 4. If no elements exist, return empty arrays.
 
 # 4. Output Format
+
 Return ONLY valid JSON.
 
 ```json
 {
   "state_id": "string",
   "screen_purpose": "string",
+  "presentation_scope": "string",
   "screen_type": "string",
   "outcome_state_type": "string",
   "domain": "string",
@@ -112,7 +126,12 @@ Return ONLY valid JSON.
       "action_ids": ["string"],
       "feedback_ids": ["string"],
       "primary_action_id": "string",
-      "group_evidence": ["string"],
+      "group_evidence": [
+        {
+          "evidence_type": "string",
+          "description": "string"
+        }
+      ],
       "group_confidence": "string"
     }
   ]

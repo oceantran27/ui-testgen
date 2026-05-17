@@ -25,7 +25,7 @@ You receive a JSON object containing `behaviour_intents[]`. Each intent includes
 
 ## 3.3 Metadata & Traceability
 - **IDs**: `scenario_` + behaviour name in snake_case.
-- **Type**: Map from intent's `test_path`.
+- **Type**: Map behaviour intent to `scenario_type` using the intent classification (`intent_type` → path slug such as `happy_path` / `negative_path`; pipeline applies `map_test_path`).
 - **Traceability**: Carry forward ALL source IDs (`intent_id`, `flow_id`, `group_id`, `transition_ids`).
 - **Confidence**: Inherit from intent confidence.
 
@@ -39,7 +39,7 @@ Return ONLY a valid JSON object. No Markdown, no ```json.
     {
       "scenario_id": "string",
       "scenario_name": "string",
-      "scenario_type": "happy_path | negative_path | validation_path | navigation_path | recovery_path | unknown_path",
+      "scenario_type": "happy_path | negative_path | validation_path | navigation_path | recovery_path | registration_path | access_control_path | data_entry_path | unknown_path",
       "source_intent_id": "string",
       "source_flow_id": "string",
       "start_state": "string",

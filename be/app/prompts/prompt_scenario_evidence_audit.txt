@@ -21,14 +21,35 @@ You receive a JSON object containing outputs from previous pipeline stages.
 3. Hallucination Control (Detecting invented elements/actions).
 4. Status & Scoring (Final validation decision).
 
+When `pre_audit_results` is present per scenario (backend-calculated): `evidence_found_count` / `evidence_total_count` exclude technical assertions (`state_transition`, `ui_text_grounding_required: false`). They reflect **verbatim** UI text matches only for evidenced assertions—not whether the logical end-state is correct.
+
+### Backend `pre_audit_results` — trigger grounding (layered)
+
+The backend computes deterministic trigger grounding **before** your audit:
+
+- `trigger_action_found` — true when the trigger action text matches UI evidence under backend rules (after normalization).
+- `trigger_action_grounding_scope`:
+  - `source_state`: match found using **`start_state`** UI evidence only (strongest path-local grounding).
+  - `transition_path`: match found on states derived from **`source_flow_id`** main-path edges (`transition_edge_ids` × `candidate_edges`) scoped by **`source_transition_indexes`** when present.
+  - `any_state`: match found only after scanning **all** extracted states (weakest; possible cross-screen leakage).
+  - `none`: no UI match for the trigger under backend rules.
+- `trigger_action_found_in_source_state` / `trigger_action_found_anywhere` mirror the above.
+
+Prefer trusting **`trigger_action_grounding_scope == source_state`** over **`any_state`**. When scope is `any_state`, treat grounding as weaker unless corroborated by explicit intent/evidence alignment.
+
+### Backend value binding (causal literals)
+
+When assertions imply concrete literals (times like `09:00`, currency like `$100`, strict month/day phrases such as `May 20`, or the token `quantity`), the backend checks those literals appear in a combined corpus built from **`scenario.steps` where `source == "user_action"`**, **`trigger_action.text`**, and **`test_data`** placeholders (`value_placeholder`, `data_name`). If literals are absent there, backend forces **`trigger_action_found` false** even if raw trigger labels appear in UI pools—because the scenario body does not justify those asserted values.
+
 # 3. Instructions
 
 ## 3.1 Layer 3.5: Scenario-to-Screen-Intent Grounding
 
 Verify that the scenario is grounded in the local `screen_behaviour_intent` it claims to originate from.
-1. `scenario.source_screen_intent_id` must exist in `screen_intent_package`.
+1. `scenario.source_screen_intent_id` must exist in `screen_intent_package`'s hydrated `screen_intent_catalog`.
 2. `scenario.source_group_id` must match the intent's `source_group_id`.
-3. The scenario trigger action must match the screen intent's `primary_action` if present.
+3. The scenario trigger action must align with the screen intent's hydrated `primary_action` if present (`action_type` + `text` come from Phase 1 extraction).
+4. When `evidence_refs` accompany the catalogued intent, use them as the authoritative grounding list instead of inventing new labels.
 
 If the scenario references a missing screen intent or group:
 - mark `screen_intent_grounding_score` as 0
@@ -66,6 +87,12 @@ final_reliability =
 
 Clamp final reliability to [0, 1].
 
+## 3.4 Batch completeness & acceptance (backend enforced)
+
+Each batch MUST return exactly one `validated_scenarios[]` row per input `scenario_id`. Missing/extra IDs, invalid `validation_status` tokens, or **`include_in_final_output: true`** paired with **`needs_revision`/`rejected`** may trigger an automatic fallback retry on the backend; if still inconsistent, the audit fails that batch explicitly.
+
+After parsing, the backend may **`exclude`** scenarios from final output when status/reliability violate guardrails (`needs_revision`/`rejected`, or extreme low reliability bands)—even if your JSON disagrees.
+
 # 4. Output Format
 
 Return ONLY a valid JSON object matching the `ScenarioValidationResult` schema, incorporating `screen_intent_grounding_score` into `scores`.
@@ -102,8 +129,7 @@ Return ONLY a valid JSON object matching the `ScenarioValidationResult` schema, 
     "low_confidence_count": 0,
     "needs_revision_count": 0,
     "rejected_count": 0,
-    "total_count": 0,
-    "average_reliability": 0.0
+    "total_count": 0
   },
   "package_warnings": ["string"]
 }

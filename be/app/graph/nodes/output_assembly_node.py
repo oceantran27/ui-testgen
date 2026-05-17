@@ -24,8 +24,8 @@ async def output_assembly_node(state: PipelineState, db: AsyncSession) -> Dict[s
                 ],
                 state_keys=(
                     "run_id",
-                    "validated_scenarios",
-                    "draft_scenarios",
+                    "validated_scenario_package",
+                    "scenario_draft_package",
                     "final_output",
                     "should_stop",
                 ),
@@ -37,7 +37,8 @@ async def output_assembly_node(state: PipelineState, db: AsyncSession) -> Dict[s
         out = {
             "final_output": final_output,
             "metrics": final_output.get("metrics", {}),
-            "current_node": node_name
+            "current_node": node_name,
+            "completed_nodes": [node_name],
         }
         if is_active():
             log_node_return(node_name, ["ok"], out)

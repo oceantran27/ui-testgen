@@ -4,8 +4,6 @@ Graph Runner — builds and executes the LangGraph pipeline.
 from __future__ import annotations
 
 import functools
-from typing import Literal
-
 from langgraph.graph import StateGraph, START, END
 
 from app.graph.state.graph_state import PipelineState
@@ -41,21 +39,11 @@ _route_after_flow_discovery = _make_route("behaviour_contract_builder_node")
 _route_after_behaviour_contract = _make_route("behaviour_scenario_generation_node")
 _route_after_behaviour_scenario_generation = _make_route("scenario_evidence_audit_node")
 def _route_after_scenario_evidence_audit(state: PipelineState) -> str:
+    """Audit no longer loops back into scenario generation — always assembly unless stopped."""
     if state.get("should_stop"):
         return "graph_finalizer_node"
-    
-    revision_round = state.get("scenario_revision_round", 0)
-    revision_suggestions = state.get("revision_suggestions", [])
-    
-    # Retry if: round 0 (first pass) AND has revision suggestions
-    if revision_round == 0 and revision_suggestions:
-        return "behaviour_scenario_generation_node"
-        
     return "output_assembly_node"
 
-
-def _route_after_output_assembly(state: PipelineState) -> str:
-    return "graph_finalizer_node"
 
 
 # ──────────────────────────────────────────────
@@ -160,19 +148,12 @@ def build_graph(db) -> StateGraph:
         _route_after_scenario_evidence_audit,
         {
             "graph_finalizer_node": "graph_finalizer_node",
-            "behaviour_scenario_generation_node": "behaviour_scenario_generation_node",
-            "output_assembly_node": "output_assembly_node"
+            "output_assembly_node": "output_assembly_node",
         },
     )
 
 
-    graph.add_conditional_edges(
-        "output_assembly_node",
-        _route_after_output_assembly,
-        {
-            "graph_finalizer_node": "graph_finalizer_node"
-        },
-    )
+    graph.add_edge("output_assembly_node", "graph_finalizer_node")
 
     graph.add_edge("graph_finalizer_node", END)
 

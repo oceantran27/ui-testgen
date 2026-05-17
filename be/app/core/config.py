@@ -40,62 +40,87 @@ class Settings(BaseSettings):
 
     # Model providers
     DEFAULT_MODEL_PROVIDER: str = "openai"
+
     GEMINI_TEXT_MODEL: str = "gemini-2.5-flash"
     GEMINI_VISION_MODEL: str = "gemini-2.5-flash"
-    OPENAI_TEXT_MODEL: str = "gpt-5-mini"
-    OPENAI_VISION_MODEL: str = "gpt-5-mini"
+
+    OPENAI_TEXT_MODEL: str = "gpt-5.4-mini"
+    OPENAI_VISION_MODEL: str = "gpt-5.4-mini"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
 
-    VISION_MODEL_TIMEOUT_SECONDS: int = 90
+    # Timeouts / fallback
+    VISION_MODEL_TIMEOUT_SECONDS: int = 120
     TEXT_MODEL_TIMEOUT_SECONDS: int = 60
+    MODEL_MAX_RETRIES: int = 1
+    MODEL_RETRY_BACKOFF_SECONDS: float = 1.5
+    DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT: bool = False
+    DISABLE_MODEL_HTTP_TIMEOUT: bool = False
 
-    MODEL_MAX_RETRIES: int = 2
-    MODEL_RETRY_BACKOFF_SECONDS: float = 2.0
-    DISABLE_MODEL_CALL_ASYNCIO_TIMEOUT: bool = True
-    DISABLE_MODEL_HTTP_TIMEOUT: bool = True
+    ENABLE_MODEL_FALLBACK: bool = True
+    FALLBACK_MODEL_PROVIDER: str = "openai"
 
-    ENABLE_MODEL_FALLBACK: bool = False
-    FALLBACK_MODEL_PROVIDER: str = "gemini"
-
-    USE_VLM_FOR_UI_STATE_EXTRACTION: bool = True
-    USE_LLM_FOR_FLOW_DISCOVERY: bool = True
-    USE_LLM_FOR_SCENARIO_GENERATION: bool = True
+    USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER: bool = False
+    USE_LLM_FOR_SCENARIO_GENERATION: bool = False
     USE_LLM_FOR_SCENARIO_VALIDATION: bool = True
 
     ENABLE_MODEL_RAW_RESPONSE_ARTIFACT: bool = True
 
     MOCK_MODEL_MODE: str = "success"  # success | schema_mismatch | timeout | provider_error
 
-    # UI state extraction (vision)
-    UI_STATE_EXTRACTION_PROVIDER: str = "openai"
-    UI_STATE_EXTRACTION_MODEL_NAME: str = "gpt-5.4-mini"
+    # Phase 1: UI state extraction
+    UI_STATE_EXTRACTION_PROVIDER: str = "gemini"
+    UI_STATE_EXTRACTION_MODEL_NAME: str = "gemini-2.5-flash"
+    UI_STATE_EXTRACTION_FALLBACK_PROVIDER: str = "openai"
+    UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME: str = "gpt-5.4-mini"
     UI_STATE_EXTRACTION_TIMEOUT_SECONDS: int = 120
-    UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS: int = 16384
-    UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
+    UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS: int = 12288
+    UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
     SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
 
-    # Screen intent extraction v2 + intent-aware flow discovery (shared provider defaults)
-    LLM_FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
-    LLM_FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
-    LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 16384
-    LLM_FLOW_DISCOVERY_MAX_CONCURRENCY: int = Field(default=5, ge=1, le=50)
+    # Phase 2: Screen intent extraction
+    SCREEN_INTENT_MODEL_PROVIDER: str = "openai"
+    SCREEN_INTENT_MODEL_NAME: str = "gpt-5.4-nano"
+    SCREEN_INTENT_FALLBACK_MODEL_NAME: str = "gpt-5.4-mini"
+    SCREEN_INTENT_MAX_OUTPUT_TOKENS: int = 4096
+    SCREEN_INTENT_MAX_CONCURRENCY: int = Field(default=8, ge=1, le=50)
 
-    # Behaviour contract builder (env names retain legacy “behaviour intent” wording)
-    BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "openai"
-    BEHAVIOUR_INTENT_MODEL_NAME: str = "gpt-5.4-mini"
-    BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 32768
+    # Phase 3: Candidate edge resolver
+    CANDIDATE_EDGE_STRONG_THRESHOLD: int = Field(default=85, ge=0, le=100)
+    CANDIDATE_EDGE_ACCEPT_THRESHOLD: int = Field(default=72, ge=0, le=100)
+    CANDIDATE_EDGE_PRUNE_THRESHOLD: int = Field(default=72, ge=0, le=100)
+    CANDIDATE_EDGE_WEAK_THRESHOLD: int = Field(default=60, ge=0, le=100)
+    CANDIDATE_EDGE_DISABLE_WEAK_BAND: bool = True
+    CANDIDATE_EDGE_NEGATIVE_THRESHOLD: int = Field(default=68, ge=0, le=100)
+    CANDIDATE_EDGE_NEUTRAL_PROGRESS_THRESHOLD: int = Field(default=78, ge=0, le=100)
+    CANDIDATE_EDGE_FEEDBACK_ACK_THRESHOLD: int = Field(default=75, ge=0, le=100)
+    # Deprecated: ignored by resolver v2 (kept for env compatibility).
+    CANDIDATE_EDGE_DROP_BELOW_THRESHOLD: bool = False
+    CANDIDATE_EDGE_MIN_NORMALIZED_SCORE: float = Field(default=0.25, ge=0.0, le=1.0)
 
-    # BDD scenario generation
-    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "openai"
-    BDD_SCENARIO_GENERATION_MODEL_NAME: str = "gpt-5.4-nano"
-    BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 16384
+    # Phase 4: Intent-aware flow discovery
+    FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
+    FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
+    FLOW_DISCOVERY_FALLBACK_MODEL_NAME: str = "gpt-5.4"
+    FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 8192
+    FLOW_DISCOVERY_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
 
-    # Scenario evidence audit (env names retain legacy “scenario validation” wording)
+    # Phase 5: Behaviour contract builder
+    BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "none"
+    BEHAVIOUR_INTENT_MODEL_NAME: str = ""
+    BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 8192
+
+    # Phase 6: Scenario generation
+    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "none"
+    BDD_SCENARIO_GENERATION_MODEL_NAME: str = ""
+    BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 4096
+
+    # Phase 7: Scenario evidence audit
     SCENARIO_VALIDATION_MODEL_PROVIDER: str = "openai"
-    SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4"
-    SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 65536
-    SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 600
+    SCENARIO_VALIDATION_MODEL_NAME: str = "gpt-5.4-mini"
+    SCENARIO_VALIDATION_FALLBACK_MODEL_NAME: str = "gpt-5.4"
+    SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 32768
+    SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 300
     SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
 
     SAVE_RESEARCH_FINAL_OUTPUT: bool = True

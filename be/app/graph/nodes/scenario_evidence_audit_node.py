@@ -4,8 +4,11 @@ LangGraph node for Scenario Evidence Audit (Agent 7).
 from typing import Any, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.graph.state.graph_state import PipelineState
-from app.services.scenario_evidence_audit_service import run_scenario_evidence_audit
-from app.core.logging import log_event, logger
+from app.services.scenario_evidence_audit_service import (
+    run_scenario_evidence_audit,
+    revision_hints_from_validated_package,
+)
+from app.core.logging import logger
 from app.core.pipeline_run_log import is_active, log_node, log_node_return
 from app.services.graph_progress import persist_run_graph_progress
 
@@ -30,7 +33,8 @@ async def scenario_evidence_audit_node(state: PipelineState, db: AsyncSession) -
             return {
                 "should_stop": True,
                 "stop_reason": "NO_SCENARIO_DRAFTS",
-                "graph_status": "failed"
+                "graph_status": "failed",
+                "audit_revision_suggestions": [],
             }
         
         ui_state_package = state.get("ui_state_package", {})
@@ -48,8 +52,10 @@ async def scenario_evidence_audit_node(state: PipelineState, db: AsyncSession) -
             screen_intent_package=screen_intent_package
         )
 
+        hints = revision_hints_from_validated_package(result)
         out = {
             "validated_scenario_package": result,
+            "audit_revision_suggestions": hints,
             "current_node": node_name,
             "completed_nodes": [node_name],
         }
@@ -65,5 +71,6 @@ async def scenario_evidence_audit_node(state: PipelineState, db: AsyncSession) -
             "errors": [f"{node_name}: {e}"],
             "should_stop": True,
             "stop_reason": f"CRITICAL_NODE_ERROR: {e}",
-            "graph_status": "failed"
+            "graph_status": "failed",
+            "audit_revision_suggestions": [],
         }
