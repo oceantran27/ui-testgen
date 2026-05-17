@@ -1,6 +1,180 @@
 from __future__ import annotations
-from typing import List, Optional, Any, Union
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Literal, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.constants.screen_intent_taxonomy import (
+    EVIDENCE_TYPE_VALUES,
+    INTENT_KIND_VALUES,
+    MODEL_CONFIDENCE_VALUES,
+    OPTION_REF_TYPE_VALUES,
+    STEP_TYPE_VALUES,
+    UNRESOLVED_REASON_VALUES,
+    VISIBLE_STATUS_VALUES,
+)
+
+# ── A1 V2 closed vocabularies (prompt: prompt_ui_state_evidence_extraction_v2) ──
+
+A1ScreenType = Literal[
+    "landing",
+    "auth",
+    "search",
+    "listing",
+    "detail",
+    "form",
+    "dashboard",
+    "table",
+    "cart",
+    "checkout",
+    "profile",
+    "settings",
+    "wizard_step",
+    "document",
+    "media",
+    "support",
+    "other",
+]
+
+A1PresentationScope = Literal[
+    "full_screen",
+    "modal",
+    "drawer",
+    "popover",
+    "toast",
+    "banner",
+    "inline",
+    "overlay",
+    "unknown",
+]
+
+A1OutcomeStateType = Literal[
+    "neutral",
+    "success",
+    "error",
+    "validation_error",
+    "warning",
+    "empty",
+    "loading",
+    "confirmation_required",
+    "review_required",
+    "unknown",
+]
+
+A1VisualRegion = Literal[
+    "top_bar",
+    "navigation",
+    "sidebar",
+    "main",
+    "footer",
+    "bottom_bar",
+    "dialog",
+    "drawer",
+    "popover",
+    "toast",
+    "overlay",
+    "unknown",
+]
+
+A1ElementType = Literal[
+    "heading",
+    "text",
+    "image",
+    "icon",
+    "button",
+    "link",
+    "input",
+    "textarea",
+    "select",
+    "checkbox",
+    "radio",
+    "switch",
+    "slider",
+    "date_picker",
+    "tab",
+    "menu_item",
+    "list",
+    "list_item",
+    "card",
+    "table",
+    "divider",
+    "badge",
+    "progress",
+    "container",
+    "other",
+]
+
+A1ActionType = Literal[
+    "click",
+    "type",
+    "select",
+    "toggle",
+    "submit",
+    "navigate",
+    "open",
+    "close",
+    "confirm",
+    "cancel",
+    "upload",
+    "drag",
+    "scroll",
+    "unknown",
+]
+
+A1FeedbackType = Literal[
+    "success",
+    "error",
+    "validation_error",
+    "warning",
+    "info",
+    "loading",
+    "progress",
+    "empty",
+    "confirmation",
+    "unknown",
+]
+
+A1GroupType = Literal[
+    "form",
+    "navigation",
+    "search",
+    "filter",
+    "list",
+    "list_item",
+    "card",
+    "table",
+    "toolbar",
+    "dialog",
+    "feedback",
+    "empty_state",
+    "content_section",
+    "media",
+    "other",
+]
+
+A1GroupEvidenceType = Literal[
+    "proximity",
+    "common_region",
+    "visual_similarity",
+    "alignment",
+    "explicit_container",
+    "shared_label",
+    "functional_relation",
+]
+
+A1RoleHint = Literal[
+    "primary_action",
+    "secondary_action",
+    "required_input",
+    "optional_input",
+    "navigation",
+    "informative",
+    "status_indicator",
+    "other",
+]
+
+A1ActionPriority = Literal["primary", "secondary", "tertiary"]
+
+A1GroupConfidence = Literal["high", "medium", "low"]
 
 
 class _PromptOutputBase(BaseModel):
@@ -27,47 +201,53 @@ class VisualDeltaRef(_PromptOutputBase):
 # ──────────────────────────────────────────────
 
 
+class GroupEvidenceA1V2(_PromptOutputBase):
+    evidence_type: A1GroupEvidenceType
+    description: str
+
+
 class UIElementA1V2(_PromptOutputBase):
     element_id: str
-    element_type: str
+    element_type: A1ElementType
     text: List[str] = Field(default_factory=list)
-    role_hint: Optional[str] = None
-    visual_region: Optional[str] = None
+    role_hint: Optional[A1RoleHint] = None
+    visual_region: A1VisualRegion = "unknown"
 
 
 class UIActionA1V2(_PromptOutputBase):
     action_id: str
-    action_type: str
+    action_type: A1ActionType
     text: List[str] = Field(default_factory=list)
-    action_priority: Optional[str] = None
-    visual_region: Optional[str] = None
+    action_priority: Optional[A1ActionPriority] = None
+    visual_region: A1VisualRegion = "unknown"
 
 
 class UIFeedbackA1V2(_PromptOutputBase):
     feedback_id: str
-    feedback_type: str
+    feedback_type: A1FeedbackType
     text: List[str] = Field(default_factory=list)
     related_element_ids: List[str] = Field(default_factory=list)
-    visual_region: Optional[str] = None
+    visual_region: A1VisualRegion = "unknown"
 
 
 class InteractionGroupA1V2(_PromptOutputBase):
     group_id: str
-    group_type: str
+    group_type: A1GroupType
     group_label: Optional[str] = None
     element_ids: List[str] = Field(default_factory=list)
     action_ids: List[str] = Field(default_factory=list)
     feedback_ids: List[str] = Field(default_factory=list)
     primary_action_id: Optional[str] = None
-    group_evidence: List[str] = Field(default_factory=list)
-    group_confidence: str
+    group_evidence: List[GroupEvidenceA1V2] = Field(default_factory=list)
+    group_confidence: A1GroupConfidence
 
 
 class UIStateExtractionV2Result(_PromptOutputBase):
     state_id: str
     screen_purpose: str
-    screen_type: str  # form, list, detail, dashboard, search, landing, error, success, modal, unknown
-    outcome_state_type: str = "normal"  # normal | validation_error | failure | success | warning | confirmation | review | empty_state | modal | unknown
+    presentation_scope: A1PresentationScope = "unknown"
+    screen_type: A1ScreenType
+    outcome_state_type: A1OutcomeStateType = "neutral"
     domain: str
     visible_elements: List[UIElementA1V2] = Field(default_factory=list)
     available_actions: List[UIActionA1V2] = Field(default_factory=list)
@@ -81,30 +261,106 @@ class UIStateExtractionV2Result(_PromptOutputBase):
 
 
 class ScreenIntentPrimaryActionA2(_PromptOutputBase):
-    """Primary action for a screen intent — explicit keys for OpenAI strict json_schema."""
+    """Hydrated action reference — populated from Phase 1 `available_actions` by backend."""
 
-    action_id: str
+    action_id: Optional[str] = Field(default=None)
     action_type: str
+    text: List[str] = Field(default_factory=list)
+
+
+class EvidenceRefDraftA2(_PromptOutputBase):
+    """LLM output: evidence grounding by ID only; backend hydrates `text`."""
+
+    evidence_type: str
+    source_id: str
+
+    @field_validator("evidence_type")
+    @classmethod
+    def _evidence_kind(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in EVIDENCE_TYPE_VALUES:
+            raise ValueError(f"unsupported evidence_type {v!r}")
+        return v
+
+
+class EvidenceRefHydratedA2(_PromptOutputBase):
+    evidence_type: str
+    source_id: str
     text: List[str] = Field(default_factory=list)
 
 
 class UnresolvedScreenGroupA2(_PromptOutputBase):
     group_id: str
-    reason: str
+    reason_code: str
+    details: str = ""
+
+    @field_validator("reason_code")
+    @classmethod
+    def _reason_code_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in UNRESOLVED_REASON_VALUES:
+            raise ValueError(f"unsupported reason_code {v!r}")
+        return v
+
+
+class SelectionOptionDraftA2(_PromptOutputBase):
+    option_ref_type: str
+    option_element_id: Optional[str] = None
+    option_action_id: Optional[str] = None
+    visible_status: str = "unknown"
+
+    @field_validator("option_ref_type")
+    @classmethod
+    def _opt_ref_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in OPTION_REF_TYPE_VALUES:
+            raise ValueError(f"unsupported option_ref_type {v!r}")
+        return v
+
+    @field_validator("visible_status")
+    @classmethod
+    def _vis_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in VISIBLE_STATUS_VALUES:
+            raise ValueError(f"unsupported visible_status {v!r}")
+        return v
 
 
 class SelectionOptionA2(_PromptOutputBase):
-    option_element_id: str
+    """Hydrated selection option incl. duplicated text from Phase 1 objects."""
+
+    option_ref_type: str
+    option_element_id: Optional[str] = None
     option_action_id: Optional[str] = None
     option_text: List[str] = Field(default_factory=list)
-    visible_status: str = "unknown"  # selected | unselected | disabled | unknown
+    visible_status: str = "unknown"
+
+
+class ActionSequenceStepDraftA2(_PromptOutputBase):
+    step_type: str
+    source_action_id: Optional[str] = None
+    source_element_id: Optional[str] = None
+
+    @field_validator("step_type")
+    @classmethod
+    def _step_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in STEP_TYPE_VALUES:
+            raise ValueError(f"unsupported step_type {v!r}")
+        return v
 
 
 class ActionSequenceStepA2(_PromptOutputBase):
-    step_type: str  # select_option | click_action | enter_input
+    step_type: str
     source_action_id: Optional[str] = None
     source_element_id: Optional[str] = None
     text: List[str] = Field(default_factory=list)
+
+
+class ActionSequenceTemplateDraftA2(_PromptOutputBase):
+    sequence_name: str
+    steps: List[ActionSequenceStepDraftA2] = Field(default_factory=list)
+    outcome_prediction_allowed: bool = False
 
 
 class ActionSequenceTemplateA2(_PromptOutputBase):
@@ -113,7 +369,47 @@ class ActionSequenceTemplateA2(_PromptOutputBase):
     outcome_prediction_allowed: bool = False
 
 
+class ScreenBehaviourIntentDraftA2(_PromptOutputBase):
+    """Structured LLM output (IDs only for actions/evidence/options). Backend validates + hydrates."""
+
+    source_group_id: str
+    intent_kind: str
+    intent_name: str
+    local_user_goal: str
+    primary_action_id: Optional[str] = None
+    commit_action_id: Optional[str] = None
+    secondary_action_ids: List[str] = Field(default_factory=list)
+    selection_options: List[SelectionOptionDraftA2] = Field(default_factory=list)
+    local_action_sequence_templates: List[ActionSequenceTemplateDraftA2] = Field(default_factory=list)
+    required_input_element_ids: List[str] = Field(default_factory=list)
+    evidence_refs: List[EvidenceRefDraftA2] = Field(default_factory=list)
+    model_confidence: str = "medium"
+
+    @field_validator("intent_kind")
+    @classmethod
+    def _intent_kind_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in INTENT_KIND_VALUES:
+            raise ValueError(f"unsupported intent_kind {v!r}")
+        return v
+
+    @field_validator("model_confidence")
+    @classmethod
+    def _model_conf_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in MODEL_CONFIDENCE_VALUES:
+            raise ValueError(f"unsupported model_confidence {v!r}")
+        return v
+
+
+class ScreenIntentExtractionV2Result(_PromptOutputBase):
+    screen_behaviour_intents: List[ScreenBehaviourIntentDraftA2] = Field(default_factory=list)
+    unresolved_screen_groups: List[UnresolvedScreenGroupA2] = Field(default_factory=list)
+
+
 class ScreenBehaviourIntentA2(_PromptOutputBase):
+    """Validated hydrated catalog consumed by downstream (flow context / edges / audits)."""
+
     screen_intent_id: str
     source_state_id: str
     source_group_id: str
@@ -125,14 +421,15 @@ class ScreenBehaviourIntentA2(_PromptOutputBase):
     commit_action: Optional[ScreenIntentPrimaryActionA2] = None
     secondary_actions: List[ScreenIntentPrimaryActionA2] = Field(default_factory=list)
     local_action_sequence_templates: List[ActionSequenceTemplateA2] = Field(default_factory=list)
-    required_input_groups: List[str] = Field(default_factory=list)
-    evidence: List[str] = Field(default_factory=list)
-    confidence: str
-
-
-class ScreenIntentExtractionV2Result(_PromptOutputBase):
-    screen_behaviour_intents: List[ScreenBehaviourIntentA2] = Field(default_factory=list)
-    unresolved_screen_groups: List[UnresolvedScreenGroupA2] = Field(default_factory=list)
+    required_input_element_ids: List[str] = Field(default_factory=list)
+    evidence_refs: List[EvidenceRefHydratedA2] = Field(default_factory=list)
+    evidence: List[str] = Field(
+        default_factory=list,
+        description="Short verbatim-style summaries derived from hydrated evidence_refs (legacy-compatible).",
+    )
+    model_confidence: str = "medium"
+    validation_confidence: str = "medium"
+    confidence: str = "medium"
 
 
 
@@ -140,78 +437,122 @@ class ScreenIntentExtractionV2Result(_PromptOutputBase):
 # A3: UI Flow Discovery / intent-aware flows (prompt: prompt_intent_aware_flow_discovery)
 # ──────────────────────────────────────────────
 
+FLOW_DISCOVERY_FLOW_TYPES: frozenset[str] = frozenset(
+    {"single_step_outcome", "ordered_sequence", "branching_flow"}
+)
+
+EDGE_DECISION_REASON_CODES: frozenset[str] = frozenset(
+    {
+        "selected_high_score_edge",
+        "selected_medium_score_edge",
+        "negative_outcome_branch",
+        "recovery_navigation",
+        "local_only_no_target",
+        "contradicted_visible_evidence",
+        "ambiguous_target",
+        "insufficient_evidence",
+        "conflicting_order",
+        "weak_semantic_fit",
+    }
+)
+
+SEMANTIC_CLUSTER_REASON_CODES: frozenset[str] = frozenset(
+    {
+        "same_task_area",
+        "same_domain",
+        "same_screen_family",
+        "similar_feedback",
+        "shared_user_goal",
+    }
+)
+
+
 class FlowTransitionTriggerA3(_PromptOutputBase):
+    """Hydrated trigger shape stored on FlowTransition.trigger_json (not LLM-authored)."""
+
     action_type: str
     text: List[str] = Field(default_factory=list)
 
 
+class EdgeDecisionA4(_PromptOutputBase):
+    candidate_edge_id: str
+    decision: Literal["accepted", "rejected", "local_interaction", "uncertain"]
+    bucket: Literal[
+        "direct_transition",
+        "alternative_outcome",
+        "local_interaction",
+        "uncertain_relation",
+        "rejected",
+    ]
+    reason_code: str
+    evidence_level: Literal["strong", "medium"]
+    notes: Optional[str] = None
 
-
-
-class FlowTransitionA3(_PromptOutputBase):
-    from_state: str
-    to_state: str
-    relation_type: str = "direct_transition"
-    trigger_action: FlowTransitionTriggerA3
-    source_group_id: Optional[str] = None
-    source_screen_intent_id: Optional[str] = None
-    evidence_level: str  # strong, medium
-    reasoning_pattern: Optional[str] = None
-    source_evidence: List[str] = Field(default_factory=list)
-    target_evidence: List[str] = Field(default_factory=list)
-    source_visible_evidence: List[str] = Field(default_factory=list)
-    target_visible_evidence: List[str] = Field(default_factory=list)
-    assumptions: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
-
-
-class AlternativeOutcomeA3(_PromptOutputBase):
-    source_state: str
-    source_group_id: Optional[str] = None
-    source_screen_intent_id: Optional[str] = None
-    trigger_action: FlowTransitionTriggerA3
-    outcome_states: List[str] = Field(default_factory=list)
-    visible_evidence: List[str] = Field(default_factory=list)
-    reason: str
-    evidence_level: str
-    warnings: List[str] = Field(default_factory=list)
-
-
-class LocalInteractionA3(_PromptOutputBase):
-    source_state: str
-    source_group_id: str
-    source_screen_intent_id: str
-    trigger_action: FlowTransitionTriggerA3
-    reason: str
+    @field_validator("reason_code")
+    @classmethod
+    def _reason_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in EDGE_DECISION_REASON_CODES:
+            raise ValueError(f"unsupported edge_decision reason_code {v!r}")
+        return v
 
 
 class FlowDiscoveryA3(_PromptOutputBase):
+    """LLM composes flows using existing candidate_edge_id values only."""
+
     flow_id: str
     flow_name: str
-    flow_type: str  # single_step_outcome, ordered_sequence, branching_flow
+    flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
     user_goal: str
     ordered_states: List[str] = Field(default_factory=list)
-    transitions: List[FlowTransitionA3] = Field(default_factory=list)
-    alternative_outcomes: List[AlternativeOutcomeA3] = Field(default_factory=list)
-    local_interactions: List[LocalInteractionA3] = Field(default_factory=list)
+    transition_edge_ids: List[str] = Field(default_factory=list)
+    alternative_outcome_edge_ids: List[str] = Field(default_factory=list)
+    local_interaction_edge_ids: List[str] = Field(default_factory=list)
+    uncertain_edge_ids: List[str] = Field(default_factory=list)
+
+    @field_validator("flow_type")
+    @classmethod
+    def _flow_type_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in FLOW_DISCOVERY_FLOW_TYPES:
+            raise ValueError(f"unsupported flow_type {v!r}")
+        return v
 
 
 class SemanticClusterA3(_PromptOutputBase):
     cluster_id: str
     domain: str
     states: List[str] = Field(default_factory=list)
-    reason: str
+    reason_code: str
+    notes: Optional[str] = None
+
+    @field_validator("reason_code")
+    @classmethod
+    def _cluster_reason_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in SEMANTIC_CLUSTER_REASON_CODES:
+            raise ValueError(f"unsupported semantic cluster reason_code {v!r}")
+        return v
 
 
 class UncertainRelationA3(_PromptOutputBase):
-    state_a: str
-    state_b: str
-    reason: str
+    candidate_edge_id: str
+    reason_code: str
+    notes: Optional[str] = None
+
+    @field_validator("reason_code")
+    @classmethod
+    def _uncertain_reason_vocab(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in EDGE_DECISION_REASON_CODES:
+            raise ValueError(f"unsupported uncertain_relations reason_code {v!r}")
+        return v
 
 
 class UIFlowDiscoveryResult(_PromptOutputBase):
     flow_discovery_result_id: Optional[str] = None
     source_canonical_state_set_id: Optional[str] = None
+    edge_decisions: List[EdgeDecisionA4] = Field(default_factory=list)
     candidate_flows: List[FlowDiscoveryA3] = Field(default_factory=list)
     semantic_clusters: List[SemanticClusterA3] = Field(default_factory=list)
     uncertain_relations: List[UncertainRelationA3] = Field(default_factory=list)
@@ -226,6 +567,93 @@ class IntentReadinessA3(_PromptOutputBase):
     readiness_level: str  # ready_for_intent, partial_intent_only, capability_only, not_ready
     reason: str
     usable_for_primary_scenario: bool
+
+
+class ActionSequenceStepEdge(_PromptOutputBase):
+    source_state: str
+    source_group_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
+    source_action_id: Optional[str] = None
+    source_element_id: Optional[str] = None
+    action_role: str  # select_option | input | commit | confirm | cancel | navigate
+    action_text: List[str] = Field(default_factory=list)
+
+
+class EdgeContextParameter(_PromptOutputBase):
+    name: str
+    value: str
+    evidence: List[str] = Field(default_factory=list)
+
+
+class CandidateEdge(_PromptOutputBase):
+    edge_id: str
+    from_state: str
+    to_state: str
+    edge_kind: str  # progress | success_terminal | empty_result | validation_error | warning | error | failure | confirmation_required | review_required | (+ legacy composer tokens if persisted downstream)
+    scenario_role: str  # core | branch | optional | excluded
+    action_sequence: List[ActionSequenceStepEdge] = Field(default_factory=list)
+    alternative_action_sequences: List[List[ActionSequenceStepEdge]] = Field(default_factory=list)
+    context_parameters: List[EdgeContextParameter] = Field(default_factory=list)
+    source_visible_evidence: List[str] = Field(default_factory=list)
+    target_visible_evidence: List[str] = Field(default_factory=list)
+    confidence: str = "medium"
+    exclusion_reason: Optional[str] = None
+    edge_score: float = 0.0  # 0–100 resolver heuristic after gates
+    edge_score_reasons: List[str] = Field(default_factory=list)
+    edge_risk_flags: List[str] = Field(default_factory=list)
+
+
+class ComposedEdge(CandidateEdge):
+    """An edge that has been validated and selected for a path."""
+    pass
+
+
+class ComposedFlowSourceTraceStep(_PromptOutputBase):
+    """Trace row for intermediate composed-flow provenance."""
+
+    candidate_edge_id: Optional[str] = None
+    transition_id: Optional[str] = None
+    bucket: Optional[str] = None
+    reason_code: Optional[str] = None
+
+
+class ComposedFlowInternal(_PromptOutputBase):
+    """
+    Backend-only composed flow handed to BehaviourIntent mapper.
+    edge_sequence mirrors hydrated transition dicts (extra keys tolerated).
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    composed_flow_id: str
+    source_flow_id: str
+    source_flow_name: str
+    user_goal: str = ""
+    source_discovery_flow_type: str = ""
+    flow_type: str  # main_success_path | validation_branch | error_branch | empty_result_branch | cancellation_branch | recovery_branch | navigation_branch | ...
+    start_state: str
+    end_state: str
+    state_path: List[str] = Field(default_factory=list)
+    edge_sequence: List[Dict[str, Any]] = Field(default_factory=list)
+    source_trace: List[ComposedFlowSourceTraceStep] = Field(default_factory=list)
+    composition_method: str  # agent4_selected_edges | backend_dfs_fallback
+    confidence: str
+    behaviour_name: str
+    source_group_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
+
+
+class ComposedFlowA5(_PromptOutputBase):
+    composed_flow_id: str
+    source_flow_id: str
+    source_flow_name: str
+    flow_type: str  # main_success_path | negative_branch | alternative_branch | validation_branch | error_branch | recovery_branch | independent_flow (+ empty_result_branch, cancellation_branch, navigation_branch per internal composer)
+    start_state: str
+    end_state: str
+    state_path: List[str] = Field(default_factory=list)
+    edge_sequence: List[ComposedEdge] = Field(default_factory=list)
+    behaviour_name: str
+    confidence: str
 
 
 class TriggerActionA5(_PromptOutputBase):
@@ -307,9 +735,10 @@ class TestScenarioStepA6(_PromptOutputBase):
 
 
 class AssertionA6(_PromptOutputBase):
-    assertion_type: str  # state_reached | feedback_visible | screen_type_visible | screen_purpose_matched | ui_evidence_present | state_not_reached | feedback_not_visible | unknown
+    assertion_type: str  # state_reached | state_transition | feedback_visible | screen_type_visible | screen_purpose_matched | ui_evidence_present | state_not_reached | feedback_not_visible | unknown
     expected: str
     source: str  # expected_result | expected_ui_evidence | negative_expectation
+    ui_text_grounding_required: Optional[bool] = None  # False: skip verbatim UI pool matching in Agent 7 pre-audit counts
 
 
 class TestScenarioA6(_PromptOutputBase):
@@ -339,7 +768,7 @@ class TestScenarioA6(_PromptOutputBase):
 
 
 class UnresolvedScenarioItemA6(_PromptOutputBase):
-    item_type: str  # invalid_intent | missing_critical_field | unsupported_intent | insufficient_expected_result | insufficient_traceability
+    item_type: str  # invalid_intent | missing_critical_field | unsupported_intent | insufficient_expected_result | insufficient_traceability | insufficient_evidence
     source_intent_id: Optional[str] = None
     source_flow_id: Optional[str] = None
     reason: str

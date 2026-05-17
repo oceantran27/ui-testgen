@@ -278,7 +278,9 @@ class ModelProviderAdapter:
 
         max_output_tokens = 4096
         if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery"):
-            max_output_tokens = settings.LLM_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+            max_output_tokens = settings.FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+        elif task_name == "screen_intent_extraction":
+            max_output_tokens = settings.SCREEN_INTENT_MAX_OUTPUT_TOKENS
         elif task_name == "behaviour_contract_builder":
             max_output_tokens = settings.BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS
         elif task_name == "bdd_scenario_generation":
@@ -438,7 +440,12 @@ def _create_registry() -> ProviderRegistry:
     registry.register(MockModelProvider())
 
     # Register Gemini if key available
-    if settings.GEMINI_API_KEY or settings.DEFAULT_MODEL_PROVIDER == "gemini":
+    if (
+        settings.GEMINI_API_KEY
+        or settings.DEFAULT_MODEL_PROVIDER == "gemini"
+        or settings.UI_STATE_EXTRACTION_PROVIDER == "gemini"
+        or settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER == "gemini"
+    ):
         registry.register(GeminiModelProvider())
 
     # Register OpenAI if default/fallback or key present (lazy auth at call time)

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from dataclasses import replace
 from typing import Optional
 
 from tenacity import (
@@ -33,6 +34,23 @@ from app.model_providers.base import (
     NonRetryableModelError,
     RetryableModelError,
 )
+
+
+def _same_provider_fallback_model(task_name: str) -> str:
+    """Alternate model on the primary provider when the spec names a same-provider fallback."""
+    if task_name == "screen_intent_extraction":
+        return settings.SCREEN_INTENT_FALLBACK_MODEL_NAME or ""
+    if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery"):
+        return settings.FLOW_DISCOVERY_FALLBACK_MODEL_NAME or ""
+    if task_name == "scenario_evidence_audit":
+        return settings.SCENARIO_VALIDATION_FALLBACK_MODEL_NAME or ""
+    return ""
+
+
+def _cross_provider_fallback_model(task_name: str, fallback_provider_name: str) -> str:
+    if task_name == "ui_state_extraction" and fallback_provider_name == settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER:
+        return settings.UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME or ""
+    return ""
 
 
 async def execute_with_retry(
@@ -104,6 +122,29 @@ async def execute_with_retry(
     except (RetryableModelError, NonRetryableModelError) as primary_err:
         error = primary_err.error if hasattr(primary_err, "error") else None
 
+        if settings.ENABLE_MODEL_FALLBACK:
+            alt_model = _same_provider_fallback_model(request.task_name)
+            cur_model = request.model_name or ""
+            if alt_model and alt_model != cur_model:
+                try:
+                    logger.warning(
+                        f"Primary model '{cur_model or 'default'}' failed for task '{request.task_name}', "
+                        f"retrying same provider '{provider.name}' with '{alt_model}'"
+                    )
+                    log_event(
+                        "model_same_provider_fallback_used",
+                        run_id=request.run_id,
+                        node_name=request.node_name,
+                        task_name=request.task_name,
+                        provider=provider.name,
+                        alternate_model=alt_model,
+                    )
+                    response = await _attempt(provider, replace(request, model_name=alt_model))
+                    response.retry_count = retry_count
+                    return response
+                except Exception:
+                    pass
+
         # Try fallback if enabled and available
         if settings.ENABLE_MODEL_FALLBACK and fallback_provider is not None:
             logger.warning(
@@ -119,7 +160,9 @@ async def execute_with_retry(
                 fallback_provider=fallback_provider.name,
             )
             try:
-                response = await _attempt(fallback_provider, request)
+                fb_model = _cross_provider_fallback_model(request.task_name, fallback_provider.name)
+                fb_request = replace(request, model_name=fb_model) if fb_model else request
+                response = await _attempt(fallback_provider, fb_request)
                 response.retry_count = retry_count
                 return response
             except Exception as fallback_err:
