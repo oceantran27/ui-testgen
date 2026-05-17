@@ -20,7 +20,8 @@ class UIState(Base):
     
     page_type: Mapped[str] = mapped_column(String)
     screen_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    outcome_state_type: Mapped[str] = mapped_column(String, default="normal")
+    presentation_scope: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    outcome_state_type: Mapped[str] = mapped_column(String, default="neutral")
     screen_purpose: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     domain: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     

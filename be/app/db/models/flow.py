@@ -4,7 +4,7 @@ Flow — SQLAlchemy model for tracking discovered UI flows.
 import datetime
 from typing import Any, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, JSON, Float
+from sqlalchemy import DateTime, ForeignKey, String, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -18,7 +18,7 @@ class Flow(Base):
     run_id: Mapped[str] = mapped_column(String, ForeignKey("runs.id"), index=True)
     
     name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    flow_type: Mapped[str] = mapped_column(String)  # linear_flow, branched_flow, single_state_pseudo_flow
+    flow_type: Mapped[str] = mapped_column(String)  # Agent 4 LLM: single_step_outcome | ordered_sequence | branching_flow (legacy docs may say linear_flow / branched_flow)
     input_level: Mapped[str] = mapped_column(String)
     user_goal: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     

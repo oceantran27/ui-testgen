@@ -4,7 +4,7 @@ FlowTransition — SQLAlchemy model for tracking transitions between UI states i
 import datetime
 from typing import Any, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, JSON, Float
+from sqlalchemy import DateTime, ForeignKey, String, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 

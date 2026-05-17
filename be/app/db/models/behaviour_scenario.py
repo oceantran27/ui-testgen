@@ -60,7 +60,7 @@ class BehaviourScenario(Base):
     curated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
 
     status: Mapped[str] = mapped_column(String, default="draft") # draft, generated
-    validation_status: Mapped[str] = mapped_column(String, default="pending") # pending, validated, rejected
+    validation_status: Mapped[str] = mapped_column(String, default="pending")  # pending | validated | low_confidence | needs_revision | rejected
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow

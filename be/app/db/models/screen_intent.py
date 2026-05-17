@@ -26,11 +26,16 @@ class ScreenBehaviourIntent(Base):
     commit_action_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     secondary_actions_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     local_action_sequence_templates_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-    required_input_groups_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    required_input_element_ids_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     evidence_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     
     confidence: Mapped[str] = mapped_column(String, default="low")
+    model_confidence: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    validation_confidence: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
     raw_result_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    raw_model_output_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    validation_report_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
