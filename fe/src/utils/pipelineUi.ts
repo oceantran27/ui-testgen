@@ -1,7 +1,8 @@
 import type { GraphStatusResponse } from "../types/run";
 import type { RunResponse } from "../types/run";
 import {
-  PIPELINE_NODE_IDS,
+  PIPELINE_NODE_IDS_SEPARATED,
+  PIPELINE_NODE_IDS_JOINT,
   PIPELINE_STEP_LABELS,
   type PipelineNodeId,
 } from "../constants/pipeline";
@@ -20,20 +21,20 @@ export type PipelineHints = {
   scenarioCount: number;
 };
 
-const NODE_INDEX: Record<string, number> = Object.fromEntries(
-  PIPELINE_NODE_IDS.map((id, i) => [id, i]),
-);
-
-/**
- * Backend `persist_run_graph_progress` uses *_node ids; graph state may use shorter names.
- */
 const PIPELINE_NODE_ALIASES: Record<string, PipelineNodeId> = {
   ui_state_evidence_extraction: "ui_state_evidence_extraction_node",
   screen_intent_extraction_v2: "screen_intent_extraction_v2_node",
-  flow_context_builder: "flow_context_builder_node",
-  intent_aware_flow_discovery: "intent_aware_flow_discovery_node",
-  behaviour_contract_builder: "behaviour_contract_builder_node",
-  behaviour_scenario_generation: "behaviour_scenario_generation_node",
+  joint_screen_understanding: "joint_screen_understanding_node",
+  compressed_representation: "representation_compression_node",
+  representation_compression: "representation_compression_node",
+  global_flow_discovery: "global_flow_discovery_node",
+  flow_context_builder: "global_flow_discovery_node",
+  transition_evidence: "global_flow_discovery_node",
+  intent_aware_flow_discovery: "global_flow_discovery_node",
+  discover_flows: "global_flow_discovery_node",
+  behaviour_contract_builder: "generate_tests_node",
+  behaviour_scenario_generation: "generate_tests_node",
+  generate_tests: "generate_tests_node",
   scenario_evidence_audit: "scenario_evidence_audit_node",
 };
 
@@ -43,10 +44,14 @@ export function normalizePipelineNodeId(
   if (!raw) {
     return null;
   }
-  if ((PIPELINE_NODE_IDS as readonly string[]).includes(raw)) {
+  const aliased = PIPELINE_NODE_ALIASES[raw];
+  if (aliased) {
+    return aliased;
+  }
+  if (raw in PIPELINE_STEP_LABELS) {
     return raw as PipelineNodeId;
   }
-  return PIPELINE_NODE_ALIASES[raw] ?? null;
+  return null;
 }
 
 /** Merge `GET /runs/:id` (primary) with optional `/graph-status` for pipeline fields. */
@@ -67,26 +72,26 @@ function effectivePipelineFields(
 }
 
 /** Inverse of BE `progress_percentage = clamp(1..99, int((idx + 1) / n * 100))`. */
-function activeIndexFromProgressPercentage(pct: number): number {
-  const n = PIPELINE_NODE_IDS.length;
+function activeIndexFromProgressPercentage(pct: number, totalSteps: number): number {
   const clamped = Math.max(1, Math.min(99, Math.round(pct)));
-  return Math.min(n - 1, Math.max(0, Math.ceil((clamped / 100) * n) - 1));
+  return Math.min(totalSteps - 1, Math.max(0, Math.ceil((clamped / 100) * totalSteps) - 1));
 }
 
 function heuristicActiveIndex(
   hints: PipelineHints | undefined,
+  nodeIndex: Record<string, number>,
 ): number | null {
   if (!hints) {
     return null;
   }
   if (hints.scenarioCount > 0) {
-    return NODE_INDEX["scenario_evidence_audit_node"] ?? null;
+    return nodeIndex["scenario_evidence_audit_node"] ?? null;
   }
   if (hints.flowCount > 0) {
-    return NODE_INDEX["behaviour_contract_builder_node"] ?? null;
+    return nodeIndex["generate_tests_node"] ?? null;
   }
   if (hints.uiStateCount > 0) {
-    return NODE_INDEX["flow_context_builder_node"] ?? null;
+    return nodeIndex["global_flow_discovery_node"] ?? null;
   }
   return null;
 }
@@ -101,6 +106,12 @@ export function buildPipelineStepRows(
 ): PipelineStepRow[] {
   const eff = effectivePipelineFields(run, graph);
 
+  const mode = run?.config?.screen_understanding_mode === "joint" ? "joint" : "separated";
+  const nodeIds = mode === "joint" ? PIPELINE_NODE_IDS_JOINT : PIPELINE_NODE_IDS_SEPARATED;
+  const nodeIndex: Record<string, number> = Object.fromEntries(
+    nodeIds.map((id, i) => [id, i]),
+  );
+
   const failed = run?.status === "failed";
   const completed = run?.status === "completed";
   const graphStatusVal = eff.graph_status;
@@ -113,8 +124,8 @@ export function buildPipelineStepRows(
   let activeIdx: number | null = null;
 
   const normalized = normalizePipelineNodeId(eff.current_node);
-  if (normalized != null && NODE_INDEX[normalized] !== undefined) {
-    activeIdx = NODE_INDEX[normalized];
+  if (normalized != null && nodeIndex[normalized] !== undefined) {
+    activeIdx = nodeIndex[normalized];
   }
 
   if (activeIdx === null) {
@@ -123,12 +134,12 @@ export function buildPipelineStepRows(
     const inFlight =
       run?.status === "processing" || graphStatusVal === "running";
     if (inFlight && !Number.isNaN(pctNum)) {
-      activeIdx = activeIndexFromProgressPercentage(pctNum);
+      activeIdx = activeIndexFromProgressPercentage(pctNum, nodeIds.length);
     }
   }
 
   if (activeIdx === null && processing && hints) {
-    activeIdx = heuristicActiveIndex(hints);
+    activeIdx = heuristicActiveIndex(hints, nodeIndex);
   }
 
   /* Queued / starting: no node yet — show first step as active */
@@ -140,7 +151,7 @@ export function buildPipelineStepRows(
     activeIdx = 0;
   }
 
-  return PIPELINE_NODE_IDS.map((id, idx) => {
+  return nodeIds.map((id, idx) => {
     const label = PIPELINE_STEP_LABELS[id];
     if (failed) {
       if (activeIdx !== null) {

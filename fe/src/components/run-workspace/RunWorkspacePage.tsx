@@ -54,7 +54,7 @@ import type {
 import { useRunPolling } from "../../hooks/useRunPolling";
 import { PipelineStrip } from "./PipelineStrip";
 import { RunProgressModal } from "../runs/RunProgressModal";
-import type { PipelineHints } from "../../utils/pipelineUi";
+import { buildPipelineStepRows, type PipelineHints } from "../../utils/pipelineUi";
 import { formatStateLabel } from "../../utils/stateLabels";
 
 function formatElementText(text: string[] | string | null | undefined): string {
@@ -317,6 +317,11 @@ export function RunWorkspacePage() {
     flowCount: 0,
     scenarioCount: 0,
   });
+
+  const steps = useMemo(
+    () => buildPipelineStepRows(run, graphStatus, hints),
+    [run, graphStatus, hints],
+  );
 
   const [images, setImages] = useState<ImageRecord[] | null>(null);
   const [states, setStates] = useState<UIStateSummary[] | null>(null);
@@ -784,11 +789,10 @@ export function RunWorkspacePage() {
 
       <div className="card-dark mb-6">
         <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-zinc-500">
-          Pipeline (10 steps)
+          Pipeline ({steps.length} steps)
         </h2>
         <p className="mb-3 text-[11px] text-zinc-500">
-          A1 UI evidence → A2 screen intents → flow context → intent-aware discovery → A5 behaviour
-          contracts → scenarios → evidence audit → output assembly → finalize
+          {steps.map((s) => s.label).join(" → ")}
         </p>
         <PipelineStrip run={run} graphStatus={graphStatus} hints={hints} />
       </div>
@@ -933,7 +937,7 @@ export function RunWorkspacePage() {
 
                   {stateDetail.interaction_groups?.length ? (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Interaction Groups (Agent A1)</p>
+                      <p className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Interaction Groups</p>
                       <div className="grid gap-2">
                         {stateDetail.interaction_groups.map(grp => (
                           <div key={grp.group_id} className="rounded border border-zinc-800 bg-zinc-900/40 p-2">
