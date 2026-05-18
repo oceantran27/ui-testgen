@@ -120,7 +120,7 @@ Tất cả các field trên là **`str` runtime** — không có `Literal` enfor
 | `prompt_intent_aware_flow_discovery` | `intent_aware_flow_discovery_service` | `UIFlowDiscoveryResult` |
 | `prompt_scenario_evidence_audit` | `scenario_evidence_audit_service` | `ScenarioValidationResult` |
 
-Nodes trong `be/app/graph/nodes/` delegate đúng các service trên; `behaviour_contract_builder_node` và `behaviour_scenario_generation_node` **không** kết nối prompt file tương ứng.
+Các bước behaviour contract và scenario generation chạy trong `generate_tests_node` qua `generate_tests_service` (`run_behaviour_contract_builder`, `run_bdd_scenario_generation`); không còn các file LangGraph node riêng cho từng bước đó.
 
 ### `map_test_path` (`behaviour_contract_service.py`)
 

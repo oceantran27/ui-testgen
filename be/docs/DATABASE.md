@@ -10,7 +10,8 @@ Represents an analysis lifecycle.
 - `id`: Run ID (string)
 - `status`: Lifecycle state (`created`, `queued`, `processing`, `completed`, `failed`, `cancelled`)
 - `total_images`, `valid_images`, `invalid_images`: Counts for image stats
-- `input_level`: The determined flow level (e.g., Level 1, 2, or 3)
+- Graph execution fields (`current_phase`, `current_node`, `progress_percentage`, …) track pipeline progress
+- Per-flow level metadata lives on **`flows`** (`input_level`), not on `runs`
 
 ### `images`
 Stores metadata for uploaded screenshots.

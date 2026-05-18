@@ -16,7 +16,6 @@ class BehaviourScenario(Base):
     run_id: Mapped[str] = mapped_column(String, ForeignKey("runs.id"), index=True)
     flow_id: Mapped[str] = mapped_column(String, ForeignKey("flows.id"), index=True)
     intent_id: Mapped[str] = mapped_column(String, ForeignKey("behaviour_intents.id"), index=True)
-    path_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     feature: Mapped[str] = mapped_column(String)
     scenario_title: Mapped[str] = mapped_column(String)

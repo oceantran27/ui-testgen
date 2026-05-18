@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, DateTime, JSON, Float
+from sqlalchemy import String, Integer, DateTime, JSON
 from .base import Base
 import datetime
 from typing import List, Optional, Any
@@ -23,11 +23,6 @@ class Run(Base):
     graph_status: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     graph_started_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     graph_completed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    
-    # Phase 7: Input Level Detection
-    input_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    input_level_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    input_level_reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     submitted_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     started_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
