@@ -45,6 +45,16 @@ def _edge(edge_id: str, fr: str, to: str, kind: str = "progress", texts: list[st
     }
 
 
+def _mock_persisted_flow(flow_pk: str, discovery_flow_id: str, *, name: str = "") -> MagicMock:
+    m = MagicMock()
+    m.id = flow_pk
+    m.run_id = "run_12345"
+    m.flow_evidence_package_json = {"discovery_source_flow_id": discovery_flow_id}
+    m.flow_label = name or None
+    m.name = name or None
+    return m
+
+
 def test_compose_preserves_transition_edge_order() -> None:
     catalog = [_state("A"), _state("B"), _state("C", oc="success")]
     cands = [
@@ -161,7 +171,7 @@ def test_run_behaviour_contract_persists_with_mock_db(monkeypatch: pytest.Monkey
         m.scalars.return_value = scalars_mock
         return m
 
-    db.execute = AsyncMock(return_value=_result([]))
+    db.execute = AsyncMock(return_value=_result([_mock_persisted_flow("flow_db_frun", "frun", name="RunFlow")]))
     db.commit = AsyncMock()
     db.rollback = AsyncMock()
 
@@ -213,7 +223,7 @@ def test_run_behaviour_contract_negative_intent_populates_negative_expectations(
         m.scalars.return_value = scalars_mock
         return m
 
-    db.execute = AsyncMock(return_value=_result([]))
+    db.execute = AsyncMock(return_value=_result([_mock_persisted_flow("flow_db_fneg", "f_neg", name="NegFlow")]))
     db.commit = AsyncMock()
     db.rollback = AsyncMock()
 
@@ -255,7 +265,7 @@ def test_run_behaviour_contract_with_llm(monkeypatch: pytest.MonkeyPatch) -> Non
         m.scalars.return_value = scalars_mock
         return m
 
-    db.execute = AsyncMock(return_value=_result([]))
+    db.execute = AsyncMock(return_value=_result([_mock_persisted_flow("flow_db_llm", "f_llm", name="LlmFlow")]))
     db.commit = AsyncMock()
     db.rollback = AsyncMock()
 

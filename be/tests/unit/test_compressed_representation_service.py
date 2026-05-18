@@ -81,6 +81,8 @@ def test_run_build_compressed_catalog_shape():
     assert pa["action_id"] == "act_dent"
     assert "Dental" in pa["text"]
     assert "fb_1" in g0["feedback_refs"]
+    assert g0["actions"]
+    assert g0["actions"][0] == ("act_dent", "click", "Dental", "Dental", "unknown")
 
     stats = pkg.get("compression_stats") or {}
     assert stats.get("screen_count") == 1
@@ -89,3 +91,166 @@ def test_run_build_compressed_catalog_shape():
 
     ok, err = validate_compressed_catalog_size(pkg, max_screens=10)
     assert ok and err is None
+
+
+def test_run_build_compressed_catalog_selection_action_rows():
+    catalog = [
+        {
+            "state_id": "st_559c031df702_BOOK_S03.png",
+            "source_image_id": "img_1",
+            "upload_order": 1,
+            "domain": "booking",
+            "screen_type": "form",
+            "screen_purpose": "Choose time",
+            "presentation_scope": "full_screen",
+            "outcome_state_type": "neutral",
+            "visible_feedback": [],
+            "visible_elements": [],
+            "interaction_groups": [],
+            "available_actions": [
+                {"action_id": "st_559c031df702_BOOK_S03.png_ac_004", "action_type": "select", "text": ["Select 09:00", "09:00"]},
+                {"action_id": "st_559c031df702_BOOK_S03.png_ac_005", "action_type": "select", "text": ["Select 10:00", "10:00"]},
+                {"action_id": "st_559c031df702_BOOK_S03.png_ac_006", "action_type": "select", "text": ["Select 14:00", "14:00"]},
+            ],
+        }
+    ]
+    sipkg = {
+        "screen_intent_package_id": "sbi_pkg_x",
+        "screen_intent_catalog": [
+            {
+                "source_state_id": "st_559c031df702_BOOK_S03.png",
+                "screen_intent_id": "sbi_7bc0fa64ddf9",
+                "source_group_id": "g_slot",
+                "intent_kind": "selection",
+                "intent_name": "time",
+                "local_user_goal": "choose appointment time slot",
+                "primary_action": {
+                    "action_id": "st_559c031df702_BOOK_S03.png_ac_005",
+                    "action_type": "select",
+                    "text": ["Select 10:00", "10:00"],
+                },
+                "commit_action": None,
+                "secondary_actions": [],
+                "selection_options": [
+                    {
+                        "option_ref_type": "action",
+                        "option_action_id": "st_559c031df702_BOOK_S03.png_ac_004",
+                        "option_text": ["Select 09:00", "09:00"],
+                        "visible_status": "unselected",
+                    },
+                    {
+                        "option_ref_type": "action",
+                        "option_action_id": "st_559c031df702_BOOK_S03.png_ac_005",
+                        "option_text": ["Select 10:00", "10:00"],
+                        "visible_status": "selected",
+                    },
+                    {
+                        "option_ref_type": "action",
+                        "option_action_id": "st_559c031df702_BOOK_S03.png_ac_006",
+                        "option_text": ["Select 14:00", "14:00"],
+                        "visible_status": "disabled",
+                    },
+                ],
+                "local_action_sequence_templates": [],
+                "required_input_element_ids": [],
+                "evidence_refs": [],
+            }
+        ],
+    }
+    pkg = run_build_compressed_catalog(
+        run_id="run_x",
+        state_catalog=catalog,
+        screen_intent_pkg=sipkg,
+        ui_state_package=None,
+    )
+    g0 = pkg["compressed_catalog"][0]["intent_groups"][0]
+    rows = [list(r) for r in g0["actions"]]
+    assert len(rows) == 3
+    assert rows[0] == [
+        "st_559c031df702_BOOK_S03.png_ac_004",
+        "select",
+        "Select 09:00 09:00",
+        "09:00",
+        "unselected",
+    ]
+    assert rows[1] == [
+        "st_559c031df702_BOOK_S03.png_ac_005",
+        "select",
+        "Select 10:00 10:00",
+        "10:00",
+        "selected",
+    ]
+    assert rows[2] == [
+        "st_559c031df702_BOOK_S03.png_ac_006",
+        "select",
+        "Select 14:00 14:00",
+        "14:00",
+        "disabled",
+    ]
+
+
+def test_continuity_entities_from_date_time_and_order():
+    catalog = [
+        {
+            "state_id": "st_x",
+            "source_image_id": "img_1",
+            "upload_order": 1,
+            "domain": "booking",
+            "screen_type": "form",
+            "screen_purpose": "Review",
+            "presentation_scope": "full_screen",
+            "outcome_state_type": "neutral",
+            "visible_feedback": [
+                {"feedback_id": "f1", "feedback_type": "success", "text": ["Confirmed booking #BOOK12345"]},
+            ],
+            "visible_elements": [
+                {"element_id": "eh", "element_type": "heading", "text": ["Appointment on 2026-05-18"]},
+                {"element_id": "ein", "element_type": "input", "role_hint": "required_input", "text": ["10:30"]},
+            ],
+            "interaction_groups": [],
+            "available_actions": [],
+        }
+    ]
+    sipkg = {"screen_intent_package_id": "p1", "screen_intent_catalog": []}
+    pkg = run_build_compressed_catalog(
+        run_id="run_x",
+        state_catalog=catalog,
+        screen_intent_pkg=sipkg,
+    )
+    cont = pkg["compressed_catalog"][0]["continuity_entities"]
+    types = {e["entity_type"] for e in cont}
+    assert "date" in types
+    assert "time" in types
+    assert "order" in types
+    texts_flat = " ".join(t for e in cont for t in (e.get("text") or []))
+    assert "2026-05-18" in texts_flat
+    assert "10:30" in texts_flat
+    assert "BOOK12345" in texts_flat
+
+
+def test_continuity_entities_empty_without_signals():
+    catalog = [
+        {
+            "state_id": "st_plain",
+            "source_image_id": "img_1",
+            "upload_order": 1,
+            "domain": "generic",
+            "screen_type": "landing",
+            "screen_purpose": "Welcome",
+            "presentation_scope": "full_screen",
+            "outcome_state_type": "neutral",
+            "visible_feedback": [],
+            "visible_elements": [
+                {"element_id": "h1", "element_type": "heading", "text": ["Welcome"]},
+            ],
+            "interaction_groups": [],
+            "available_actions": [],
+        }
+    ]
+    sipkg = {"screen_intent_package_id": "p1", "screen_intent_catalog": []}
+    pkg = run_build_compressed_catalog(
+        run_id="run_x",
+        state_catalog=catalog,
+        screen_intent_pkg=sipkg,
+    )
+    assert pkg["compressed_catalog"][0]["continuity_entities"] == []

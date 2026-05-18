@@ -342,7 +342,6 @@ def test_run_audit_fallback_on_batch_integrity() -> None:
                             mock_db,
                             run_id="run_test",
                             scenario_draft_package=pkg,
-                            ui_state_package=None,
                             flow_discovery_result=None,
                             intent_package=None,
                             screen_intent_package=None,

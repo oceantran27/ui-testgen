@@ -75,6 +75,11 @@ def test_build_llm_discovery_catalog_trims_intent_noise():
     assert "evidence_refs" not in ig
     assert "source_group_id" not in ig
     assert ig["primary_action"]["text"] == ["Go"]
+    assert ig["actions"] == []
+    assert ig["iid"] == "intent_login"
+    assert ig["kind"] == "submission"
+    assert ig["goal"] == "login"
+    assert ig["primary"] == "ac_go"
 
 
 def test_validate_discovery_input_duplicate_state_rejected():
@@ -169,6 +174,62 @@ def test_repair_trigger_text_mismatch_uses_catalog_copy():
     trig = repaired.candidate_flows[0].ordered_steps[0].next_trigger_action
     assert trig is not None
     assert trig.text == ["Go"]
+
+
+def test_repair_trigger_text_mismatch_uses_actions_row():
+    def slot_screen(state_id: str) -> dict:
+        s = _screen(state_id)
+        s["intent_groups"] = [
+            {
+                "intent_id": "intent_slot",
+                "source_group_id": "g1",
+                "intent_kind": "selection",
+                "intent_name": "t",
+                "local_user_goal": "pick time",
+                "primary_action": {
+                    "action_id": "ac_primary",
+                    "action_type": "select",
+                    "text": ["Primary"],
+                    "priority": "primary",
+                },
+                "actions": [
+                    ["ac_opt", "select", "Select 10:00", "10:00", "selected"],
+                ],
+                "secondary_actions": [],
+                "evidence_refs": [],
+            }
+        ]
+        return s
+
+    llm = build_llm_discovery_catalog(_compressed_pkg(slot_screen("a"), slot_screen("b")))
+    raw = GlobalFlowDiscoveryResult(
+        candidate_flows=[
+            FlowDiscoveryCandidateFlow(
+                flow_id="fx2",
+                flow_name="x",
+                flow_type="ordered_sequence",
+                ordered_steps=[
+                    FlowDiscoveryStep(
+                        state_id="a",
+                        step_role="entry",
+                        next_trigger_action=FlowDiscoveryTriggerAction(
+                            action_id="ac_opt",
+                            action_type="select",
+                            text=["Wrong"],
+                            intent_id="intent_slot",
+                        ),
+                    ),
+                    FlowDiscoveryStep(state_id="b"),
+                ],
+            ),
+        ],
+    )
+
+    repaired, _ = repair_or_filter_discovery_output(raw, llm_catalog=llm)
+    trig = repaired.candidate_flows[0].ordered_steps[0].next_trigger_action
+    assert trig is not None
+    assert trig.action_id == "ac_opt"
+    assert trig.text == ["Select 10:00"]
 
 
 def test_unassigned_dropped_when_on_spine():

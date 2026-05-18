@@ -119,6 +119,22 @@ def test_precheck_negative_with_expected_result_passes_without_negative_expectat
     assert issue is None
 
 
+def test_deterministic_negative_expectations_are_assertions_not_steps() -> None:
+    from app.services.scenario_generation_service import build_deterministic_test_scenario_from_intent
+
+    data = _base_behaviour_intent_dict()
+    data["intent_type"] = "negative"
+    data["expected_ui_evidence"] = ["Error banner"]
+    data["negative_expectations"] = ["No success confirmation"]
+    intent = BehaviourIntentA5.model_validate(data)
+    scn = build_deterministic_test_scenario_from_intent(intent)
+    assert not any("not see" in s.text.lower() for s in scn.steps)
+    neg_asserts = [a for a in scn.assertions if a.source == "negative_expectation"]
+    assert len(neg_asserts) == 1
+    assert neg_asserts[0].render_in_gherkin is False
+    assert neg_asserts[0].ui_text_grounding_required is False
+
+
 def test_assertion_ui_pool_eligibility_skips_transition_and_explicit_flag() -> None:
     assert not _assertion_requires_ui_verbatim_pool_match({"assertion_type": "state_transition"})
     assert not _assertion_requires_ui_verbatim_pool_match({"assertion_type": "state_reached"})
