@@ -1,0 +1,102 @@
+[
+  {
+    "book_screen_id": "BOOK_S01",
+    "route": "/booking/services",
+    "canonical_title_hints": ["Book a Service", "DemoBooking", "Dental checkup"],
+    "expected_screen_type": "listing",
+    "expected_outcome": "neutral",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S02",
+    "route": "/booking/service/dental-checkup",
+    "canonical_title_hints": ["Dental checkup", "Duration", "Price"],
+    "expected_screen_type": "detail",
+    "expected_outcome": "neutral",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S03",
+    "route": "/booking/choose-time",
+    "canonical_title_hints": ["Choose date and time", "May 20", "10:00"],
+    "expected_screen_type": "wizard_step",
+    "expected_outcome": "neutral",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S04",
+    "route": "/booking/customer-info",
+    "canonical_title_hints": ["Your information", "Full name", "Email"],
+    "expected_screen_type": "form",
+    "expected_outcome": "neutral",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S05",
+    "route": "/booking/customer-info-error",
+    "canonical_title_hints": ["Please complete", "Full name is required"],
+    "expected_screen_type": "form",
+    "expected_outcome": "validation_error",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S06",
+    "route": "/booking/review",
+    "canonical_title_hints": ["Review booking", "Service: Dental"],
+    "expected_screen_type": "wizard_step",
+    "expected_outcome": "review_required",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S07",
+    "route": "/booking/confirmed",
+    "canonical_title_hints": ["Booking confirmed", "appointment has been scheduled"],
+    "expected_screen_type": "wizard_step",
+    "expected_outcome": "success",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S08",
+    "route": "/booking/slot-unavailable",
+    "canonical_title_hints": ["no longer available", "Choose date and time"],
+    "expected_screen_type": "wizard_step",
+    "expected_outcome": "error",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S09",
+    "route": "/booking/my-appointments",
+    "canonical_title_hints": ["My appointments", "Scheduled"],
+    "expected_screen_type": "listing",
+    "expected_outcome": "neutral",
+    "presentation_scope": "main",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S10",
+    "route": "/booking/cancel-confirmation",
+    "canonical_title_hints": ["Cancel appointment", "Are you sure"],
+    "expected_screen_type": "other",
+    "expected_outcome": "neutral",
+    "presentation_scope": "modal",
+    "domain_hint": "booking"
+  },
+  {
+    "book_screen_id": "BOOK_S11",
+    "route": "/booking/cancelled",
+    "canonical_title_hints": ["has been cancelled", "No upcoming"],
+    "expected_screen_type": "listing",
+    "expected_outcome": "success",
+    "presentation_scope": "main",
+    "notes": "Use success outcome with confirmation copy; canonical schema has no cancelled.",
+    "domain_hint": "booking"
+  }
+]

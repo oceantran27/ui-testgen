@@ -3,6 +3,8 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
 from app.services import behaviour_contract_service as bsvc
 def _state(cid: str, oc: str = "neutral", pres: str = "full_screen") -> dict:
     return {
@@ -33,6 +35,9 @@ def _edge(edge_id: str, fr: str, to: str, kind: str = "progress", texts: list[st
         "confidence": "high",
         "edge_score": 90.0,
         "edge_risk_flags": [],
+        "scenario_branch_role": "success_terminal" if kind == "success_terminal" else "core_progress",
+        "action_scope": "task_core",
+        "scenario_worthiness_score": 95,
         "alternative_action_sequences": [],
         "context_parameters": [],
         "source_visible_evidence": [],
@@ -84,7 +89,7 @@ def test_compose_preserves_transition_edge_order() -> None:
         ],
     }
 
-    cfs, _unresolved = bsvc._compose_flows_from_discovery(fdr, catalog)
+    cfs, _unresolved, _metrics = bsvc._compose_flows_from_discovery(fdr, catalog)
     mains = [c for c in cfs if "cf_main" in c.get("composed_flow_id", "")]
     assert len(mains) == 1
     cf = mains[0]
@@ -95,7 +100,7 @@ def test_compose_preserves_transition_edge_order() -> None:
     assert cf["confidence"] == "high"
 
 
-def test_broken_agent4_chain_emits_dfs_fallback() -> None:
+def test_broken_agent4_chain_emits_unsupported_flow_without_main_compose() -> None:
     catalog = [_state("A"), _state("B", oc="success"), _state("C", oc="success")]
     cands = [
         _edge("e_ab", "A", "B"),
@@ -118,14 +123,15 @@ def test_broken_agent4_chain_emits_dfs_fallback() -> None:
         "report": {"candidate_edges": cands},
         "edge_decisions": [],
     }
-    cfs, unresolved = bsvc._compose_flows_from_discovery(fdr, catalog)
+    cfs, unresolved, _metrics = bsvc._compose_flows_from_discovery(fdr, catalog)
     mains = [c for c in cfs if "cf_main" in c.get("composed_flow_id", "")]
-    assert len(mains) == 1
-    assert mains[0]["composition_method"] == "backend_dfs_fallback"
-    assert any("continuous" in (u.reason or "").lower() for u in unresolved)
+    assert len(mains) == 0
+    assert any("continuous chain" in (u.reason or "").lower() for u in unresolved)
+    assert any(u.item_type == "unsupported_flow" for u in unresolved)
 
 
-def test_run_behaviour_contract_persists_with_mock_db() -> None:
+def test_run_behaviour_contract_persists_with_mock_db(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bsvc.settings, "USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER", False)
     catalog = [_state("A"), _state("B", oc="success")]
     cands = [_edge("e_ab", "A", "B", kind="success_terminal")]
     flows = [
@@ -175,3 +181,137 @@ def test_templates_and_infer_intent() -> None:
     )
     r = bsvc._expected_result_from_templates({"outcome_state_type": "validation_error"}, None)
     assert "validation feedback" in r.lower()
+
+
+def test_run_behaviour_contract_negative_intent_populates_negative_expectations(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bsvc.settings, "USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER", False)
+    catalog = [_state("A"), _state("B", oc="error")]
+    cands = [_edge("e_ab", "A", "B", kind="warning")]
+    flows = [
+        {
+            "flow_id": "f_neg",
+            "flow_name": "NegFlow",
+            "flow_type": "branching_flow",
+            "user_goal": "Goal",
+            "ordered_states": ["A"],
+            "transition_edge_ids": [],
+            "alternative_outcome_edge_ids": ["e_ab"],
+            "transition_id_by_candidate_edge_id": {"e_ab": "t_run"},
+        }
+    ]
+    fdr = {
+        "candidate_flows": flows,
+        "report": {"candidate_edges": cands},
+        "edge_decisions": [],
+    }
+    db = MagicMock()
+
+    def _result(rows: list) -> MagicMock:
+        m = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = rows
+        m.scalars.return_value = scalars_mock
+        return m
+
+    db.execute = AsyncMock(return_value=_result([]))
+    db.commit = AsyncMock()
+    db.rollback = AsyncMock()
+
+    out = asyncio.run(bsvc.run_behaviour_contract_builder(db, "run_12345", fdr, catalog))
+    assert out["generation_summary"]["total_behaviour_intents"] >= 1
+    bi = out["behaviour_intents"][0]
+    assert bi["intent_type"] == "negative"
+    assert "The success outcome is displayed." in bi["negative_expectations"]
+
+
+def test_run_behaviour_contract_with_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bsvc.settings, "USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER", True)
+    
+    catalog = [_state("A"), _state("B", oc="success")]
+    cands = [_edge("e_ab", "A", "B", kind="success_terminal")]
+    flows = [
+        {
+            "flow_id": "f_llm",
+            "flow_name": "LlmFlow",
+            "flow_type": "ordered_sequence",
+            "user_goal": "Goal",
+            "ordered_states": ["A", "B"],
+            "transition_edge_ids": ["e_ab"],
+            "alternative_outcome_edge_ids": [],
+            "transition_id_by_candidate_edge_id": {"e_ab": "t_llm"},
+        }
+    ]
+    fdr = {
+        "candidate_flows": flows,
+        "report": {"candidate_edges": cands},
+        "edge_decisions": [],
+    }
+    
+    db = MagicMock()
+    def _result(rows: list) -> MagicMock:
+        m = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = rows
+        m.scalars.return_value = scalars_mock
+        return m
+
+    db.execute = AsyncMock(return_value=_result([]))
+    db.commit = AsyncMock()
+    db.rollback = AsyncMock()
+
+    mock_response = MagicMock()
+    mock_response.status.value = "success"
+    
+    from app.model_providers.schemas import BehaviourIntentA5, BehaviourIntentInferenceResult, GenerationSummaryA5, TriggerActionA5
+    
+    mock_bi = BehaviourIntentA5(
+        intent_id="bi_test",
+        source_flow_id="f_llm",
+        source_flow_name="LlmFlow",
+        source_flow_type="ordered_sequence",
+        source_transition_indexes=[0],
+        source_outcome_state="B",
+        source_group_id="g1",
+        source_screen_intent_id="sbi_test",
+        source_transition_ids=["t_llm"],
+        behaviour_name="AI Generated Behaviour",
+        intent_type="positive",
+        user_intent="AI User Intent",
+        business_goal="AI Business Goal",
+        start_state="A",
+        end_state="B",
+        trigger_action=TriggerActionA5(action_type="click", text=["Continue"]),
+        preconditions=["User is logged in"],
+        test_data_requirements=[],
+        user_actions=["Click Continue"],
+        expected_result="Success screen appears",
+        expected_ui_evidence=["Welcome"],
+        negative_expectations=[],
+        assumptions=[],
+        warnings=[],
+        confidence="high"
+    )
+    
+    mock_response.parsed_output = BehaviourIntentInferenceResult(
+        behaviour_intents=[mock_bi],
+        unresolved_flow_items=[],
+        generation_summary=GenerationSummaryA5(
+            total_candidate_flows=1,
+            total_behaviour_intents=1,
+            total_unresolved_items=0
+        )
+    )
+    
+    call_mock = AsyncMock(return_value=mock_response)
+    monkeypatch.setattr(bsvc.model_adapter, "call_text_structured", call_mock)
+
+    out = asyncio.run(bsvc.run_behaviour_contract_builder(db, "run_12345", fdr, catalog))
+    assert out["generation_summary"]["total_behaviour_intents"] == 1
+    bi = out["behaviour_intents"][0]
+    assert bi["behaviour_name"] == "AI Generated Behaviour"
+    assert bi["business_goal"] == "AI Business Goal"
+    assert bi["user_intent"] == "AI User Intent"
+    assert "User is logged in" in bi["preconditions"]
+    db.commit.assert_awaited()
+
+

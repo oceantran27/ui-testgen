@@ -30,6 +30,55 @@ def _base_behaviour_intent_dict() -> dict:
     }
 
 
+def _minimal_compressed_catalog() -> dict:
+    tax = {
+        "domain": "test",
+        "screen_type": "listing",
+        "presentation_scope": "primary_task",
+        "outcome_state_type": "success",
+    }
+    empty_form = {"has_form": False, "has_visible_values": False, "has_validation_feedback": False}
+    vis = {"headings": [], "primary_texts": [], "status_texts": []}
+    nav = {
+        "breadcrumb_texts": [],
+        "active_tab_text": None,
+        "step_label_text": None,
+        "step_index_visible": None,
+        "step_total_visible": None,
+        "progress_text": None,
+    }
+    return {
+        "compressed_catalog": [
+            {
+                "state_id": "sA",
+                "screen_purpose": "Booking",
+                "taxonomy": tax,
+                "visible_signature": vis,
+                "navigation_cues": nav,
+                "state_feedback_summary": [],
+                "form_state_summary": empty_form,
+                "continuity_entities": [],
+                "intent_groups": [],
+                "evidence_refs": [],
+            },
+            {
+                "state_id": "sB",
+                "screen_purpose": "Done",
+                "taxonomy": tax,
+                "visible_signature": vis,
+                "navigation_cues": nav,
+                "state_feedback_summary": [
+                    {"feedback_id": "fb_ok", "feedback_type": "success", "text": ["Success banner"]}
+                ],
+                "form_state_summary": empty_form,
+                "continuity_entities": [],
+                "intent_groups": [],
+                "evidence_refs": [],
+            },
+        ]
+    }
+
+
 def test_precheck_cross_state_without_user_actions() -> None:
     data = _base_behaviour_intent_dict()
     data["start_state"] = "sA"
@@ -60,14 +109,14 @@ def test_precheck_ordered_sequence_missing_transition_ids() -> None:
     assert issue.item_type == "insufficient_traceability"
 
 
-def test_precheck_negative_missing_negative_expectations() -> None:
+def test_precheck_negative_with_expected_result_passes_without_negative_expectations() -> None:
     data = _base_behaviour_intent_dict()
     data["intent_type"] = "negative"
     data["expected_ui_evidence"] = []
     data["negative_expectations"] = []
     intent = BehaviourIntentA5.model_validate(data)
     issue = _precheck_behaviour_intent_for_scenarios(intent)
-    assert issue is not None
+    assert issue is None
 
 
 def test_assertion_ui_pool_eligibility_skips_transition_and_explicit_flag() -> None:
@@ -113,6 +162,27 @@ def test_pre_audit_evidence_counts_ignore_technical_assertion() -> None:
     assert pre["evidence_found_count"] == 1
 
 
+def test_pre_audit_includes_keyword_anchor_grounding() -> None:
+    scenarios = [
+        {
+            "end_state": "sB",
+            "trigger_action": {"text": [], "action_type": "tap"},
+            "assertions": [],
+            "pre_generation_grounding": {
+                "keyword_anchor_coverage": 0.9,
+                "grounding_passed": True,
+                "required_anchor_count": 3,
+                "matched_anchor_count": 3,
+                "missing_anchor_ids": [],
+                "wrong_section_anchor_ids": [],
+                "unexpected_placeholders": [],
+            },
+        }
+    ]
+    out = _pre_audit_grounding(scenarios, {"extracted_states": []})
+    assert "keyword_anchor_grounding" in out[0]["pre_audit_results"]
+
+
 def test_merge_audit_pipeline_report_preserves_existing_error_keys() -> None:
     payload: dict = {"report": {"error": "x", "failed_batch": 2}}
     _merge_audit_pipeline_report_into_payload(payload)
@@ -120,3 +190,100 @@ def test_merge_audit_pipeline_report_preserves_existing_error_keys() -> None:
     assert payload["report"]["failed_batch"] == 2
     assert payload["report"]["auto_retry_enabled"] is False
     assert payload["report"]["revision_suggestions_mode"] == "report_only"
+
+
+def test_run_scenario_generation_with_llm(monkeypatch) -> None:
+    from app.services import scenario_generation_service as sgensvc
+    import pytest
+    from unittest.mock import AsyncMock, MagicMock
+    import asyncio
+    
+    monkeypatch.setattr(sgensvc.settings, "USE_LLM_FOR_SCENARIO_GENERATION", True)
+    
+    intent_data = _base_behaviour_intent_dict()
+    intent_package = {
+        "behaviour_intents": [intent_data]
+    }
+    
+    db = MagicMock()
+    db.commit = AsyncMock()
+    db.rollback = AsyncMock()
+    
+    mock_response = MagicMock()
+    mock_response.status.value = "success"
+    
+    from app.model_providers.schemas import (
+        BDDScenarioGenerationResult,
+        TestScenarioA6,
+        TriggerActionA5,
+        TestScenarioStepA6,
+        AssertionA6,
+        ScenarioGenerationSummaryA6
+    )
+    
+    mock_scenario = TestScenarioA6(
+        scenario_id="scn_abc123",
+        scenario_name="Confirm step",
+        scenario_type="happy_path",
+        source_intent_id=intent_data["intent_id"],
+        source_flow_id=intent_data["source_flow_id"],
+        source_flow_name=intent_data["source_flow_name"],
+        source_flow_type=intent_data["source_flow_type"],
+        start_state=intent_data["start_state"],
+        end_state=intent_data["end_state"],
+        trigger_action=TriggerActionA5(action_type="tap", text=["Continue"]),
+        test_objective="Verify complete",
+        preconditions=[],
+        test_data=[],
+        steps=[
+            TestScenarioStepA6(
+                step_number=1, keyword="Given", text="The user is viewing Booking", source="precondition"
+            ),
+            TestScenarioStepA6(step_number=2, keyword="When", text="Tap Continue", source="user_action"),
+            TestScenarioStepA6(
+                step_number=3,
+                keyword="Then",
+                text="User completes the step and sees Success banner.",
+                source="expected_result",
+            ),
+        ],
+        expected_results=["User completes the step."],
+        assertions=[
+            AssertionA6(assertion_type="state_reached", expected="sB", source="expected_result")
+        ],
+        confidence="high"
+    )
+    
+    mock_response.parsed_output = BDDScenarioGenerationResult(
+        test_scenarios=[mock_scenario],
+        unresolved_scenario_items=[],
+        coverage_matrix=[],
+        generation_summary=ScenarioGenerationSummaryA6(
+            total_behaviour_intents=1,
+            total_test_scenarios=1,
+            total_unresolved_scenario_items=0,
+            coverage_rate=1.0
+        )
+    )
+    
+    call_mock = AsyncMock(return_value=mock_response)
+    monkeypatch.setattr(sgensvc.model_adapter, "call_text_structured", call_mock)
+    
+    out = asyncio.run(
+        sgensvc.run_bdd_scenario_generation(
+            db,
+            "run_12345",
+            intent_package,
+            compressed_catalog_package=_minimal_compressed_catalog(),
+        )
+    )
+    
+    assert out["generation_summary"]["total_test_scenarios"] == 1
+    scn = out["test_scenarios"][0]
+    assert scn["scenario_name"] == "Confirm step"
+    assert scn["scenario_type"] == "happy_path"
+    assert len(scn["steps"]) >= 2
+    merged = "\n".join(s["text"] for s in scn["steps"])
+    assert "Continue" in merged
+    assert "Success banner" in merged
+    db.commit.assert_awaited()

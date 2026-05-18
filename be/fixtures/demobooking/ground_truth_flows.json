@@ -1,0 +1,38 @@
+[
+  {
+    "flow_id": "BOOK_F01",
+    "intent_slug": "book_appointment_success",
+    "screens": ["BOOK_S01", "BOOK_S02", "BOOK_S03", "BOOK_S04", "BOOK_S06", "BOOK_S07"],
+    "action_hints": [
+      ["Select", "Dental"],
+      ["Book this service"],
+      ["Continue"],
+      ["Review booking"],
+      ["Confirm booking"]
+    ]
+  },
+  {
+    "flow_id": "BOOK_F02",
+    "intent_slug": "booking_customer_information_validation_error",
+    "screens": ["BOOK_S04", "BOOK_S05"],
+    "action_hints": [["Review booking"]]
+  },
+  {
+    "flow_id": "BOOK_F03",
+    "intent_slug": "select_unavailable_booking_slot",
+    "screens": ["BOOK_S03", "BOOK_S08"],
+    "action_hints": [["14:00"]]
+  },
+  {
+    "flow_id": "BOOK_F04",
+    "intent_slug": "edit_booking_time_before_confirmation",
+    "screens": ["BOOK_S06", "BOOK_S03"],
+    "action_hints": [["Edit time"]]
+  },
+  {
+    "flow_id": "BOOK_F05",
+    "intent_slug": "cancel_appointment_success",
+    "screens": ["BOOK_S09", "BOOK_S10", "BOOK_S11"],
+    "action_hints": [["Cancel appointment"], ["Confirm cancellation"]]
+  }
+]
