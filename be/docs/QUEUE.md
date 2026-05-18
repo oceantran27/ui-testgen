@@ -25,14 +25,14 @@ From the `be` directory (same virtualenv as the API):
 arq app.workers.main_worker.WorkerSettings
 ```
 
-The API (`uvicorn main:app`) **only** enqueues jobs to Redis. **Pipeline nodes (including lightweight preprocessing) run inside this worker.** If you only start the API, runs stay `processing` or `queued` and the UI can look “stuck” on an early step.
+The API (`uvicorn main:app`) **only** enqueues jobs to Redis. **All LangGraph pipeline nodes run inside this worker.** If you only start the API, runs stay `processing` or `queued` and the UI can look “stuck” on an early step.
 
 ## Troubleshooting
 
 - **Run never leaves `queued`**: worker not running or cannot reach Redis / DB.
-- **`lightweight_preprocessing` feels slow**: that node is only DB work (usually milliseconds). Perceived delay is often (1) waiting for the worker to pick the job, (2) LangGraph **Postgres checkpoint** `setup()` on first connection (`ENABLE_GRAPH_CHECKPOINT=true` in `app/core/config.py` — set `ENABLE_GRAPH_CHECKPOINT=false` in `.env` for faster local runs if you do not need resume), or (3) the **next** node (e.g. UI state extraction with a vision model).
+- **Early pipeline steps feel slow**: perceived delay is often (1) waiting for the worker to pick the job, (2) LangGraph **Postgres checkpoint** `setup()` on first connection (`ENABLE_GRAPH_CHECKPOINT=true` in `app/core/config.py` — set `ENABLE_GRAPH_CHECKPOINT=false` in `.env` for faster local runs if you do not need resume), or (3) vision-heavy nodes (e.g. joint screen understanding).
 
-Watch **worker** logs (not only Uvicorn) for `pipeline_execution_started`, `lightweight_preprocessing_*`, and timing lines `graph_checkpoint_ready_ms` / `graph_ainvoke_ms` from `GraphExecutionService`.
+Watch **worker** logs (not only Uvicorn) for `pipeline_execution_started` and timing lines `graph_checkpoint_ready_ms` / `graph_ainvoke_ms` from `GraphExecutionService`.
 
 When `PIPELINE_RUN_LOG_ENABLED=true` (default in `app/core/config.py`), each worker run also prints plain **BEGIN/END** step lines to the console and writes a session folder under `be/var/pipeline_run_logs/<UTC_timestamp>_<run_id>/` with `steps/*.json` (one file per graph node) plus `raw/` for model payloads. HTTP **4xx/5xx** from the API process are logged under `be/var/api_error_logs/`.
 

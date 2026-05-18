@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -12,8 +12,10 @@ from app.constants.screen_intent_taxonomy import (
     UNRESOLVED_REASON_VALUES,
     VISIBLE_STATUS_VALUES,
 )
+# Phase-2 draft enums (intent_kind, step_type, unresolved reason_code, …): canonical ordered lists live in
+# app.constants.screen_intent_taxonomy — keep prompts aligned with those tuples, not duplicated literals here.
 
-# ── A1 V2 closed vocabularies (prompt: prompt_ui_state_evidence_extraction_v2) ──
+# ── UI state closed vocabularies (joint vision: prompt_joint_screen_understanding_v1) ──
 
 A1ScreenType = Literal[
     "landing",
@@ -197,7 +199,7 @@ class VisualDeltaRef(_PromptOutputBase):
 
 
 # ──────────────────────────────────────────────
-# A1: UI State Extraction V2 (prompt: prompt_ui_state_evidence_extraction_v2)
+# UI State Extraction V2 shape (embedded in JointScreenUnderstandingResult)
 # ──────────────────────────────────────────────
 
 
@@ -337,6 +339,8 @@ class SelectionOptionA2(_PromptOutputBase):
 
 
 class ActionSequenceStepDraftA2(_PromptOutputBase):
+    """LLM step in local_action_sequence_templates; step_type whitelist = STEP_TYPE_VALUES in screen_intent_taxonomy."""
+
     step_type: str
     source_action_id: Optional[str] = None
     source_element_id: Optional[str] = None
@@ -682,6 +686,8 @@ class CompressedIntentGroup(_PromptOutputBase):
     intent_kind: str
     intent_name: str
     local_user_goal: str
+    # Each row: [action_id, action_type, action_text, value, status] for LLM / discovery (selection + primary).
+    actions: List[Tuple[str, str, str, str, str]] = Field(default_factory=list)
     primary_action: Optional[CompressedActionRef] = None
     commit_action: Optional[CompressedActionRef] = None
     secondary_actions: List[CompressedActionRef] = Field(default_factory=list)
@@ -777,6 +783,7 @@ class FlowDiscoveryCandidateFlow(_PromptOutputBase):
     user_goal: str = ""
     flow_confidence: str = "medium"
     ordered_steps: List[FlowDiscoveryStep] = Field(default_factory=list)
+    ordered_states: List[str] = Field(default_factory=list)
     alternative_outcomes: List[FlowDiscoveryAlternativeOutcome] = Field(default_factory=list)
     flow_evidence: List[FlowDiscoveryEvidence] = Field(default_factory=list)
     entry_state_id: str = ""
@@ -1004,9 +1011,9 @@ class UnresolvedFlowItemA5(_PromptOutputBase):
 
 
 class GenerationSummaryA5(_PromptOutputBase):
-    total_candidate_flows: int = 0
-    total_behaviour_intents: int = 0
-    total_unresolved_items: int = 0
+    total_candidate_flows: int
+    total_behaviour_intents: int
+    total_unresolved_items: int
     behaviour_intents_created: int = 0
     skipped_due_to_invalid_flow: int = 0
     skipped_due_to_non_scenario_worthy_edge: int = 0
@@ -1054,6 +1061,15 @@ class BlueprintTerminalStateRefA6(_PromptOutputBase):
     outcome_state_type: Optional[str] = None
 
 
+class BlueprintHiddenAssertionA6(_PromptOutputBase):
+    """Internal / causal assertions kept for audit — not mandatory Gherkin Then anchors."""
+
+    assertion_type: str = "internal"
+    expected: str
+    render_in_gherkin: bool = False
+    ui_text_grounding_required: bool = False
+
+
 class ScenarioWritingBlueprint(_PromptOutputBase):
     blueprint_id: str
     source_intent_id: str
@@ -1064,6 +1080,7 @@ class ScenarioWritingBlueprint(_PromptOutputBase):
     writing_goal: str = ""
     mandatory_anchors: MandatoryAnchorsBySectionA6 = Field(default_factory=MandatoryAnchorsBySectionA6)
     allowed_test_data_placeholders: List[str] = Field(default_factory=list)
+    hidden_assertions: List[BlueprintHiddenAssertionA6] = Field(default_factory=list)
     forbidden_content_policy: ForbiddenContentPolicyA6 = Field(default_factory=ForbiddenContentPolicyA6)
     traceability: BlueprintTraceabilityA6 = Field(default_factory=BlueprintTraceabilityA6)
 
@@ -1104,6 +1121,7 @@ class AssertionA6(_PromptOutputBase):
     expected: str
     source: str  # expected_result | expected_ui_evidence | negative_expectation
     ui_text_grounding_required: Optional[bool] = None  # False: skip verbatim UI pool matching in Agent 7 pre-audit counts
+    render_in_gherkin: bool = True
     anchor_ids_used: List[str] = Field(default_factory=list)
 
 
@@ -1127,6 +1145,11 @@ class PreGenerationGroundingA6(_PromptOutputBase):
     section_coverage_given: float = 0.0
     section_coverage_when: float = 0.0
     section_coverage_then: float = 0.0
+    readability_passed: bool = True
+    forbidden_pipeline_terms: List[str] = Field(default_factory=list)
+    max_step_length: int = 180
+    overlong_step_numbers: List[int] = Field(default_factory=list)
+    full_pre_audit_passed: bool = False
 
 
 class TestScenarioA6(_PromptOutputBase):
@@ -1186,6 +1209,7 @@ class ScenarioGenerationMetricsA6(_PromptOutputBase):
     blueprint_count: int = 0
     llm_generated_count: int = 0
     llm_repaired_count: int = 0
+    llm_readability_repair_count: int = 0
     unresolved_count: int = 0
     deterministic_fallback_count: int = 0
     required_anchor_count: int = 0
@@ -1196,6 +1220,10 @@ class ScenarioGenerationMetricsA6(_PromptOutputBase):
     then_anchor_coverage: float = 0.0
     unexpected_placeholder_count: int = 0
     invalid_trace_ref_count: int = 0
+    _section_count: int = 0
+    _given_sum: float = 0.0
+    _when_sum: float = 0.0
+    _then_sum: float = 0.0
 
 
 class BDDScenarioGenerationResult(_PromptOutputBase):

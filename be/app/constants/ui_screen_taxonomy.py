@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import FrozenSet
 
-# Must stay aligned with prompt_ui_state_evidence_extraction_v2.txt
+# Must stay aligned with prompt_joint_screen_understanding_v1.txt (ui_state contract).
 SCREEN_TYPES_CANONICAL: FrozenSet[str] = frozenset(
     {
         "landing",

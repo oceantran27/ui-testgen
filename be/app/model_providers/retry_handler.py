@@ -10,7 +10,6 @@ Rules per user decision:
 from __future__ import annotations
 
 import asyncio
-import time
 from dataclasses import replace
 from typing import Optional
 
@@ -38,8 +37,6 @@ from app.model_providers.base import (
 
 def _same_provider_fallback_model(task_name: str) -> str:
     """Alternate model on the primary provider when the spec names a same-provider fallback."""
-    if task_name == "screen_intent_extraction":
-        return settings.SCREEN_INTENT_FALLBACK_MODEL_NAME or ""
     if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery"):
         return settings.FLOW_DISCOVERY_FALLBACK_MODEL_NAME or ""
     if task_name == "scenario_evidence_audit":
@@ -48,8 +45,6 @@ def _same_provider_fallback_model(task_name: str) -> str:
 
 
 def _cross_provider_fallback_model(task_name: str, fallback_provider_name: str) -> str:
-    if task_name == "ui_state_extraction" and fallback_provider_name == settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER:
-        return settings.UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME or ""
     if (
         task_name == "joint_screen_understanding"
         and fallback_provider_name == settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER

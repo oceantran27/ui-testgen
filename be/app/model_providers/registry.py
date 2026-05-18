@@ -188,7 +188,7 @@ class ProviderRegistry:
         Resolve provider for a task.
         Priority: task-specific env var → DEFAULT_MODEL_PROVIDER → first registered.
         """
-        # Could be extended later with per-task env config (e.g. UI_STATE_EXTRACTION_PROVIDER)
+        # Could be extended later with per-task env config (e.g. JOINT_SCREEN_UNDERSTANDING_PROVIDER)
         provider_name = settings.DEFAULT_MODEL_PROVIDER
         return self.get(provider_name)
 
@@ -254,7 +254,7 @@ class ModelProviderAdapter:
         prompt_version: str = "v1",
         provider_override: str = "",
         model_name_override: str = "",
-        temperature: float = 0.2,
+        temperature: float = 0,
     ) -> ModelResponse:
         """
         Structured text call. Returns ModelResponse with parsed_output validated against output_schema.
@@ -283,8 +283,6 @@ class ModelProviderAdapter:
                 if task_name == "global_flow_discovery"
                 else settings.FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
             )
-        elif task_name == "screen_intent_extraction":
-            max_output_tokens = settings.SCREEN_INTENT_MAX_OUTPUT_TOKENS
         elif task_name == "behaviour_contract_builder":
             max_output_tokens = settings.BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS
         elif task_name == "bdd_scenario_generation":
@@ -329,7 +327,7 @@ class ModelProviderAdapter:
         prompt_version: str = "v1",
         provider_override: str = "",
         model_name_override: str = "",
-        temperature: float = 0.2,
+        temperature: float = 0,
     ) -> ModelResponse:
         """
         Structured vision call. Accepts 1 or more images.
@@ -354,10 +352,7 @@ class ModelProviderAdapter:
 
         max_output_tokens = 4096
         vision_timeout_secs = settings.VISION_MODEL_TIMEOUT_SECONDS
-        if task_name == "ui_state_extraction":
-            max_output_tokens = settings.UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS
-            vision_timeout_secs = settings.UI_STATE_EXTRACTION_TIMEOUT_SECONDS
-        elif task_name == "joint_screen_understanding":
+        if task_name == "joint_screen_understanding":
             max_output_tokens = settings.JOINT_SCREEN_UNDERSTANDING_MAX_OUTPUT_TOKENS
             vision_timeout_secs = settings.JOINT_SCREEN_UNDERSTANDING_TIMEOUT_SECONDS
 
@@ -402,8 +397,8 @@ def _create_registry() -> ProviderRegistry:
     if (
         settings.GEMINI_API_KEY
         or settings.DEFAULT_MODEL_PROVIDER == "gemini"
-        or settings.UI_STATE_EXTRACTION_PROVIDER == "gemini"
-        or settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER == "gemini"
+        or settings.JOINT_SCREEN_UNDERSTANDING_PROVIDER == "gemini"
+        or settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER == "gemini"
     ):
         registry.register(GeminiModelProvider())
 

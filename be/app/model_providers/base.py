@@ -117,7 +117,7 @@ class ModelRequest:
     model_name: str = ""
 
     # Generation params
-    temperature: float = 0.2
+    temperature: float = 0
     max_output_tokens: int = 4096
     timeout_seconds: int = 60
 

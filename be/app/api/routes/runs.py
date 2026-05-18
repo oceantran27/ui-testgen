@@ -443,16 +443,11 @@ async def get_model_config(
         "openai_text_model": settings.OPENAI_TEXT_MODEL,
         "openai_vision_model": settings.OPENAI_VISION_MODEL,
         "pipeline_phase_models": {
-            "ui_state_extraction": {
-                "provider": settings.UI_STATE_EXTRACTION_PROVIDER,
-                "model": settings.UI_STATE_EXTRACTION_MODEL_NAME,
-                "fallback_provider": settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER,
-                "fallback_model": settings.UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME,
-            },
-            "screen_intent_extraction": {
-                "provider": settings.SCREEN_INTENT_MODEL_PROVIDER,
-                "model": settings.SCREEN_INTENT_MODEL_NAME,
-                "fallback_model": settings.SCREEN_INTENT_FALLBACK_MODEL_NAME,
+            "joint_screen_understanding": {
+                "provider": settings.JOINT_SCREEN_UNDERSTANDING_PROVIDER,
+                "model": settings.JOINT_SCREEN_UNDERSTANDING_MODEL_NAME,
+                "fallback_provider": settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER,
+                "fallback_model": settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_MODEL_NAME,
             },
             "intent_aware_flow_discovery": {
                 "provider": settings.FLOW_DISCOVERY_MODEL_PROVIDER,
@@ -1018,7 +1013,7 @@ async def get_research_output(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Return validated scenario package JSON (same artifact as GET /scenario-validation)."""
+    """Return validated scenario package JSON (legacy URL name; same payload as GET /scenario-validation)."""
 
     await run_service.get_run(db, run_id)
 

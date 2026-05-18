@@ -2,9 +2,9 @@
 ARQ Worker — receives jobs from the Redis queue and executes the LangGraph pipeline.
 
 Job: process_run
-  1. Marks run status → processing
-  2. Invokes graph_runner.run_pipeline(run_id)
-  3. Marks run status → completed or failed based on result
+  1. Run row is set to processing inside GraphExecutionService
+  2. GraphExecutionService.execute(run_id, job_id) runs the compiled LangGraph
+  3. graph_finalizer_node sets run/job status to completed or failed
 """
 import asyncio
 import json

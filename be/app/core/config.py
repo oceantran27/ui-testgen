@@ -1,6 +1,6 @@
-from typing import List, Literal
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 class Settings(BaseSettings):
     # App config
@@ -70,18 +70,7 @@ class Settings(BaseSettings):
     # Appended into scenario drafts for stable demo-ish fixtures (newline-separated snippets; empty = disabled).
     SCENARIO_CONTEXT_SEED_BLOCK: str = ""
 
-    # Phase 1: UI state extraction
-    UI_STATE_EXTRACTION_PROVIDER: str = "gemini"
-    UI_STATE_EXTRACTION_MODEL_NAME: str = "gemini-2.5-flash"
-    UI_STATE_EXTRACTION_FALLBACK_PROVIDER: str = "openai"
-    UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME: str = "gpt-5.4-mini"
-    UI_STATE_EXTRACTION_TIMEOUT_SECONDS: int = 120
-    UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS: int = 12288
-    UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
-    SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
-
     # Joint screen understanding (single vision call / image — UI + local intents)
-    SCREEN_UNDERSTANDING_MODE: Literal["joint", "separated"] = "separated"
     JOINT_SCREEN_UNDERSTANDING_PROVIDER: str = "gemini"
     JOINT_SCREEN_UNDERSTANDING_MODEL_NAME: str = "gemini-2.5-flash"
     JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER: str = "openai"
@@ -90,13 +79,6 @@ class Settings(BaseSettings):
     JOINT_SCREEN_UNDERSTANDING_MAX_OUTPUT_TOKENS: int = 16384
     JOINT_SCREEN_UNDERSTANDING_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
     SAVE_JOINT_SCREEN_UNDERSTANDING_REPORT: bool = True
-
-    # Phase 2: Screen intent extraction
-    SCREEN_INTENT_MODEL_PROVIDER: str = "openai"
-    SCREEN_INTENT_MODEL_NAME: str = "gpt-5.4-nano"
-    SCREEN_INTENT_FALLBACK_MODEL_NAME: str = "gpt-5.4-mini"
-    SCREEN_INTENT_MAX_OUTPUT_TOKENS: int = 4096
-    SCREEN_INTENT_MAX_CONCURRENCY: int = Field(default=8, ge=1, le=50)
 
     # Phase 3: Candidate edge resolver (Scenario-worthiness only, resolver v1 deprecated)
     CANDIDATE_EDGE_SCENARIO_WORTHINESS_MIN_FOR_AGENT4: int = Field(default=40, ge=0, le=100)
@@ -128,9 +110,21 @@ class Settings(BaseSettings):
     SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
     SCENARIO_EVIDENCE_AUDIT_CAUSAL_HARD_CAP: bool = True
 
-    RESEARCH_SCENARIO_EXPORT_VALIDATION_STATUSES: List[str] = Field(default=["validated", "low_confidence"])
+    PIPELINE_SCENARIO_EXPORT_VALIDATION_STATUSES: List[str] = Field(
+        default=["validated", "low_confidence"],
+        validation_alias=AliasChoices(
+            "PIPELINE_SCENARIO_EXPORT_VALIDATION_STATUSES",
+            "RESEARCH_SCENARIO_EXPORT_VALIDATION_STATUSES",
+        ),
+    )
 
-    SAVE_RESEARCH_FINAL_OUTPUT: bool = True
+    SAVE_PIPELINE_FINAL_OUTPUT: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "SAVE_PIPELINE_FINAL_OUTPUT",
+            "SAVE_RESEARCH_FINAL_OUTPUT",
+        ),
+    )
 
     PIPELINE_RUN_LOG_ENABLED: bool = True
     PIPELINE_RUN_LOG_ROOT: str = "var/pipeline_run_logs"
