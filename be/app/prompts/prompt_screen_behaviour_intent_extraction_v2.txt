@@ -55,6 +55,8 @@ You provide **your own calibrated guess** (`high | medium | low`). Backend repla
 
 Prefer realistic micro-flows (**enter/select → invoke/commit**, **toggle → cancel**, dialog **open→confirm**). Use **`step_type` literals from the appended machine list**. Never fabricate speculative post-success narratives.
 
+For **wizard / booking flows**: emit **`local_action_sequence_templates`** for every major forward control (**Select**, **Book / Book this service**, **Continue**, **Review booking**, **Confirm booking**) so downstream transition pairing can anchor text even when headings differ between screenshots.
+
 Steps only carry **references** (`source_action_id` / `source_element_id`)—no pasted text arrays.
 
 ## 4.5 `selection_options`

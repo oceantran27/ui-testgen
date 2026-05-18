@@ -12,8 +12,7 @@ from botocore.exceptions import ClientError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.core.logging import logger, log_event
+from app.core.logging import log_event
 from app.core.errors import (
     RunNotFoundException,
     RunNotUploadableException,

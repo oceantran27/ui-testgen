@@ -42,6 +42,19 @@ SCREEN_TYPE_ALIASES: dict[str, str] = {
     "catalog": "listing",
     "browse": "listing",
     "wizard": "wizard_step",
+    "service_listing_page": "listing",
+    "service_catalog": "listing",
+    "service_detail_page": "detail",
+    "booking_time_selection_page": "wizard_step",
+    "appointment_time_selection": "wizard_step",
+    "booking_customer_information_page": "form",
+    "booking_customer_information_error_page": "form",
+    "booking_review_page": "wizard_step",
+    "booking_confirmed_page": "wizard_step",
+    "booking_slot_unavailable_page": "wizard_step",
+    "my_appointments_page": "listing",
+    "appointment_cancelled_page": "listing",
+    "booking_flow_page": "wizard_step",
 }
 
 # Legacy / forbidden-as-layout tokens from older prompts or models -> coerce to canonical layout or other.

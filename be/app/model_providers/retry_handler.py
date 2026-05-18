@@ -50,6 +50,11 @@ def _same_provider_fallback_model(task_name: str) -> str:
 def _cross_provider_fallback_model(task_name: str, fallback_provider_name: str) -> str:
     if task_name == "ui_state_extraction" and fallback_provider_name == settings.UI_STATE_EXTRACTION_FALLBACK_PROVIDER:
         return settings.UI_STATE_EXTRACTION_FALLBACK_MODEL_NAME or ""
+    if (
+        task_name == "joint_screen_understanding"
+        and fallback_provider_name == settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER
+    ):
+        return settings.JOINT_SCREEN_UNDERSTANDING_FALLBACK_MODEL_NAME or ""
     return ""
 
 

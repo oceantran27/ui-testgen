@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
@@ -60,13 +60,15 @@ class Settings(BaseSettings):
     ENABLE_MODEL_FALLBACK: bool = True
     FALLBACK_MODEL_PROVIDER: str = "openai"
 
-    USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER: bool = False
-    USE_LLM_FOR_SCENARIO_GENERATION: bool = False
-    USE_LLM_FOR_SCENARIO_VALIDATION: bool = True
+    USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER: bool = True
+    USE_LLM_FOR_SCENARIO_GENERATION: bool = True
 
     ENABLE_MODEL_RAW_RESPONSE_ARTIFACT: bool = True
 
     MOCK_MODEL_MODE: str = "success"  # success | schema_mismatch | timeout | provider_error
+
+    # Appended into scenario drafts for stable demo-ish fixtures (newline-separated snippets; empty = disabled).
+    SCENARIO_CONTEXT_SEED_BLOCK: str = ""
 
     # Phase 1: UI state extraction
     UI_STATE_EXTRACTION_PROVIDER: str = "gemini"
@@ -78,6 +80,17 @@ class Settings(BaseSettings):
     UI_STATE_EXTRACTION_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
     SAVE_UI_STATE_EXTRACTION_REPORT: bool = True
 
+    # Joint screen understanding (single vision call / image — UI + local intents)
+    SCREEN_UNDERSTANDING_MODE: Literal["joint", "separated"] = "separated"
+    JOINT_SCREEN_UNDERSTANDING_PROVIDER: str = "gemini"
+    JOINT_SCREEN_UNDERSTANDING_MODEL_NAME: str = "gemini-2.5-flash"
+    JOINT_SCREEN_UNDERSTANDING_FALLBACK_PROVIDER: str = "openai"
+    JOINT_SCREEN_UNDERSTANDING_FALLBACK_MODEL_NAME: str = "gpt-5.4-mini"
+    JOINT_SCREEN_UNDERSTANDING_TIMEOUT_SECONDS: int = 120
+    JOINT_SCREEN_UNDERSTANDING_MAX_OUTPUT_TOKENS: int = 16384
+    JOINT_SCREEN_UNDERSTANDING_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
+    SAVE_JOINT_SCREEN_UNDERSTANDING_REPORT: bool = True
+
     # Phase 2: Screen intent extraction
     SCREEN_INTENT_MODEL_PROVIDER: str = "openai"
     SCREEN_INTENT_MODEL_NAME: str = "gpt-5.4-nano"
@@ -85,34 +98,25 @@ class Settings(BaseSettings):
     SCREEN_INTENT_MAX_OUTPUT_TOKENS: int = 4096
     SCREEN_INTENT_MAX_CONCURRENCY: int = Field(default=8, ge=1, le=50)
 
-    # Phase 3: Candidate edge resolver
-    CANDIDATE_EDGE_STRONG_THRESHOLD: int = Field(default=85, ge=0, le=100)
-    CANDIDATE_EDGE_ACCEPT_THRESHOLD: int = Field(default=72, ge=0, le=100)
-    CANDIDATE_EDGE_PRUNE_THRESHOLD: int = Field(default=72, ge=0, le=100)
-    CANDIDATE_EDGE_WEAK_THRESHOLD: int = Field(default=60, ge=0, le=100)
-    CANDIDATE_EDGE_DISABLE_WEAK_BAND: bool = True
-    CANDIDATE_EDGE_NEGATIVE_THRESHOLD: int = Field(default=68, ge=0, le=100)
-    CANDIDATE_EDGE_NEUTRAL_PROGRESS_THRESHOLD: int = Field(default=78, ge=0, le=100)
-    CANDIDATE_EDGE_FEEDBACK_ACK_THRESHOLD: int = Field(default=75, ge=0, le=100)
-    # Deprecated: ignored by resolver v2 (kept for env compatibility).
-    CANDIDATE_EDGE_DROP_BELOW_THRESHOLD: bool = False
-    CANDIDATE_EDGE_MIN_NORMALIZED_SCORE: float = Field(default=0.25, ge=0.0, le=1.0)
+    # Phase 3: Candidate edge resolver (Scenario-worthiness only, resolver v1 deprecated)
+    CANDIDATE_EDGE_SCENARIO_WORTHINESS_MIN_FOR_AGENT4: int = Field(default=40, ge=0, le=100)
 
-    # Phase 4: Intent-aware flow discovery
+    # Phase 4: Flow discovery
     FLOW_DISCOVERY_MODEL_PROVIDER: str = "openai"
     FLOW_DISCOVERY_MODEL_NAME: str = "gpt-5.4-mini"
     FLOW_DISCOVERY_FALLBACK_MODEL_NAME: str = "gpt-5.4"
     FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 8192
-    FLOW_DISCOVERY_MAX_CONCURRENCY: int = Field(default=3, ge=1, le=50)
+
+    GLOBAL_FLOW_DISCOVERY_MAX_SCREENS: int = Field(default=40, ge=1, le=500)
+    GLOBAL_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS: int = 8192
 
     # Phase 5: Behaviour contract builder
-    BEHAVIOUR_INTENT_MODEL_PROVIDER: str = "none"
-    BEHAVIOUR_INTENT_MODEL_NAME: str = ""
     BEHAVIOUR_CONTRACT_BUILDER_MAX_OUTPUT_TOKENS: int = 8192
 
-    # Phase 6: Scenario generation
-    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "none"
-    BDD_SCENARIO_GENERATION_MODEL_NAME: str = ""
+    # Phase 6: Scenario generation (production guards)
+    SCENARIO_GENERATION_PRODUCTION_GUARDS: bool = True
+    BDD_SCENARIO_GENERATION_MODEL_PROVIDER: str = "openai"
+    BDD_SCENARIO_GENERATION_MODEL_NAME: str = "gpt-5.4-mini"
     BDD_SCENARIO_GENERATION_MAX_OUTPUT_TOKENS: int = 4096
 
     # Phase 7: Scenario evidence audit
@@ -122,6 +126,9 @@ class Settings(BaseSettings):
     SCENARIO_EVIDENCE_AUDIT_MAX_OUTPUT_TOKENS: int = 32768
     SCENARIO_EVIDENCE_AUDIT_TIMEOUT_SECONDS: int = 300
     SCENARIO_EVIDENCE_AUDIT_SCENARIO_BATCH_SIZE: int = 3
+    SCENARIO_EVIDENCE_AUDIT_CAUSAL_HARD_CAP: bool = True
+
+    RESEARCH_SCENARIO_EXPORT_VALIDATION_STATUSES: List[str] = Field(default=["validated", "low_confidence"])
 
     SAVE_RESEARCH_FINAL_OUTPUT: bool = True
 

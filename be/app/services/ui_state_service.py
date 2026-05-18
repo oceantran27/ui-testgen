@@ -5,7 +5,6 @@ Builds a UIStatePackage (extracted_states) for semantic canonicalization per pro
 """
 import asyncio
 import json
-import re
 import time
 import uuid
 from typing import Any, Dict, List
@@ -18,122 +17,19 @@ from app.core.logging import log_event, logger
 from app.core.prompt_manager import prompt_manager
 from app.db.models.artifact import Artifact
 from app.db.models.image import Image
-from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
 from app.model_providers import model_adapter
 from app.model_providers.base import ImageInput
-from app.model_providers.schemas import (
-    GroupEvidenceA1V2,
-    UIElementA1V2,
-    UIActionA1V2,
-    UIFeedbackA1V2,
-    UIStateExtractionV2Result,
-    InteractionGroupA1V2,
-)
+from app.model_providers.schemas import UIStateExtractionV2Result
 from app.services.storage_service import storage_service
-from app.constants.ui_screen_taxonomy import normalize_screen_type
-
-
-def _sanitize_filename_for_state_id(name: str, max_len: int = 64) -> str:
-    """Human-readable image label safe for primary keys and logs."""
-    base = name.replace("\\", "/").split("/")[-1].strip()
-    base = re.sub(r"[^a-zA-Z0-9._-]+", "_", base)
-    base = base.strip("._") or "image"
-    return base[:max_len]
-
-
-def _generate_state_id(image: Image) -> str:
-    """Unique id with filename suffix so run logs correlate states to uploads."""
-    label = _sanitize_filename_for_state_id(image.original_filename or image.id)
-    return f"st_{uuid.uuid4().hex[:12]}_{label}"
+from app.services.ui_state_evidence_persist import (
+    generate_state_id_for_image,
+    persist_ui_state_from_v2_result,
+)
 
 
 def _generate_artifact_id() -> str:
     return f"art_{uuid.uuid4().hex[:12]}"
-
-
-def _convert_bbox(normalized_0_1000: List[int]) -> Dict[str, float]:
-    if len(normalized_0_1000) != 4:
-        return {"x_min": 0.0, "y_min": 0.0, "x_max": 0.0, "y_max": 0.0}
-    ymin, xmin, ymax, xmax = normalized_0_1000
-    return {
-        "x_min": max(0.0, min(1.0, xmin / 1000.0)),
-        "y_min": max(0.0, min(1.0, ymin / 1000.0)),
-        "x_max": max(0.0, min(1.0, xmax / 1000.0)),
-        "y_max": max(0.0, min(1.0, ymax / 1000.0)),
-    }
-
-
-def _confidence_from_extraction(extraction_status: str, quality: Any) -> float:
-    base = {"success": 0.88, "partial": 0.62, "failed": 0.05}.get(extraction_status, 0.5)
-    if quality is None:
-        return round(base, 3)
-    vr = getattr(quality, "visual_readability", "") or ""
-    ec = getattr(quality, "extraction_completeness", "") or ""
-    if vr == "high" and ec == "complete":
-        base = min(1.0, base + 0.08)
-    elif vr == "low" or ec == "poor":
-        base = max(0.05, base - 0.25)
-    return round(base, 3)
-
-
-def _confidence_label(conf: float) -> str:
-    if conf >= 0.75:
-        return "high"
-    if conf >= 0.5:
-        return "medium"
-    return "low"
-
-
-def _generate_state_signature(page_type: str, elements: List[UIElementA1V2], actions: List[UIActionA1V2], feedback_list: List[UIFeedbackA1V2]) -> str:
-    inputs: List[str] = []
-    action_labels: List[str] = []
-    fb_type = "none"
-    
-    for el in elements:
-        if el.element_type in ("input", "textarea", "checkbox", "radio", "select", "switch", "date_picker"):
-            t = " ".join(el.text) if el.text else ""
-            if t:
-                inputs.append(t[:20])
-    
-    for act in actions:
-        t = " ".join(act.text) if act.text else ""
-        if t:
-            action_labels.append(t[:20])
-            
-    if feedback_list:
-        fb_type = feedback_list[0].feedback_type
-        
-    return f"{page_type}|inputs:{','.join(inputs[:5]) or 'none'}|actions:{','.join(action_labels[:5]) or 'none'}|feedback:{fb_type}"
-
-
-def _flags_from_elements(
-    elements: List[UIElementA1V2],
-    actions: List[UIActionA1V2],
-    feedback_list: List[UIFeedbackA1V2],
-    presentation_scope: str,
-) -> tuple[bool, bool, bool, bool]:
-    has_form = any(
-        el.element_type in ("input", "textarea", "select", "checkbox", "radio")
-        for el in elements
-    ) or any(act.action_type == "submit" for act in actions)
-
-    has_table = any(el.element_type == "table" for el in elements)
-    overlay_regions = frozenset({"dialog", "drawer", "popover", "toast", "overlay"})
-    has_modal = presentation_scope in ("modal", "drawer", "popover") or any(
-        el.visual_region in overlay_regions for el in elements
-    ) or any(ac.visual_region in overlay_regions for ac in actions) or any(
-        fb.visual_region in overlay_regions for fb in feedback_list
-    )
-    has_feedback = len(feedback_list) > 0
-    return has_form, has_table, has_modal, has_feedback
-
-
-def _safe_element_db_id(state_id: str, element_id: str, idx: int) -> str:
-    raw = f"{state_id}_{element_id}"
-    if len(raw) > 200:
-        return f"{state_id}_E{idx}"
-    return raw
 
 
 async def run_ui_state_evidence_extraction(
@@ -220,7 +116,7 @@ async def run_ui_state_evidence_extraction(
             failed_extractions_count += 1
             failed_items.append(img.id)
             failed_state = UIState(
-                id=_generate_state_id(img),
+                id=generate_state_id_for_image(img),
                 run_id=run_id,
                 image_id=img.id,
                 page_type="unknown_page",
@@ -235,7 +131,7 @@ async def run_ui_state_evidence_extraction(
             failed_extractions_count += 1
             failed_items.append(img.id)
             failed_state = UIState(
-                id=_generate_state_id(img),
+                id=generate_state_id_for_image(img),
                 run_id=run_id,
                 image_id=img.id,
                 page_type="unknown_page",
@@ -245,180 +141,18 @@ async def run_ui_state_evidence_extraction(
             db.add(failed_state)
             continue
 
-        result_data: UIStateExtractionV2Result = response.parsed_output
+        result_data: UIStateExtractionV2Result = response.parsed_output.model_copy(deep=True)
 
-        canonical_screen_type = normalize_screen_type(result_data.screen_type)
-
-        extraction_status = "success" if (result_data.visible_elements or result_data.available_actions) else "partial"
-        state_quality_payload: Dict[str, Any] = {}
-        # result_data no longer has extraction_warnings, but we can check if it's empty
-        if not result_data.screen_purpose or result_data.screen_purpose == "null":
-            extraction_status = "failed"
-
-        state_id = _generate_state_id(img)
-        conf = _confidence_from_extraction(extraction_status, None)
-        conf_label = _confidence_label(conf)
-        
-        has_form, has_table, has_modal, has_feedback = _flags_from_elements(
-            result_data.visible_elements,
-            result_data.available_actions,
-            result_data.visible_feedback,
-            result_data.presentation_scope,
-        )
-        
-        signature = _generate_state_signature(
-            canonical_screen_type,
-            result_data.visible_elements,
-            result_data.available_actions,
-            result_data.visible_feedback
-        )
-
-        db_state = UIState(
-            id=state_id,
-            run_id=run_id,
-            image_id=img.id,
-            page_type=canonical_screen_type,
-            screen_type=canonical_screen_type,
-            presentation_scope=result_data.presentation_scope,
-            outcome_state_type=result_data.outcome_state_type,
-            screen_purpose=result_data.screen_purpose,
-            domain=result_data.domain,
-            state_summary=result_data.screen_purpose,
-            state_signature=signature,
-            confidence=conf,
-            confidence_label=conf_label,
-            has_form=has_form,
-            has_table=has_table,
-            has_modal=has_modal,
-            has_feedback=has_feedback,
-            state_quality=state_quality_payload,
-            extraction_status=extraction_status,
-        )
-        db.add(db_state)
-
-        # Interaction Groups Fallback
-        if not result_data.interaction_groups and (result_data.visible_elements or result_data.available_actions or result_data.visible_feedback):
-            fallback_group = InteractionGroupA1V2(
-                group_id="ig_fallback",
-                group_type="content_section",
-                group_label=f"Screen {result_data.screen_purpose}",
-                element_ids=[el.element_id for el in result_data.visible_elements],
-                action_ids=[ac.action_id for ac in result_data.available_actions],
-                feedback_ids=[fb.feedback_id for fb in result_data.visible_feedback],
-                primary_action_id=result_data.available_actions[0].action_id if result_data.available_actions else None,
-                group_evidence=[
-                    GroupEvidenceA1V2(
-                        evidence_type="explicit_container",
-                        description="auto-generated fallback group covering full screen evidence",
-                    )
-                ],
-                group_confidence="low",
-            )
-            result_data.interaction_groups = [fallback_group]
-
-        # Prepend state_id to all items and interaction group reference IDs to make them globally unique
-        for el in result_data.visible_elements:
-            el.element_id = f"{state_id}_{el.element_id}"
-        for ac in result_data.available_actions:
-            ac.action_id = f"{state_id}_{ac.action_id}"
-        for fb in result_data.visible_feedback:
-            fb.feedback_id = f"{state_id}_{fb.feedback_id}"
-
-        for ig in result_data.interaction_groups:
-            ig.group_id = f"{state_id}_{ig.group_id}"
-            ig.element_ids = [f"{state_id}_{eid}" for eid in ig.element_ids]
-            ig.action_ids = [f"{state_id}_{aid}" for aid in ig.action_ids]
-            ig.feedback_ids = [f"{state_id}_{fid}" for fid in ig.feedback_ids]
-            if ig.primary_action_id:
-                ig.primary_action_id = f"{state_id}_{ig.primary_action_id}"
-
-        db_state.interaction_groups_json = [ig.model_dump() for ig in result_data.interaction_groups]
-
-        total_elements_in_state = 0
-        
-        # 1. Visible Elements
-        for idx, el_data in enumerate(result_data.visible_elements):
-            db_el = UIElement(
-                id=el_data.element_id,
-                state_id=state_id,
-                run_id=run_id,
-                image_id=img.id,
-                type=el_data.element_type,
-                text=el_data.text,
-                actionable=False,
-                is_feedback=False,
-                visibility="fully_visible",
-                visible=True,
-                confidence=0.0,
-            )
-            db.add(db_el)
-            total_elements_in_state += 1
-            total_ui_elements += 1
-
-        # 2. Available Actions
-        for idx, act_data in enumerate(result_data.available_actions):
-            db_el = UIElement(
-                id=act_data.action_id,
-                state_id=state_id,
-                run_id=run_id,
-                image_id=img.id,
-                type="action",
-                action_type=act_data.action_type,
-                text=act_data.text,
-                actionable=True,
-                is_feedback=False,
-                visibility="fully_visible",
-                visible=True,
-                confidence=0.0,
-            )
-            db.add(db_el)
-            total_elements_in_state += 1
-            total_ui_elements += 1
-            total_actionable_elements += 1
-
-        # 3. Visible Feedback
-        for idx, fb_data in enumerate(result_data.visible_feedback):
-            db_el = UIElement(
-                id=fb_data.feedback_id,
-                state_id=state_id,
-                run_id=run_id,
-                image_id=img.id,
-                type="feedback",
-                feedback_type=fb_data.feedback_type,
-                text=fb_data.text,
-                actionable=False,
-                is_feedback=True,
-                visibility="fully_visible",
-                visible=True,
-                confidence=0.0,
-            )
-            db.add(db_el)
-            total_elements_in_state += 1
-            total_ui_elements += 1
-            total_feedback_elements += 1
-
-        state_row = {
-            "extraction_status": extraction_status,
-            "state_id": state_id,
-            "upload_order": img.upload_order,
-            "source_image_id": img.id,
-            "page_type": canonical_screen_type,
-            "screen_type": canonical_screen_type,
-            "presentation_scope": result_data.presentation_scope,
-            "outcome_state_type": result_data.outcome_state_type,
-            "screen_purpose": result_data.screen_purpose,
-            "domain": result_data.domain,
-            "state_summary": result_data.screen_purpose,
-            "visible_texts": [],
-            "visible_elements": [e.model_dump() for e in result_data.visible_elements],
-            "available_actions": [a.model_dump() for a in result_data.available_actions],
-            "visible_feedback": [f.model_dump() for f in result_data.visible_feedback],
-            "interaction_groups": [ig.model_dump() for ig in result_data.interaction_groups],
-            "state_quality": state_quality_payload,
-        }
+        state_row, counts = persist_ui_state_from_v2_result(db, run_id, img, result_data)
         extracted_states.append(state_row)
         extracted_states_count += 1
-        page_type_distribution[canonical_screen_type] = page_type_distribution.get(canonical_screen_type, 0) + 1
+        canonical_screen_type = state_row["screen_type"]
+        page_type_distribution[canonical_screen_type] = page_type_distribution.get(
+            canonical_screen_type, 0
+        ) + 1
+        total_ui_elements += counts["total_ui_elements"]
+        total_actionable_elements += counts["total_actionable_elements"]
+        total_feedback_elements += counts["total_feedback_elements"]
 
     await db.commit()
 
@@ -469,5 +203,6 @@ async def run_ui_state_evidence_extraction(
         ],
         "report": report,
     }
+
 
 run_ui_state_extraction = run_ui_state_evidence_extraction

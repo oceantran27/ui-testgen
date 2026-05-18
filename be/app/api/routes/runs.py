@@ -460,8 +460,8 @@ async def get_model_config(
                 "fallback_model": settings.FLOW_DISCOVERY_FALLBACK_MODEL_NAME,
             },
             "behaviour_contract_builder": {
-                "provider": settings.BEHAVIOUR_INTENT_MODEL_PROVIDER,
-                "model": settings.BEHAVIOUR_INTENT_MODEL_NAME,
+                "provider": settings.FLOW_DISCOVERY_MODEL_PROVIDER,
+                "model": settings.FLOW_DISCOVERY_MODEL_NAME,
             },
             "bdd_scenario_generation": {
                 "provider": settings.BDD_SCENARIO_GENERATION_MODEL_PROVIDER,
@@ -476,7 +476,6 @@ async def get_model_config(
         "feature_flags": {
             "USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER": settings.USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER,
             "USE_LLM_FOR_SCENARIO_GENERATION": settings.USE_LLM_FOR_SCENARIO_GENERATION,
-            "USE_LLM_FOR_SCENARIO_VALIDATION": settings.USE_LLM_FOR_SCENARIO_VALIDATION,
             "ENABLE_MODEL_FALLBACK": settings.ENABLE_MODEL_FALLBACK,
             "ENABLE_MODEL_RAW_RESPONSE_ARTIFACT": settings.ENABLE_MODEL_RAW_RESPONSE_ARTIFACT,
         },

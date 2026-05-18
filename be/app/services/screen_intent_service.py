@@ -25,6 +25,64 @@ def _generate_screen_intent_id() -> str:
     return f"sbi_{uuid.uuid4().hex[:12]}"
 
 
+def generate_screen_intent_id() -> str:
+    """Public id factory for joint pipeline reuse."""
+    return _generate_screen_intent_id()
+
+
+def persist_screen_intent_catalog_rows(
+    db: AsyncSession,
+    run_id: str,
+    state_id: str,
+    catalog_dicts: List[Dict[str, Any]],
+    draft_raw_outer: Dict[str, Any] | None,
+) -> None:
+    """Insert validated intent catalogue rows (mirrors ``run_screen_intent_extraction`` persistence)."""
+    for intent_dict in catalog_dicts:
+        vdetail = intent_dict.pop("_validation_detail", None)
+        hydrated = ScreenBehaviourIntentA2.model_validate(intent_dict)
+        vid = hydrated.screen_intent_id
+
+        draft_snap = None
+        if isinstance(vdetail, dict):
+            draft_snap = vdetail.get("draft_snapshot")
+
+        db_row = ScreenBehaviourIntent(
+            id=vid,
+            run_id=run_id,
+            state_id=state_id,
+            source_group_id=hydrated.source_group_id,
+            intent_name=hydrated.intent_name,
+            intent_kind=hydrated.intent_kind,
+            local_user_goal=hydrated.local_user_goal,
+            primary_action_json=(
+                hydrated.primary_action.model_dump() if hydrated.primary_action is not None else None
+            ),
+            selection_options_json=[o.model_dump() for o in hydrated.selection_options],
+            commit_action_json=(
+                hydrated.commit_action.model_dump() if hydrated.commit_action is not None else None
+            ),
+            secondary_actions_json=[a.model_dump() for a in hydrated.secondary_actions],
+            local_action_sequence_templates_json=[
+                s.model_dump() for s in hydrated.local_action_sequence_templates
+            ],
+            required_input_element_ids_json=list(hydrated.required_input_element_ids),
+            evidence_json=[e.model_dump() for e in hydrated.evidence_refs],
+            confidence=hydrated.confidence,
+            model_confidence=hydrated.model_confidence,
+            validation_confidence=hydrated.validation_confidence,
+            validation_report_json=vdetail,
+            raw_model_output_json=draft_snap,
+            raw_result_json={
+                "state_id": state_id,
+                "full_draft_snapshot": draft_raw_outer,
+                "intent_draft": draft_snap,
+                "validated_intent_catalog_row": hydrated.model_dump(),
+            },
+        )
+        db.add(db_row)
+
+
 def _rich_user_instruction_bundle(state_id: str, screen_purpose: Any, enriched_groups: Any, allowed: Dict[str, Any]) -> str:
     payload = {
         "state_id": state_id,
@@ -164,50 +222,8 @@ async def run_screen_intent_extraction(
         per_state_summaries.append(summary)
         merged_unresolved.extend(unst)
 
-        for intent_dict in cat:
-            vdetail = intent_dict.pop("_validation_detail", None)
-            hydrated = ScreenBehaviourIntentA2.model_validate(intent_dict)
-            vid = hydrated.screen_intent_id
-            screen_intent_catalog.append(intent_dict)
-
-            draft_snap = None
-            if isinstance(vdetail, dict):
-                draft_snap = vdetail.get("draft_snapshot")
-
-            db_row = ScreenBehaviourIntent(
-                id=vid,
-                run_id=run_id,
-                state_id=sid,
-                source_group_id=hydrated.source_group_id,
-                intent_name=hydrated.intent_name,
-                intent_kind=hydrated.intent_kind,
-                local_user_goal=hydrated.local_user_goal,
-                primary_action_json=(
-                    hydrated.primary_action.model_dump() if hydrated.primary_action is not None else None
-                ),
-                selection_options_json=[o.model_dump() for o in hydrated.selection_options],
-                commit_action_json=(
-                    hydrated.commit_action.model_dump() if hydrated.commit_action is not None else None
-                ),
-                secondary_actions_json=[a.model_dump() for a in hydrated.secondary_actions],
-                local_action_sequence_templates_json=[
-                    s.model_dump() for s in hydrated.local_action_sequence_templates
-                ],
-                required_input_element_ids_json=list(hydrated.required_input_element_ids),
-                evidence_json=[e.model_dump() for e in hydrated.evidence_refs],
-                confidence=hydrated.confidence,
-                model_confidence=hydrated.model_confidence,
-                validation_confidence=hydrated.validation_confidence,
-                validation_report_json=vdetail,
-                raw_model_output_json=draft_snap,
-                raw_result_json={
-                    "state_id": sid,
-                    "full_draft_snapshot": draft_raw_outer,
-                    "intent_draft": draft_snap,
-                    "validated_intent_catalog_row": hydrated.model_dump(),
-                },
-            )
-            db.add(db_row)
+        screen_intent_catalog.extend(cat)
+        persist_screen_intent_catalog_rows(db, run_id, sid, cat, draft_raw_outer)
 
     await db.commit()
 

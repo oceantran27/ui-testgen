@@ -6,11 +6,11 @@ Handles: validate files, stream-hash, save to MinIO, persist metadata.
 import hashlib
 import uuid
 from io import BytesIO
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Any
 
 from fastapi import UploadFile
 from PIL import Image as PILImage
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings

@@ -30,7 +30,8 @@ async def init_run_context_node(
             NODE_NAME,
             intent_lines=[
                 "Load Run row and Image rows; merge run.config with defaults.",
-                "routing: always ui_state_extraction unless error (should_stop).",
+                "routing: joint_screen_understanding_node or ui_state_evidence_extraction_node "
+                "(see SCREEN_UNDERSTANDING_MODE / run.config_json.screen_understanding_mode).",
             ],
             state_keys=("run_id", "job_id"),
             state=state,
@@ -50,6 +51,7 @@ async def init_run_context_node(
             "duplicate_allowed": settings.DUPLICATE_ALLOWED,
             "unordered_images_allowed": settings.UNORDERED_IMAGES_ALLOWED,
             "input_level_detection": settings.INPUT_LEVEL_DETECTION,
+            "screen_understanding_mode": settings.SCREEN_UNDERSTANDING_MODE,
         }
         merged_config.update(config)
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.constants.screen_intent_taxonomy import (
     EVIDENCE_TYPE_VALUES,
@@ -407,6 +407,13 @@ class ScreenIntentExtractionV2Result(_PromptOutputBase):
     unresolved_screen_groups: List[UnresolvedScreenGroupA2] = Field(default_factory=list)
 
 
+class JointScreenUnderstandingResult(_PromptOutputBase):
+    """Single vision structured output: UI evidence (A1) + local intents (A2 drafts)."""
+
+    ui_state: UIStateExtractionV2Result
+    screen_intents: ScreenIntentExtractionV2Result
+
+
 class ScreenBehaviourIntentA2(_PromptOutputBase):
     """Validated hydrated catalog consumed by downstream (flow context / edges / audits)."""
 
@@ -440,6 +447,22 @@ class ScreenBehaviourIntentA2(_PromptOutputBase):
 FLOW_DISCOVERY_FLOW_TYPES: frozenset[str] = frozenset(
     {"single_step_outcome", "ordered_sequence", "branching_flow"}
 )
+
+GLOBAL_FLOW_DISCOVERY_STEP_ROLES: frozenset[str] = frozenset(
+    {
+        "entry",
+        "intermediate",
+        "review",
+        "outcome_success",
+        "outcome_error",
+        "outcome_validation",
+        "confirmation_surface",
+        "terminal_success",
+        "terminal_failure",
+        "isolated",
+    }
+)
+
 
 EDGE_DECISION_REASON_CODES: frozenset[str] = frozenset(
     {
@@ -509,6 +532,7 @@ class FlowDiscoveryA3(_PromptOutputBase):
     alternative_outcome_edge_ids: List[str] = Field(default_factory=list)
     local_interaction_edge_ids: List[str] = Field(default_factory=list)
     uncertain_edge_ids: List[str] = Field(default_factory=list)
+    flow_validation_status: Optional[str] = None  # valid | invalid | repaired (backend)
 
     @field_validator("flow_type")
     @classmethod
@@ -559,6 +583,259 @@ class UIFlowDiscoveryResult(_PromptOutputBase):
     discovery_warnings: List[str] = Field(default_factory=list)
 
 
+# ── compressed_catalog_v2 (deterministic shrink for global_flow_discovery input) ──
+
+CompressedContinuityEntityType = Literal[
+    "product",
+    "service",
+    "user",
+    "order",
+    "appointment",
+    "date",
+    "time",
+    "amount",
+    "location",
+    "document",
+    "unknown",
+]
+
+
+class CompressedTaxonomy(_PromptOutputBase):
+    domain: str
+    screen_type: A1ScreenType
+    presentation_scope: A1PresentationScope
+    outcome_state_type: A1OutcomeStateType
+
+
+class CompressedVisibleSignature(_PromptOutputBase):
+    headings: List[str] = Field(default_factory=list)
+    primary_texts: List[str] = Field(default_factory=list)
+    status_texts: List[str] = Field(default_factory=list)
+
+
+class CompressedNavigationCues(_PromptOutputBase):
+    breadcrumb_texts: List[str] = Field(default_factory=list)
+    active_tab_text: Optional[str] = None
+    step_label_text: Optional[str] = None
+    step_index_visible: Optional[int] = None
+    step_total_visible: Optional[int] = None
+    progress_text: Optional[str] = None
+
+
+class CompressedStateFeedbackItem(_PromptOutputBase):
+    feedback_id: str
+    feedback_type: A1FeedbackType
+    text: List[str] = Field(default_factory=list)
+    related_element_ids: List[str] = Field(default_factory=list)
+    visual_region: str = "unknown"
+
+
+class CompressedFormField(_PromptOutputBase):
+    element_id: str
+    text: List[str] = Field(default_factory=list)
+
+
+class CompressedFormSelectionOption(_PromptOutputBase):
+    option_ref_type: Literal["element", "action"]
+    option_element_id: Optional[str] = None
+    option_action_id: Optional[str] = None
+    text: List[str] = Field(default_factory=list)
+    visible_status: str = "unknown"
+
+
+class CompressedFormStateSummary(_PromptOutputBase):
+    has_form: bool
+    required_inputs: List[CompressedFormField] = Field(default_factory=list)
+    optional_inputs: List[CompressedFormField] = Field(default_factory=list)
+    selected_options: List[CompressedFormSelectionOption] = Field(default_factory=list)
+    has_visible_values: bool
+    has_validation_feedback: bool
+
+
+class CompressedContinuityEntity(_PromptOutputBase):
+    entity_type: CompressedContinuityEntityType
+    text: List[str] = Field(default_factory=list)
+    source_element_id: Optional[str] = None
+
+
+class CompressedActionRef(_PromptOutputBase):
+    action_id: str
+    action_type: str
+    text: List[str] = Field(default_factory=list)
+    priority: A1ActionPriority
+
+
+class CompressedEvidenceRef(_PromptOutputBase):
+    evidence_type: str
+    source_id: str
+
+
+class CompressedLocalActionStep(_PromptOutputBase):
+    step_type: str
+    source_action_id: Optional[str] = None
+    source_element_id: Optional[str] = None
+
+
+class CompressedIntentGroup(_PromptOutputBase):
+    intent_id: str
+    source_group_id: str
+    intent_kind: str
+    intent_name: str
+    local_user_goal: str
+    primary_action: Optional[CompressedActionRef] = None
+    commit_action: Optional[CompressedActionRef] = None
+    secondary_actions: List[CompressedActionRef] = Field(default_factory=list)
+    selection_options: List[CompressedFormSelectionOption] = Field(default_factory=list)
+    local_action_sequence: List[CompressedLocalActionStep] = Field(default_factory=list)
+    required_input_element_ids: List[str] = Field(default_factory=list)
+    feedback_refs: List[str] = Field(default_factory=list)
+    evidence_refs: List[CompressedEvidenceRef] = Field(default_factory=list)
+
+
+class CompressedScreenCard(_PromptOutputBase):
+    state_id: str
+    screen_purpose: str
+    taxonomy: CompressedTaxonomy
+    visible_signature: CompressedVisibleSignature
+    navigation_cues: CompressedNavigationCues
+    state_feedback_summary: List[CompressedStateFeedbackItem] = Field(default_factory=list)
+    form_state_summary: CompressedFormStateSummary
+    continuity_entities: List[CompressedContinuityEntity] = Field(default_factory=list)
+    intent_groups: List[CompressedIntentGroup] = Field(default_factory=list)
+    evidence_refs: List[CompressedEvidenceRef] = Field(default_factory=list)
+
+
+class CompressedTraceIndexEntry(_PromptOutputBase):
+    source_image_id: str
+    ui_state_package_ref: str
+    screen_intent_package_ref: str
+
+
+class CompressedCatalogPackage(_PromptOutputBase):
+    """Phase 1+2 → token-shaped catalogue for batched global flow discovery (compressed_catalog_v2)."""
+
+    catalog_version: Literal["compressed_catalog_v2"] = "compressed_catalog_v2"
+    catalog_purpose: Literal["global_flow_discovery_input"] = "global_flow_discovery_input"
+    compressed_catalog_package_id: str = ""
+    compressed_catalog: List[CompressedScreenCard] = Field(default_factory=list)
+    trace_index: Dict[str, CompressedTraceIndexEntry] = Field(default_factory=dict)
+    compression_stats: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FlowDiscoveryTriggerAction(_PromptOutputBase):
+    """Resolved trigger on a flow step — action ids must exist on the source state's catalogue card."""
+
+    intent_id: Optional[str] = None
+    action_id: str = ""
+    action_type: str = ""
+    text: List[str] = Field(default_factory=list)
+
+
+class FlowDiscoveryStep(_PromptOutputBase):
+    state_id: str
+    step_role: str = "intermediate"
+    next_trigger_action: Optional[FlowDiscoveryTriggerAction] = None
+
+    @field_validator("step_role")
+    @classmethod
+    def _step_role_vocab(cls, v: str) -> str:
+        v = str(v or "").strip() or "intermediate"
+        if v not in GLOBAL_FLOW_DISCOVERY_STEP_ROLES:
+            return "intermediate"
+        return v
+
+
+class FlowDiscoveryAlternativeOutcome(_PromptOutputBase):
+    from_state_id: str
+    to_state_id: str
+    outcome_role: str = ""
+    trigger_action: Optional[FlowDiscoveryTriggerAction] = None
+    evidence_summary: str = ""
+
+
+class FlowDiscoveryEvidence(_PromptOutputBase):
+    evidence_type: str = ""
+    from_state_id: str = ""
+    to_state_id: str = ""
+    source_refs: List[str] = Field(default_factory=list)
+
+
+class FlowDiscoverySemanticCluster(_PromptOutputBase):
+    cluster_id: str
+    cluster_goal: str = ""
+    domain: str = ""
+    state_ids: List[str] = Field(default_factory=list)
+    cluster_evidence: List[str] = Field(default_factory=list)
+
+
+class FlowDiscoveryCandidateFlow(_PromptOutputBase):
+    """One composed behavioural flow candidate from compressed UI state cards."""
+
+    flow_id: str
+    flow_name: str = ""
+    flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
+    user_goal: str = ""
+    flow_confidence: str = "medium"
+    ordered_steps: List[FlowDiscoveryStep] = Field(default_factory=list)
+    alternative_outcomes: List[FlowDiscoveryAlternativeOutcome] = Field(default_factory=list)
+    flow_evidence: List[FlowDiscoveryEvidence] = Field(default_factory=list)
+    entry_state_id: str = ""
+    terminal_outcome: Optional[str] = None
+    rationale: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_legacy_confidence(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            data = dict(data)
+            fc = data.get("flow_confidence")
+            if fc in (None, "") and data.get("confidence") not in (None, ""):
+                data["flow_confidence"] = data.get("confidence")
+        return data
+
+    @field_validator("flow_type")
+    @classmethod
+    def _flow_type_vocab_compressed(cls, v: str) -> str:
+        v = str(v).strip()
+        if v not in FLOW_DISCOVERY_FLOW_TYPES:
+            raise ValueError(f"unsupported flow_type {v!r}")
+        return v
+
+    @property
+    def confidence(self) -> str:
+        """Backward-compatible alias used when assembling bridge payloads."""
+
+        return str(self.flow_confidence or "medium")
+
+
+class FlowDiscoveryUnassignedState(_PromptOutputBase):
+    state_id: str
+    reason_code: str = ""
+    notes: Optional[str] = None
+
+
+class UncertainRelationGlobal(_PromptOutputBase):
+    """Loose linkage the model cannot place in ordered_steps."""
+
+    from_state_id: Optional[str] = None
+    to_state_id: Optional[str] = None
+    reason_code: str = ""
+    notes: Optional[str] = None
+
+
+class GlobalFlowDiscoveryResult(_PromptOutputBase):
+    """Structured output from prompt_global_flow_discovery (compressed behavioural cards)."""
+
+    semantic_clusters: List[FlowDiscoverySemanticCluster] = Field(default_factory=list)
+    candidate_flows: List[FlowDiscoveryCandidateFlow] = Field(default_factory=list)
+    unassigned_state_ids: List[FlowDiscoveryUnassignedState] = Field(default_factory=list)
+    uncertain_relations: List[UncertainRelationGlobal] = Field(default_factory=list)
+    discovery_warnings: List[str] = Field(default_factory=list)
+
+
+# Legacy aliases (removed types): use FlowDiscoveryCandidateFlow / FlowDiscoveryStep.
+
+
 # ──────────────────────────────────────────────
 # A4–A5: Behaviour contract / intent inference (prompt: prompt_behaviour_contract_builder)
 # ──────────────────────────────────────────────
@@ -585,12 +862,31 @@ class EdgeContextParameter(_PromptOutputBase):
     evidence: List[str] = Field(default_factory=list)
 
 
+class TransitionEvidenceVLMResult(_PromptOutputBase):
+    """
+    Pairwise screenshot transition evidence (Agent 3.5).
+    After VLM classification, downstream marks proposal_status / vlm_confidence on the candidate edge dict.
+    """
+
+    transition_supported: bool
+    confidence: Literal["high", "medium", "low"]
+    evidence_level: Literal["strong", "medium"]
+    visible_delta_summary: str = ""
+    mismatch_reason: Optional[str] = None
+    alternative_interpretation: Optional[str] = None
+
+
 class CandidateEdge(_PromptOutputBase):
     edge_id: str
     from_state: str
     to_state: str
     edge_kind: str  # progress | success_terminal | empty_result | validation_error | warning | error | failure | confirmation_required | review_required | (+ legacy composer tokens if persisted downstream)
     scenario_role: str  # core | branch | optional | excluded
+    action_scope: str = "task_core"
+    scenario_branch_role: str = "core_progress"
+    scenario_worthiness_score: int = 0
+    scenario_worthiness_reasons: List[str] = Field(default_factory=list)
+    excluded_from_agent4_payload: bool = False
     action_sequence: List[ActionSequenceStepEdge] = Field(default_factory=list)
     alternative_action_sequences: List[List[ActionSequenceStepEdge]] = Field(default_factory=list)
     context_parameters: List[EdgeContextParameter] = Field(default_factory=list)
@@ -636,7 +932,7 @@ class ComposedFlowInternal(_PromptOutputBase):
     state_path: List[str] = Field(default_factory=list)
     edge_sequence: List[Dict[str, Any]] = Field(default_factory=list)
     source_trace: List[ComposedFlowSourceTraceStep] = Field(default_factory=list)
-    composition_method: str  # agent4_selected_edges | backend_dfs_fallback
+    composition_method: str  # agent4_selected_edges
     confidence: str
     behaviour_name: str
     source_group_id: Optional[str] = None
@@ -673,6 +969,10 @@ class BehaviourIntentA5(_PromptOutputBase):
     source_flow_id: str
     source_flow_name: str
     source_flow_type: str  # single_step_outcome | ordered_sequence | branching_flow
+    composition_method: Optional[str] = None  # agent4_selected_edges
+    flow_validation_status: Optional[str] = None  # valid | invalid | repaired
+    min_scenario_worthiness: Optional[int] = None
+    scenario_worthy_path: bool = True
     source_transition_indexes: List[int] = Field(default_factory=list)
     source_outcome_state: Optional[str] = None
     source_group_id: Optional[str] = None
@@ -707,12 +1007,76 @@ class GenerationSummaryA5(_PromptOutputBase):
     total_candidate_flows: int = 0
     total_behaviour_intents: int = 0
     total_unresolved_items: int = 0
+    behaviour_intents_created: int = 0
+    skipped_due_to_invalid_flow: int = 0
+    skipped_due_to_non_scenario_worthy_edge: int = 0
 
 
 class BehaviourIntentInferenceResult(_PromptOutputBase):
     behaviour_intents: List[BehaviourIntentA5] = Field(default_factory=list)
     unresolved_flow_items: List[UnresolvedFlowItemA5] = Field(default_factory=list)
     generation_summary: GenerationSummaryA5
+
+
+AnchorMatchModeA6 = Literal["exact", "exact_or_contained"]
+
+
+class MandatoryAnchorA6(_PromptOutputBase):
+    anchor_id: str
+    text: str
+    source: str = ""
+    match_type: AnchorMatchModeA6 = "exact_or_contained"
+
+
+class MandatoryAnchorsBySectionA6(_PromptOutputBase):
+    given: List[MandatoryAnchorA6] = Field(default_factory=list)
+    when: List[MandatoryAnchorA6] = Field(default_factory=list)
+    then: List[MandatoryAnchorA6] = Field(default_factory=list)
+
+
+class ForbiddenContentPolicyA6(_PromptOutputBase):
+    no_new_ui_actions: bool = True
+    no_new_screens: bool = True
+    no_real_credentials: bool = True
+    no_backend_assumptions: bool = True
+
+
+class BlueprintTraceabilityA6(_PromptOutputBase):
+    trigger_action_id: Optional[str] = None
+    source_screen_intent_id: Optional[str] = None
+    source_transition_ids: List[str] = Field(default_factory=list)
+    expected_feedback_ids: List[str] = Field(default_factory=list)
+
+
+class BlueprintTerminalStateRefA6(_PromptOutputBase):
+    state_id: str
+    screen_label: str = ""
+    outcome_state_type: Optional[str] = None
+
+
+class ScenarioWritingBlueprint(_PromptOutputBase):
+    blueprint_id: str
+    source_intent_id: str
+    source_flow_id: str
+    scenario_type: str = "happy_path"
+    start_state: BlueprintTerminalStateRefA6
+    end_state: BlueprintTerminalStateRefA6
+    writing_goal: str = ""
+    mandatory_anchors: MandatoryAnchorsBySectionA6 = Field(default_factory=MandatoryAnchorsBySectionA6)
+    allowed_test_data_placeholders: List[str] = Field(default_factory=list)
+    forbidden_content_policy: ForbiddenContentPolicyA6 = Field(default_factory=ForbiddenContentPolicyA6)
+    traceability: BlueprintTraceabilityA6 = Field(default_factory=BlueprintTraceabilityA6)
+
+
+class ScenarioBlueprintWritingStyleA6(_PromptOutputBase):
+    tone: str = "clear QA BDD"
+    avoid_mechanical_state_ids: bool = True
+    use_natural_step_text: bool = True
+
+
+class ScenarioBlueprintBatchInput(_PromptOutputBase):
+    scenario_writing_blueprints: List[ScenarioWritingBlueprint] = Field(default_factory=list)
+    writing_style: ScenarioBlueprintWritingStyleA6 = Field(default_factory=ScenarioBlueprintWritingStyleA6)
 
 
 # ──────────────────────────────────────────────
@@ -732,6 +1096,7 @@ class TestScenarioStepA6(_PromptOutputBase):
     keyword: str  # Given | When | Then | And
     text: str
     source: str  # precondition | test_data | user_action | expected_result | expected_ui_evidence | negative_expectation
+    anchor_ids_used: List[str] = Field(default_factory=list)
 
 
 class AssertionA6(_PromptOutputBase):
@@ -739,6 +1104,29 @@ class AssertionA6(_PromptOutputBase):
     expected: str
     source: str  # expected_result | expected_ui_evidence | negative_expectation
     ui_text_grounding_required: Optional[bool] = None  # False: skip verbatim UI pool matching in Agent 7 pre-audit counts
+    anchor_ids_used: List[str] = Field(default_factory=list)
+
+
+class GroundingContractA6(_PromptOutputBase):
+    required_anchor_ids: List[str] = Field(default_factory=list)
+    used_anchor_ids: List[str] = Field(default_factory=list)
+
+
+class PreGenerationGroundingA6(_PromptOutputBase):
+    """Keyword-anchor validation emitted before Agent 7 (experimental metrics)."""
+
+    required_anchor_count: int = 0
+    matched_anchor_count: int = 0
+    missing_anchor_ids: List[str] = Field(default_factory=list)
+    wrong_section_anchor_ids: List[str] = Field(default_factory=list)
+    unexpected_placeholders: List[str] = Field(default_factory=list)
+    invalid_trace_refs: List[str] = Field(default_factory=list)
+    matched_anchor_ids: List[str] = Field(default_factory=list)
+    grounding_passed: bool = False
+    keyword_anchor_coverage: float = 0.0
+    section_coverage_given: float = 0.0
+    section_coverage_when: float = 0.0
+    section_coverage_then: float = 0.0
 
 
 class TestScenarioA6(_PromptOutputBase):
@@ -753,6 +1141,7 @@ class TestScenarioA6(_PromptOutputBase):
     source_group_id: Optional[str] = None
     source_transition_ids: List[str] = Field(default_factory=list)
     source_transition_indexes: List[int] = Field(default_factory=list)
+    user_actions: List[str] = Field(default_factory=list)
     start_state: str
     end_state: str
     trigger_action: TriggerActionA5
@@ -765,6 +1154,11 @@ class TestScenarioA6(_PromptOutputBase):
     assumptions: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     confidence: str  # high | medium | low
+    source_blueprint_id: Optional[str] = None
+    generation_method: Optional[str] = None
+    status: Optional[str] = None
+    grounding_contract: Optional[GroundingContractA6] = None
+    pre_generation_grounding: Optional[PreGenerationGroundingA6] = None
 
 
 class UnresolvedScenarioItemA6(_PromptOutputBase):
@@ -788,11 +1182,29 @@ class ScenarioGenerationSummaryA6(_PromptOutputBase):
     coverage_rate: float = 0.0
 
 
+class ScenarioGenerationMetricsA6(_PromptOutputBase):
+    blueprint_count: int = 0
+    llm_generated_count: int = 0
+    llm_repaired_count: int = 0
+    unresolved_count: int = 0
+    deterministic_fallback_count: int = 0
+    required_anchor_count: int = 0
+    matched_anchor_count: int = 0
+    anchor_coverage_rate: float = 0.0
+    given_anchor_coverage: float = 0.0
+    when_anchor_coverage: float = 0.0
+    then_anchor_coverage: float = 0.0
+    unexpected_placeholder_count: int = 0
+    invalid_trace_ref_count: int = 0
+
+
 class BDDScenarioGenerationResult(_PromptOutputBase):
     test_scenarios: List[TestScenarioA6] = Field(default_factory=list)
     unresolved_scenario_items: List[UnresolvedScenarioItemA6] = Field(default_factory=list)
     coverage_matrix: List[CoverageMatrixItemA6] = Field(default_factory=list)
     generation_summary: ScenarioGenerationSummaryA6
+    scenario_writing_blueprints: List[ScenarioWritingBlueprint] = Field(default_factory=list)
+    scenario_generation_metrics: ScenarioGenerationMetricsA6 = Field(default_factory=ScenarioGenerationMetricsA6)
 
 
 # ──────────────────────────────────────────────

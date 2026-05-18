@@ -4,7 +4,7 @@ Aligned with Phase 1 outcome_state_type (`A1OutcomeStateType`) plus legacy token
 
 from __future__ import annotations
 
-from typing import Dict, Final, FrozenSet
+from typing import Dict, Final, FrozenSet, Optional, Tuple
 
 # Union of pipeline outcomes + legacy DB/backfill tokens
 OUTCOME_TYPES: Final[FrozenSet[str]] = frozenset(
@@ -35,14 +35,14 @@ EMPTY_OUTCOME_TYPES: Final[FrozenSet[str]] = frozenset({"empty"})
 # Intent kind → eligible target outcome_state_type values for resolver pairing.
 INTENT_TO_TARGET_OUTCOME_COMPATIBILITY: Final[Dict[str, FrozenSet[str]]] = {
     "submission": frozenset(
-        {"success", "confirmation_required", "validation_error", "warning", "error"}
+        {"success", "confirmation_required", "validation_error", "warning", "error", "neutral"}
     ),
-    "confirmation": frozenset({"success", "confirmation_required", "neutral"}),
-    "cancellation": frozenset({"neutral", "empty"}),
+    "confirmation": frozenset({"success", "confirmation_required", "neutral", "empty"}),
+    "cancellation": frozenset({"neutral", "empty", "confirmation_required"}),
     "selection": frozenset({"neutral", "empty"}),
     "navigation": frozenset({"neutral", "empty"}),
     "editing": frozenset({"success", "neutral", "validation_error"}),
-    "deletion": frozenset({"success", "neutral", "empty"}),
+    "deletion": frozenset({"success", "neutral", "empty", "confirmation_required"}),
     "search": frozenset({"neutral", "empty"}),
     "feedback_acknowledgement": frozenset({"neutral"}),
 }
@@ -51,6 +51,7 @@ INTENT_TO_TARGET_OUTCOME_COMPATIBILITY: Final[Dict[str, FrozenSet[str]]] = {
 EDGE_KIND_VALUES: Final[FrozenSet[str]] = frozenset(
     {
         "progress",
+        "task_progress",
         "success_terminal",
         "empty_result",
         "validation_error",
@@ -62,8 +63,82 @@ EDGE_KIND_VALUES: Final[FrozenSet[str]] = frozenset(
     }
 )
 
+# Edge kinds that satisfy “forward motion” for task_core submission intents in diagnostics.
+TASK_PROGRESS_FORWARD_EDGE_KINDS: Final[FrozenSet[str]] = frozenset(
+    {
+        "task_progress",
+        "progress",
+        "success_terminal",
+        "review_required",
+        "confirmation_required",
+        "validation_error",
+        "warning",
+        "error",
+        "failure",
+        "empty_result",
+    }
+)
+
+# Target screen types (normalized) allowed for submission → neutral task_progress.
+TASK_PROGRESS_TARGET_SCREEN_TYPES: Final[FrozenSet[str]] = frozenset(
+    {"form", "detail", "wizard_step", "checkout", "listing"}
+)
+
+# Allowed (source_screen_type, target_screen_type) neutral→neutral task progress probes (resolver sparse).
+WIZARD_PROGRESS_SCREEN_PAIRS: Final[FrozenSet[Tuple[str, str]]] = frozenset(
+    {
+        ("listing", "detail"),
+        ("detail", "wizard_step"),
+        ("detail", "form"),
+        ("wizard_step", "wizard_step"),
+        ("wizard_step", "form"),
+        ("wizard_step", "listing"),
+        ("form", "wizard_step"),
+        ("form", "form"),
+        ("form", "listing"),
+        ("checkout", "wizard_step"),
+    }
+)
+
+NEUTRAL_WIZARD_FORWARD_SOURCE_SCREEN_TYPES: Final[FrozenSet[str]] = frozenset(
+    {"listing", "detail", "wizard_step", "form", "checkout", "search"}
+)
+
 SCENARIO_ROLE_VALUES: Final[FrozenSet[str]] = frozenset(
     {"core", "branch", "optional", "excluded"}
+)
+
+# Scenario pipeline: branch roles used for worthiness / causal gates (orthogonal to SCENARIO_ROLE_VALUES).
+SCENARIO_WORTHY_BRANCH_ROLES: Final[FrozenSet[str]] = frozenset(
+    {
+        "validation_branch",
+        "error_branch",
+        "warning_branch",
+        "empty_result_branch",
+        "confirmation_branch",
+        "recovery_branch",
+        "cancellation_branch",
+        "success_terminal",
+        "core_progress",
+    }
+)
+
+NON_SCENARIO_WORTHY_BRANCH_ROLES: Final[FrozenSet[str]] = frozenset(
+    {
+        "support_navigation",
+        "post_success_navigation",
+        "global_navigation",
+        "local_interaction",
+        "chrome_interaction",
+    }
+)
+
+FATAL_EDGE_RISK_FLAGS: Final[FrozenSet[str]] = frozenset(
+    {
+        "unresolved_selection_option",
+        "ambiguous_selection_requires_evidence",
+        "many_compatible_targets",
+    }
 )
 
 # Conservative (src_screen_type, dst_screen_type) pairs → eligible for transition bonus.
@@ -81,6 +156,8 @@ SCREEN_TRANSITION_BONUS_PAIRS: Final[FrozenSet[tuple[str, str]]] = frozenset(
         ("wizard_step", "success"),
         ("dashboard", "detail"),
         ("profile", "settings"),
+        ("detail", "form"),
+        ("form", "form"),
     }
 )
 
@@ -128,3 +205,74 @@ def eligible_targets(intent_kind: str | None) -> FrozenSet[str]:
     if not intent_kind:
         return frozenset()
     return INTENT_TO_TARGET_OUTCOME_COMPATIBILITY.get(intent_kind, frozenset())
+
+
+def matrix_transition_allowed(
+    intent_kind: str,
+    action_scope: str,
+    source_outcome: str,
+    target_outcome: str,
+    *,
+    value_bound_selection: bool,
+    target_presentation_scope: str = "",
+) -> Tuple[bool, Optional[str]]:
+    """
+    Sparse 4D policy (intent_kind, action_scope, source_outcome, target_outcome).
+
+    Returns (allowed, scenario_branch_role_hint). When hint is None, downstream uses edge_kind defaults.
+    Unknown tuples fall back to legacy eligibility only (allowed True).
+    """
+    ik = str(intent_kind or "").strip()
+    asc = str(action_scope or "").strip()
+    so = str(source_outcome or "neutral").strip()
+    to = str(target_outcome or "neutral").strip()
+    tgt_ps = str(target_presentation_scope or "").strip().lower()
+
+    # Selection into negative targets requires binding evidence (resolver supplies flag).
+    if ik == "selection" and asc == "task_core" and to in NEGATIVE_OUTCOME_TYPES:
+        if not value_bound_selection:
+            return False, None
+        return True, "validation_branch"
+
+    if ik == "navigation" and asc == "global_navigation":
+        return True, "global_navigation"
+
+    if ik == "editing" and to == "review_required":
+        return True, "recovery_branch"
+
+    if ik in ("cancellation", "deletion") and to == "confirmation_required":
+        if tgt_ps not in ("modal", "overlay", "dialog", "drawer", "popover"):
+            return False, None
+        return True, "cancellation_branch"
+
+    if ik == "confirmation":
+        if to in ("empty", "success"):
+            if so != "confirmation_required":
+                return False, None
+            return True, "confirmation_branch"
+        if to in ("neutral", "confirmation_required"):
+            return True, "confirmation_branch"
+        return True, None
+
+    return True, None
+
+
+def default_scenario_branch_role(edge_kind: str, intent_kind: str) -> str:
+    """Fallback scenario_branch_role when matrix returns no hint."""
+    ek = str(edge_kind or "")
+    ik = str(intent_kind or "")
+    if ek == "success_terminal":
+        return "success_terminal"
+    if ek == "empty_result":
+        return "empty_result_branch"
+    if ek == "validation_error":
+        return "validation_branch"
+    if ek in ("warning", "error", "failure"):
+        return "error_branch"
+    if ek in ("confirmation_required", "review_required"):
+        return "confirmation_branch"
+    if ik == "cancellation":
+        return "cancellation_branch"
+    if ek == "task_progress":
+        return "core_progress"
+    return "core_progress"

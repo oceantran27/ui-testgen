@@ -277,8 +277,12 @@ class ModelProviderAdapter:
             fallback = self._registry.get_fallback(provider.name)
 
         max_output_tokens = 4096
-        if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery"):
-            max_output_tokens = settings.FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+        if task_name in ("llm_flow_discovery", "intent_aware_flow_discovery", "global_flow_discovery"):
+            max_output_tokens = (
+                settings.GLOBAL_FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+                if task_name == "global_flow_discovery"
+                else settings.FLOW_DISCOVERY_MAX_OUTPUT_TOKENS
+            )
         elif task_name == "screen_intent_extraction":
             max_output_tokens = settings.SCREEN_INTENT_MAX_OUTPUT_TOKENS
         elif task_name == "behaviour_contract_builder":
@@ -353,6 +357,9 @@ class ModelProviderAdapter:
         if task_name == "ui_state_extraction":
             max_output_tokens = settings.UI_STATE_EXTRACTION_MAX_OUTPUT_TOKENS
             vision_timeout_secs = settings.UI_STATE_EXTRACTION_TIMEOUT_SECONDS
+        elif task_name == "joint_screen_understanding":
+            max_output_tokens = settings.JOINT_SCREEN_UNDERSTANDING_MAX_OUTPUT_TOKENS
+            vision_timeout_secs = settings.JOINT_SCREEN_UNDERSTANDING_TIMEOUT_SECONDS
 
         request = ModelRequest(
             task_name=task_name,
@@ -373,55 +380,7 @@ class ModelProviderAdapter:
 
         return await _execute_with_retry_pipeline_log(provider, request, fallback)
 
-    async def call_pairwise_vision(
-        self,
-        *,
-        task_name: str,
-        run_id: str,
-        node_name: str,
-        instruction: str,
-        image_a: ImageInput,
-        image_b: ImageInput,
-        output_schema: Type[BaseModel],
-        prompt_name: str = "",
-        prompt_version: str = "v1",
-        provider_override: str = "",
-    ) -> ModelResponse:
-        """
-        Pairwise vision comparison call. Sends exactly 2 images.
-        Used for: semantic duplicate verification, pairwise state comparison.
-        """
-        log_event(
-            "model_call_started",
-            run_id=run_id,
-            node_name=node_name,
-            task_name=task_name,
-            request_type=RequestType.PAIRWISE_VISION,
-            prompt_name=prompt_name,
-            prompt_version=prompt_version,
-        )
 
-        provider, fallback = self._resolve_provider_and_fallback(
-            task_name, required_capability=ModelCapability.VISION
-        )
-        if provider_override:
-            provider = self._registry.get(provider_override)
-            fallback = self._registry.get_fallback(provider.name)
-
-        request = ModelRequest(
-            task_name=task_name,
-            run_id=run_id,
-            node_name=node_name,
-            request_type=RequestType.PAIRWISE_VISION,
-            system_instruction=prompt_manager.get_prompt("pairwise_comparison"),
-            user_instruction=instruction,
-            image_inputs=[image_a, image_b],
-            output_schema=output_schema,
-            provider=provider.name,
-            timeout_seconds=settings.VISION_MODEL_TIMEOUT_SECONDS,
-        )
-
-        return await _execute_with_retry_pipeline_log(provider, request, fallback)
 
 
 # ──────────────────────────────────────────────

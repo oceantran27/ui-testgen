@@ -99,7 +99,7 @@ class GraphExecutionService:
                     db_tok = model_call_db_session.set(db)
                     job_tok = model_call_job_id.set(job_id)
                     try:
-                        graph = build_graph(db=db)
+                        graph = await build_graph(db=db, run_id=run_id)
                         t0 = time.perf_counter()
 
                         # Use checkpointer if enabled

@@ -5,7 +5,6 @@ Public API:
     model_adapter   — ModelProviderAdapter singleton (use this in LangGraph nodes)
     model_adapter.call_text_structured(...)
     model_adapter.call_vision_structured(...)
-    model_adapter.call_pairwise_vision(...)
 
     log_model_call  — persist ModelResponse to DB
 """

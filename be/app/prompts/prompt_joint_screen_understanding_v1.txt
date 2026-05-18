@@ -1,0 +1,55 @@
+# Joint Screen Understanding — single vision call per screenshot
+
+You perform **two phases in one response** for exactly **one** screenshot. Output **one JSON object** with two top-level keys: `ui_state` and `screen_intents`.
+
+## Phase A — Extract UI state evidence (visible only)
+
+Phase A extracts **only** what is visible on this screen:
+
+- `state_id`: use `state_<image_id>` where `<image_id>` is provided in user metadata.
+- `screen_purpose`, `presentation_scope`, `screen_type`, `outcome_state_type`, `domain`
+- `visible_elements`, `available_actions`, `visible_feedback` with **stable local IDs** (`el_*`, `ac_*`, `fb_*`)
+- `interaction_groups` grouping elements/actions/feedback with evidence (`ig_*`)
+
+Follow the same field meanings, enum vocabularies, verbatim-text rules, and grouping discipline as **prompt_ui_state_evidence_extraction_v2** (Gestalt grouping, one group membership per control, no hallucinated controls).
+
+## Phase B — Infer local screen behaviour intents (this screen only)
+
+Phase B infers **only** what the user can attempt **on this screen**, grounded in Phase A IDs:
+
+- Emit `screen_behaviour_intents[]` with `source_group_id`, `intent_kind`, `intent_name`, `local_user_goal`, action IDs (`primary_action_id`, `commit_action_id`, `secondary_action_ids`), `selection_options`, `local_action_sequence_templates`, `required_input_element_ids`, `evidence_refs` — **every referenced ID MUST exist in Phase A** (`element_id`, `action_id`, `feedback_id`, or `group_id`).
+- Use `unresolved_screen_groups[]` when grouping or intent grounding is impossible without guessing.
+
+Intent rules mirror **prompt_screen_behaviour_intent_extraction_v2**, except there is **no** precomputed `allowed_*` map: you assign IDs in Phase A and must stay **internally consistent**.
+
+## Hard boundaries
+
+- **No cross-screen flow discovery** (no multi-step journeys, no “next screen” narratives unless visibly implied on this screenshot).
+- **No test scenarios**, Gherkin, or acceptance criteria.
+- **No backend / business assumptions** beyond what the UI shows.
+- **No invented IDs** for intents — reuse Phase A IDs only.
+
+## Output shape (structure)
+
+Return **only** valid JSON matching this skeleton (literal enum strings for constrained fields are listed in the appended machine-generated taxonomy section):
+
+```json
+{
+  "ui_state": {
+    "state_id": "string",
+    "screen_purpose": "string",
+    "presentation_scope": "string",
+    "screen_type": "string",
+    "outcome_state_type": "string",
+    "domain": "string",
+    "visible_elements": [],
+    "available_actions": [],
+    "visible_feedback": [],
+    "interaction_groups": []
+  },
+  "screen_intents": {
+    "screen_behaviour_intents": [],
+    "unresolved_screen_groups": []
+  }
+}
+```

@@ -44,8 +44,14 @@ class PipelineState(TypedDict, total=False):
     # Screen behaviour intent extraction V2
     screen_intent_package: Dict[str, Any]
     
+    # Deterministic compression (token-light catalogue for batched global discovery)
+    compressed_catalog_package: Dict[str, Any]
+    
     # Flow context builder (deterministic merge of states + intents)
     flow_context_package: Dict[str, Any]
+
+    # Pairwise screenshot transition verification (Agent 3.5)
+    verified_transition_package: Dict[str, Any]
     
     # Intent-aware flow discovery
     flow_discovery_result: Dict[str, Any]

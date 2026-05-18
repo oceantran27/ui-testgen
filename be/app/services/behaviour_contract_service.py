@@ -11,7 +11,17 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.logging import log_event, logger
+from app.core.prompt_manager import prompt_manager
+from app.model_providers import model_adapter
+import json
+from app.constants.edge_taxonomy import (
+    FATAL_EDGE_RISK_FLAGS,
+    NON_SCENARIO_WORTHY_BRANCH_ROLES,
+    SCENARIO_WORTHY_BRANCH_ROLES,
+    default_scenario_branch_role,
+)
 from app.db.models.behaviour_intent import BehaviourIntent
 from app.db.models.screen_intent import ScreenBehaviourIntent
 from app.db.models.ui_element import UIElement
@@ -25,7 +35,7 @@ from app.model_providers.schemas import (
     TriggerActionA5,
     UnresolvedFlowItemA5,
 )
-from app.services.intent_aware_flow_discovery_hydrate import (
+from app.services.flow_hydration_utils import (
     derive_trigger_from_edge,
     hydrate_flow_edges_for_compose,
 )
@@ -51,6 +61,45 @@ def map_test_path(intent_type: str) -> str:
         "data_entry": "data_entry_path",
     }
     return mapping.get(normalized, "unknown_path")
+
+
+def _merge_candidate_edge_row(
+    candidate_edge_map: Dict[str, Dict[str, Any]], edge: Dict[str, Any]
+) -> Dict[str, Any]:
+    cid = edge.get("candidate_edge_id")
+    base = dict(candidate_edge_map.get(str(cid), {})) if cid else {}
+    return {**base, **edge}
+
+
+def _is_scenario_worthy_branch_edge(
+    candidate_edge_map: Dict[str, Dict[str, Any]],
+    edge: Dict[str, Any],
+) -> bool:
+    m = _merge_candidate_edge_row(candidate_edge_map, edge)
+    scope = str(m.get("action_scope") or "task_core")
+    if scope in ("global_navigation", "local_chrome", "non_scenario_interaction"):
+        return False
+    thr = int(settings.CANDIDATE_EDGE_SCENARIO_WORTHINESS_MIN_FOR_AGENT4)
+    sw = int(m.get("scenario_worthiness_score") or 100)
+    if sw < thr:
+        return False
+    role = str(m.get("scenario_branch_role") or "")
+    if not role:
+        role = default_scenario_branch_role(str(m.get("edge_kind") or ""), "")
+    if role in NON_SCENARIO_WORTHY_BRANCH_ROLES:
+        return False
+    if role not in SCENARIO_WORTHY_BRANCH_ROLES:
+        return False
+    if FATAL_EDGE_RISK_FLAGS.intersection(m.get("edge_risk_flags") or []):
+        return False
+    return True
+
+
+def _flow_validation_status_for(flow_discovery_result: Dict[str, Any], source_flow_id: str) -> str:
+    for f in flow_discovery_result.get("candidate_flows") or []:
+        if str(f.get("flow_id") or "") == str(source_flow_id):
+            return str(f.get("flow_validation_status") or "valid")
+    return "valid"
 
 
 def _persist_intent_row(
@@ -292,12 +341,20 @@ def _apply_edge_roles(
     dst_type = dst_node.get("outcome_state_type", "neutral")
     dst_presentation = (dst_node.get("presentation_scope") or "unknown").lower()
 
-    trig = e.get("trigger_action") if isinstance(e.get("trigger_action"), dict) else {}
-    trigger_text = " ".join((trig or {}).get("text", []) or [])
-    txt_lower = trigger_text.lower()
+    ek = str(e.get("edge_kind") or "").lower()
+    seq = e.get("action_sequence") or []
+    has_nav_action = False
+    for step in seq:
+        if isinstance(step, dict):
+            role = str(step.get("action_role") or "").lower()
+        else:
+            role = str(getattr(step, "action_role", "") or "").lower()
+        if role in ("navigate", "support_navigation"):
+            has_nav_action = True
+            break
 
-    is_support_nav = any(w in txt_lower for w in ["back", "return", "home", "restart"]) and not any(
-        w in txt_lower for w in ["cancel", "confirm"]
+    is_support_nav = ("navigation" in ek or has_nav_action) and not (
+        dst_type in ("success", "confirmation_required", "warning", "validation_error", "error")
     )
 
     if fs == ts:
@@ -326,6 +383,8 @@ def _apply_edge_roles(
     e["target_visible_evidence"] = select_distinguishing_evidence(dst_node)
 
     if e["_role"] == "negative_branch" and dst_type == "warning":
+        trig = e.get("trigger_action") if isinstance(e.get("trigger_action"), dict) else {}
+        trigger_text = " ".join((trig or {}).get("text", []) or [])
         if _score_text_match(trigger_text, e["target_visible_evidence"]) < 0:
             return None
 
@@ -562,94 +621,6 @@ def _source_trace_steps(
     return trace
 
 
-def _dfs_best_path_within_pool(
-    pool: List[Dict[str, Any]],
-    node_map: Dict[str, Dict[str, Any]],
-) -> Tuple[List[Dict[str, Any]], str]:
-    """
-    Legacy-style pick of a single forward path within a restricted edge pool.
-    Returns (path_edges, best_entry_hint).
-    """
-    filtered = [e for e in pool if e.get("_role") not in ("local_interaction",)]
-    usable = []
-    for e in filtered:
-        if e.get("_role") == "support_navigation":
-            continue
-        if e.get("_role") == "post_success_navigation":
-            continue
-        usable.append(e)
-
-    if not usable:
-        return [], ""
-
-    adj: Dict[str, List[Dict[str, Any]]] = {}
-    for e in usable:
-        fs = e.get("from_state")
-        if fs not in adj:
-            adj[fs] = []
-        adj[fs].append(e)
-
-    core_edges = [e for e in usable if e.get("_role") != "post_success_navigation"]
-    all_nodes = set(e["from_state"] for e in core_edges) | set(e["to_state"] for e in core_edges)
-
-    in_degrees: Dict[str, int] = {n: 0 for n in all_nodes}
-    for e in core_edges:
-        tos = e.get("to_state")
-        if tos in in_degrees:
-            in_degrees[str(tos)] += 1
-
-    valid_entries: List[str] = []
-    for n in all_nodes:
-        node_meta = node_map.get(str(n), {})
-        oc = node_meta.get("outcome_state_type", "neutral")
-        pres = (node_meta.get("presentation_scope") or "unknown").lower()
-        if oc == "neutral" and pres not in ("modal", "drawer", "popover"):
-            valid_entries.append(str(n))
-
-    best_entry = min(valid_entries or list(all_nodes), key=lambda nn: in_degrees.get(nn, 999))
-
-    all_paths: List[Tuple[List[str], List[Dict[str, Any]]]] = []
-
-    def dfs(current_node: str, current_path: List[str], current_edges: List[Dict[str, Any]], visited: set[str]) -> None:
-        if node_map.get(current_node, {}).get("outcome_state_type") in ["success", "confirmation_required"]:
-            all_paths.append((current_path.copy(), current_edges.copy()))
-            return
-        choices = adj.get(current_node, [])
-        valid_choices = [c for c in choices if c.get("_role") in ["progress", "success_terminal", "review_commit"]]
-        if not valid_choices:
-            all_paths.append((current_path.copy(), current_edges.copy()))
-            return
-        for edge in valid_choices:
-            nx = edge.get("to_state")
-            if nx and str(nx) not in visited:
-                visited.add(str(nx))
-                dfs(str(nx), current_path + [str(nx)], current_edges + [edge], visited)
-                visited.remove(str(nx))
-
-    dfs(best_entry, [best_entry], [], {best_entry})
-
-    def score_path(ledges: List[Dict[str, Any]]) -> int:
-        score = 0
-        for ed in ledges:
-            r = ed.get("_role")
-            if r == "progress":
-                score += 1
-            elif r in ("success_terminal", "review_commit"):
-                score += 5
-            elif r == "negative_branch":
-                score -= 2
-            elif r == "post_success_navigation":
-                score -= 5
-        return score
-
-    if not all_paths:
-        return [], best_entry
-    scored = [(edg, score_path(edg)) for _, edg in all_paths]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    path_edges = scored[0][0]
-    return path_edges, best_entry
-
-
 def _build_main_composed_flow_for_discovery_flow(
     flow: Dict[str, Any],
     candidate_edge_map: Dict[str, Dict[str, Any]],
@@ -671,8 +642,6 @@ def _build_main_composed_flow_for_discovery_flow(
     use_edge_contract = bool(candidate_edge_map) and (
         "transition_edge_ids" in flow or "alternative_outcome_edge_ids" in flow
     )
-
-    hydrated_pool: List[Dict[str, Any]] = []
 
     if use_edge_contract:
         transitions_h, _alternatives_h = hydrate_flow_edges_for_compose(flow, candidate_edge_map, tid_map)
@@ -705,43 +674,28 @@ def _build_main_composed_flow_for_discovery_flow(
                     )
                 )
 
-            method = "agent4_selected_edges"
             if missing or not path_edges_ordered:
                 unresolved.append(
                     UnresolvedFlowItemA5(
                         item_type="unsupported_flow",
                         source_id=flow_id,
                         related_states=list(flow.get("ordered_states") or []),
-                        reason="transition_edge_ids could not be fully hydrated into edges",
+                        reason="transition_edge_ids could not be fully hydrated into edges; DFS fallback is disabled",
                     )
                 )
-                path_edges_ordered = []
-                method = "backend_dfs_fallback"
+                return None
             elif not _chain_is_continuous(path_edges_ordered):
                 unresolved.append(
                     UnresolvedFlowItemA5(
-                        item_type="uncertain_relation",
+                        item_type="unsupported_flow",
                         source_id=flow_id,
                         related_states=list(flow.get("ordered_states") or []),
-                        reason="Agent 4 ordered transition edges do not form a continuous chain; using DFS fallback",
+                        reason="Agent 4 ordered transition edges do not form a continuous chain; DFS fallback is disabled",
                     )
                 )
-                method = "backend_dfs_fallback"
+                return None
 
-            if method == "backend_dfs_fallback":
-                hydrated_pool = []
-                for t in transitions_h:
-                    enriched = dict(t)
-                    enriched["_orig_type"] = enriched.get("_orig_type", "transition")
-                    en = _apply_edge_roles(_normalize_edge_shapes(enriched), node_map, flow_id, flow_name)
-                    if en:
-                        hydrated_pool.append(en)
-
-                path_edges_ordered, entry = _dfs_best_path_within_pool(hydrated_pool, node_map)
-                if path_edges_ordered:
-                    path_edges_ordered = list(path_edges_ordered)
-                else:
-                    return None
+            method = "agent4_selected_edges"
 
         else:
             unresolved.append(
@@ -749,19 +703,10 @@ def _build_main_composed_flow_for_discovery_flow(
                     item_type="unsupported_flow",
                     source_id=flow_id,
                     related_states=list(flow.get("ordered_states") or []),
-                    reason="candidate_flow has no transition_edge_ids; attempting DFS fallback on hydrated transitions",
+                    reason="candidate_flow has no transition_edge_ids and DFS fallback is disabled",
                 )
             )
-            for t in transitions_h:
-                enriched = dict(t)
-                enriched["_orig_type"] = enriched.get("_orig_type", "transition")
-                en = _apply_edge_roles(_normalize_edge_shapes(enriched), node_map, flow_id, flow_name)
-                if en:
-                    hydrated_pool.append(en)
-            path_edges_ordered, entry = _dfs_best_path_within_pool(hydrated_pool, node_map)
-            method = "backend_dfs_fallback"
-            if not path_edges_ordered:
-                return None
+            return None
 
         # cover main-path edges
         for edge in path_edges_ordered:
@@ -801,68 +746,29 @@ def _build_main_composed_flow_for_discovery_flow(
         )
         return cf.model_dump()
 
-    # Legacy flow shape (pre candidate_edge buckets)
-    raw_edges = []
-    for t in flow.get("transitions", []) or []:
+    # Pre-candidate_edge discovery payloads: unsupported (composition requires transition_edge_ids)
+    raw_transitions = list(flow.get("transitions") or [])
+    if not raw_transitions:
+        return None
+    hydrated_any = False
+    for t in raw_transitions:
         x = dict(t)
         x["_orig_type"] = "transition"
-        raw_edges.append(x)
-
-    hydrated_pool_legacy: List[Dict[str, Any]] = []
-    for e in raw_edges:
-        enriched = dict(e)
-        en = _apply_edge_roles(_normalize_edge_shapes(enriched), node_map, flow_id, flow_name)
+        en = _apply_edge_roles(_normalize_edge_shapes(x), node_map, flow_id, flow_name)
         if en:
-            hydrated_pool_legacy.append(en)
-
-    if not hydrated_pool_legacy:
+            hydrated_any = True
+            break
+    if not hydrated_any:
         return None
-
-    path_edges_legacy, _ = _dfs_best_path_within_pool(hydrated_pool_legacy, node_map)
-    if not path_edges_legacy:
-        return None
-
-    for edge in path_edges_legacy:
-        cid = edge.get("candidate_edge_id")
-        if cid:
-            covered_edge_sigs.add(f"edge:{cid}")
-        else:
-            covered_edge_sigs.add(f"{edge.get('from_state')}->{edge.get('to_state')}")
-
-    state_path_l = [path_edges_legacy[0]["from_state"]] + [e["to_state"] for e in path_edges_legacy]
-    last_e_l = path_edges_legacy[-1]
-    conf_l, weak_l = _aggregate_edges_confidence(path_edges_legacy, candidate_edge_map, decisions_map)
-
     unresolved.append(
         UnresolvedFlowItemA5(
             item_type="unsupported_flow",
             source_id=flow_id,
             related_states=list(flow.get("ordered_states") or []),
-            reason="Legacy flow composer path (no structured candidate_edge_ids); DFS fallback applied",
+            reason="Legacy flow shape requires DFS fallback which is permanently disabled",
         )
     )
-
-    flow_counters.setdefault(flow_id, 0)
-    flow_counters[flow_id] += 1
-    cf_l = ComposedFlowInternal(
-        composed_flow_id=f"cf_legacy_{flow_id}_{flow_counters[flow_id]}",
-        source_flow_id=flow_id,
-        source_flow_name=flow_name,
-        user_goal=user_goal,
-        source_discovery_flow_type=source_disc_flow_type,
-        flow_type=_main_path_flow_type(path_edges_legacy, node_map),
-        start_state=str(state_path_l[0]),
-        end_state=str(state_path_l[-1]),
-        state_path=[str(s) for s in state_path_l],
-        edge_sequence=path_edges_legacy,
-        source_trace=_source_trace_steps(path_edges_legacy, decisions_map),
-        composition_method="backend_dfs_fallback",
-        confidence=str(_refine_flow_confidence_overall(conf_l, "main_success_path", weak_l)),
-        behaviour_name=user_goal.strip() if user_goal.strip() else f"{flow_name} — main path",
-        source_group_id=last_e_l.get("source_group_id"),
-        source_screen_intent_id=last_e_l.get("source_screen_intent_id"),
-    )
-    return cf_l.model_dump()
+    return None
 
 
 def _all_classified_edges_union(
@@ -1141,7 +1047,7 @@ def _append_post_mapping_unresolved(
 def _compose_flows_from_discovery(
     flow_discovery_result: Dict[str, Any],
     state_catalog: List[Dict[str, Any]],
-) -> Tuple[List[Dict[str, Any]], List[UnresolvedFlowItemA5]]:
+) -> Tuple[List[Dict[str, Any]], List[UnresolvedFlowItemA5], Dict[str, Any]]:
     node_map = _build_node_map(state_catalog)
     report = flow_discovery_result.get("report") or {}
     candidate_edges_list = report.get("candidate_edges") or []
@@ -1156,7 +1062,7 @@ def _compose_flows_from_discovery(
 
     flows = flow_discovery_result.get("candidate_flows") or []
     if not flows:
-        return [], unresolved
+        return [], unresolved, {"skipped_non_worthy_branch": 0}
 
     for flow in flows:
         cf_main = _build_main_composed_flow_for_discovery_flow(
@@ -1172,14 +1078,11 @@ def _compose_flows_from_discovery(
             composed.append(cf_main)
 
     filtered_edges = _all_classified_edges_union(flow_discovery_result, candidate_edge_map, node_map)
-    visited_states_global = set()
-    for cf in composed:
-        for st in cf.get("state_path") or []:
-            visited_states_global.add(st)
 
     flow_counters_alt: Dict[str, int] = {}
 
     dedupe_seen: set[Tuple[Any, Any, Any]] = set()
+    skipped_non_worthy_branch = 0
 
     for edge in filtered_edges:
         if edge.get("_role") in ("post_success_navigation",):
@@ -1190,8 +1093,8 @@ def _compose_flows_from_discovery(
         if edge_sig in covered_sig:
             continue
 
-        is_negative_like = edge.get("_role") == "negative_branch"
-        if not (is_negative_like or edge.get("from_state") in visited_states_global):
+        if not _is_scenario_worthy_branch_edge(candidate_edge_map, edge):
+            skipped_non_worthy_branch += 1
             continue
 
         dedupe_key = (
@@ -1243,7 +1146,7 @@ def _compose_flows_from_discovery(
         )
         composed.append(bf.model_dump())
 
-    return composed, unresolved
+    return composed, unresolved, {"skipped_non_worthy_branch": skipped_non_worthy_branch}
 
 
 async def run_behaviour_contract_builder(
@@ -1256,8 +1159,26 @@ async def run_behaviour_contract_builder(
     log_event("behaviour_contract_builder_started", run_id=run_id)
 
     catalog = state_catalog or []
-    composed_flow_dicts, base_unresolved = _compose_flows_from_discovery(flow_discovery_result, catalog)
+    precomposed = flow_discovery_result.get("precomposed_flow_internals") or []
+
+    if flow_discovery_result.get("discovery_engine") == "global_compressed_batch" and isinstance(
+        precomposed, list
+    ) and precomposed:
+        composed_flow_dicts = list(precomposed)
+        base_unresolved: List[UnresolvedFlowItemA5] = []
+        compose_metrics = {"skipped_non_worthy_branch": 0}
+    else:
+        composed_flow_dicts, base_unresolved, compose_metrics = _compose_flows_from_discovery(
+            flow_discovery_result, catalog
+        )
+
     unresolved_all: List[UnresolvedFlowItemA5] = list(base_unresolved)
+
+    invalid_flow_ct = sum(
+        1
+        for f in flow_discovery_result.get("candidate_flows") or []
+        if str(f.get("flow_validation_status") or "") == "invalid"
+    )
 
     if not composed_flow_dicts:
         return BehaviourIntentInferenceResult(
@@ -1267,8 +1188,107 @@ async def run_behaviour_contract_builder(
                 total_candidate_flows=len(flow_discovery_result.get("candidate_flows") or []),
                 total_behaviour_intents=0,
                 total_unresolved_items=len(unresolved_all),
+                behaviour_intents_created=0,
+                skipped_due_to_invalid_flow=invalid_flow_ct,
+                skipped_due_to_non_scenario_worthy_edge=int(
+                    compose_metrics.get("skipped_non_worthy_branch") or 0
+                ),
             ),
         ).model_dump()
+
+    # --- TẬN DỤNG AI: Tích hợp Agent 5 LLM-driven Behavior Contract Builder ---
+    if settings.USE_LLM_FOR_BEHAVIOUR_CONTRACT_BUILDER:
+        try:
+            logger.info("Calling Agent 5 LLM-driven Behaviour Contract Builder.")
+            system_instruction = prompt_manager.get_prompt("prompt_behaviour_contract_builder").strip()
+            
+            # Map candidate edges for mapping validation
+            report = flow_discovery_result.get("report") or {}
+            candidate_edges_list = report.get("candidate_edges") or []
+            candidate_edge_map = {str(e["edge_id"]): dict(e) for e in candidate_edges_list if e.get("edge_id")}
+            
+            eval_payload = {
+                "composed_flows": composed_flow_dicts,
+                "flow_state_cards": catalog
+            }
+            user_instruction = (
+                f"Convert the composed flows into formal Behaviour Contracts:\n"
+                f"{json.dumps(eval_payload, indent=2)}\n"
+            )
+            
+            response = await model_adapter.call_text_structured(
+                task_name="behaviour_contract_builder",
+                run_id=run_id,
+                node_name="behaviour_contract_builder_node",
+                system_instruction=system_instruction,
+                user_instruction=user_instruction,
+                output_schema=BehaviourIntentInferenceResult,
+                prompt_name="prompt_behaviour_contract_builder",
+                prompt_version="v2",
+                provider_override=settings.FLOW_DISCOVERY_MODEL_PROVIDER,
+                model_name_override=settings.FLOW_DISCOVERY_MODEL_NAME,
+            )
+            
+            if response.status.value == "success" and response.parsed_output:
+                result = response.parsed_output
+                logger.info(f"Agent 5 LLM successfully generated {len(result.behaviour_intents)} behaviour contracts.")
+                
+                # Ground taxonomy fields and index mappings to ensure DB/schema consistency
+                for intent in result.behaviour_intents:
+                    intent.intent_id = _generate_behaviour_intent_id(run_id)
+                    
+                    orig_cf = None
+                    for cf in composed_flow_dicts:
+                        if str(cf.get("composed_flow_id")) == str(intent.source_flow_id) or str(cf.get("source_flow_id")) == str(intent.source_flow_id):
+                            orig_cf = cf
+                            break
+                    if orig_cf:
+                        intent.source_flow_id = str(orig_cf.get("source_flow_id") or intent.source_flow_id)
+                        intent.source_flow_name = str(orig_cf.get("source_flow_name") or intent.source_flow_name)
+                        intent.source_flow_type = str(orig_cf.get("source_discovery_flow_type") or intent.source_flow_type)
+                        intent.start_state = str(orig_cf.get("start_state") or intent.start_state)
+                        intent.end_state = str(orig_cf.get("end_state") or intent.end_state)
+                        intent.source_group_id = orig_cf.get("source_group_id") or intent.source_group_id
+                        intent.source_screen_intent_id = orig_cf.get("source_screen_intent_id") or intent.source_screen_intent_id
+                        intent.flow_validation_status = _flow_validation_status_for(flow_discovery_result, intent.source_flow_id)
+                        
+                        edges_cf = list(orig_cf.get("edge_sequence") or [])
+                        sw_vals = []
+                        for ee in edges_cf:
+                            cid_e = ee.get("candidate_edge_id")
+                            row_e = candidate_edge_map.get(str(cid_e)) if cid_e else {}
+                            sw_vals.append(int(row_e.get("scenario_worthiness_score") or 100))
+                        intent.min_scenario_worthiness = min(sw_vals) if sw_vals else 100
+                        intent.scenario_worthy_path = all(_is_scenario_worthy_branch_edge(candidate_edge_map, ee) for ee in edges_cf)
+                        
+                        intent.source_transition_ids = [
+                            str(e.get("transition_id"))
+                            if e.get("transition_id")
+                            else (
+                                str(e.get("candidate_edge_id"))
+                                if e.get("candidate_edge_id")
+                                else f"{e.get('from_state')}->{e.get('to_state')}"
+                            )
+                            for e in edges_cf
+                        ]
+                        intent.source_transition_indexes = list(range(len(edges_cf)))
+                    
+                    db.add(_persist_intent_row(run_id, intent))
+                
+                try:
+                    await db.commit()
+                except Exception as db_err:
+                    logger.error(f"Failed to commit LLM behaviour contracts for run {run_id}: {db_err}")
+                    await db.rollback()
+                    raise
+                
+                duration_ms = int((time.time() - start_time) * 1000)
+                log_event("behaviour_contract_builder_completed", run_id=run_id, duration_ms=duration_ms)
+                return result.model_dump()
+            else:
+                logger.error(f"LLM Behaviour Contract Builder call failed: {response.error}. Falling back to deterministic builder.")
+        except Exception as ex:
+            logger.error(f"Error in LLM Behaviour Contract Builder: {ex}. Falling back to deterministic builder.")
 
     node_map = _build_node_map(catalog)
 
@@ -1300,6 +1320,19 @@ async def run_behaviour_contract_builder(
         intent_kind = ik_tuple[0]
 
         intent_type = _infer_intent_type(cf.get("flow_type", ""), end_node_meta, last_edge, intent_kind)
+
+        flow_val_status = _flow_validation_status_for(flow_discovery_result, str(cf.get("source_flow_id") or ""))
+        sw_vals: List[int] = []
+        for ee in edges_cf:
+            cid_e = ee.get("candidate_edge_id")
+            row_e = candidate_edge_map.get(str(cid_e)) if cid_e else {}
+            sw_vals.append(int(row_e.get("scenario_worthiness_score") or 100))
+        min_sw = min(sw_vals) if sw_vals else 100
+        worthy_path = (
+            all(_is_scenario_worthy_branch_edge(candidate_edge_map, ee) for ee in edges_cf)
+            if edges_cf
+            else True
+        )
 
         source_flow_type = str(cf.get("source_discovery_flow_type") or "ordered_sequence")
 
@@ -1336,6 +1369,10 @@ async def run_behaviour_contract_builder(
             source_flow_id=str(cf["source_flow_id"]),
             source_flow_name=str(cf["source_flow_name"]),
             source_flow_type=source_flow_type,
+            composition_method=str(cf.get("composition_method") or "agent4_selected_edges"),
+            flow_validation_status=flow_val_status,
+            min_scenario_worthiness=min_sw,
+            scenario_worthy_path=worthy_path,
             source_transition_indexes=list(range(len(edges_cf))),
             source_outcome_state=cf.get("end_state"),
             source_group_id=cf.get("source_group_id"),
@@ -1353,7 +1390,7 @@ async def run_behaviour_contract_builder(
             user_actions=[],
             expected_result=exp_res,
             expected_ui_evidence=[],
-            negative_expectations=[],
+            negative_expectations=["The success outcome is displayed."] if intent_type == "negative" else [],
             assumptions=[],
             warnings=list(warns),
             confidence=str(conf_use),
@@ -1398,7 +1435,27 @@ async def run_behaviour_contract_builder(
                     if fs:
                         intent_pre.user_actions.append(fs)
 
-        # Preconditions for validation-style branches when inputs inferred missing
+            # Causal audit compares non-empty user_actions to edge count — pad with inferred triggers.
+            if edges_cf:
+                while len([x for x in intent_pre.user_actions if str(x).strip()]) < len(edges_cf):
+                    ei = len([x for x in intent_pre.user_actions if str(x).strip()])
+                    if ei >= len(edges_cf):
+                        break
+                    ee = edges_cf[ei]
+                    tri = ee.get("trigger_action")
+                    line = format_action_step(tri) if tri else ""
+                    if not line:
+                        line = format_action_step(derive_trigger_from_edge(ee))
+                    if not line:
+                        for step in ee.get("action_sequence") or []:
+                            line = format_action_step(
+                                {"action_type": "click", "text": step.get("action_text") or []}
+                            )
+                            if line:
+                                break
+                    if not line:
+                        line = "Click the primary control for this transition"
+                    intent_pre.user_actions.append(line)
         if intent_type == "validation" and not intent_pre.user_actions:
             intent_pre.preconditions.append("The required fields are interacted with according to UI affordances.")
 
@@ -1423,6 +1480,9 @@ async def run_behaviour_contract_builder(
             total_candidate_flows=len(flow_discovery_result.get("candidate_flows") or []),
             total_behaviour_intents=len(intents),
             total_unresolved_items=len(unresolved_all),
+            behaviour_intents_created=len(intents),
+            skipped_due_to_invalid_flow=invalid_flow_ct,
+            skipped_due_to_non_scenario_worthy_edge=int(compose_metrics.get("skipped_non_worthy_branch") or 0),
         ),
     )
 

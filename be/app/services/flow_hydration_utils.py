@@ -1,12 +1,9 @@
 """
-Hydration helpers for intent-aware flow discovery: derive DB-safe transitions from candidate_edges.
+Transition hydration and trigger action helpers for UI Flow composition.
 """
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
-
-from app.model_providers.schemas import EdgeDecisionA4
-
 
 _ACTION_ROLE_TO_TRIGGER_TYPE: Dict[str, str] = {
     "select_option": "select_option",
@@ -38,93 +35,11 @@ def hypothesized_action_from_trigger(trigger: Dict[str, Any]) -> Optional[str]:
     return at or None
 
 
-def evidence_level_for_edge_id(
-    edge_id: str,
-    edge_decisions: List[EdgeDecisionA4],
-    default: str = "medium",
-) -> str:
-    for d in edge_decisions:
-        if d.candidate_edge_id == edge_id:
-            return str(d.evidence_level).strip().lower()
-    return default
-
-
-def reason_code_for_edge_id(edge_id: str, edge_decisions: List[EdgeDecisionA4]) -> Optional[str]:
-    for d in edge_decisions:
-        if d.candidate_edge_id == edge_id:
-            return d.reason_code
-    return None
-
-
 def normalize_ordering_strength(raw: str) -> str:
     s = (raw or "").strip().lower()
     if s in ("strong", "medium"):
         return s
     return "medium"
-
-
-def compute_flow_confidence(
-    transition_edge_ids: List[str],
-    alternative_outcome_edge_ids: List[str],
-    candidate_edge_map: Dict[str, Dict[str, Any]],
-) -> Tuple[float, str]:
-    """Weighted heuristic from resolver scores → persisted Flow.confidence + label."""
-
-    def _avg(ids: List[str], weight: float) -> Tuple[float, float]:
-        scores = [
-            float(candidate_edge_map[e].get("edge_score") or 0.0)
-            for e in ids
-            if e in candidate_edge_map
-        ]
-        if not scores:
-            return 0.0, 0.0
-        return sum(scores) / len(scores), weight * len(scores)
-
-    main_avg, main_w = _avg(transition_edge_ids, 1.0)
-    alt_avg, alt_w = _avg(alternative_outcome_edge_ids, 0.35)
-    denom = main_w + alt_w
-    blended = main_avg if denom == 0 else (main_avg * main_w + alt_avg * alt_w) / denom
-
-    penalty = 0.0
-    for eid in transition_edge_ids:
-        edge = candidate_edge_map.get(eid) or {}
-        flags = edge.get("edge_risk_flags") or []
-        penalty += min(12.0, float(len(flags)) * 4.0)
-
-    raw = max(0.0, blended - penalty)
-
-    if raw >= 85.0:
-        return 0.9, "high"
-    if raw >= 70.0:
-        return 0.7, "medium"
-    if raw >= 55.0:
-        return 0.45, "medium"
-    return 0.25, "low"
-
-
-def build_flow_discovery_decision_report(
-    edge_decisions: List[EdgeDecisionA4],
-) -> Dict[str, List[str]]:
-    accepted: List[str] = []
-    rejected: List[str] = []
-    local_interactions: List[str] = []
-    uncertain_edges: List[str] = []
-    for d in edge_decisions:
-        eid = d.candidate_edge_id
-        if d.decision == "accepted":
-            accepted.append(eid)
-        elif d.decision == "rejected":
-            rejected.append(eid)
-        elif d.decision == "local_interaction":
-            local_interactions.append(eid)
-        elif d.decision == "uncertain":
-            uncertain_edges.append(eid)
-    return {
-        "accepted_edges": accepted,
-        "rejected_edges": rejected,
-        "local_interactions": local_interactions,
-        "uncertain_edges": uncertain_edges,
-    }
 
 
 def hydrate_flow_edges_for_compose(
@@ -133,7 +48,7 @@ def hydrate_flow_edges_for_compose(
     transition_id_by_candidate_edge_id: Optional[Dict[str, str]] = None,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Build legacy-shaped transition / alternative_outcomes lists for _compose_graph_flows.
+    Build internal transition / alternative_outcome dicts consumed by flow composition.
     """
     tid_map = transition_id_by_candidate_edge_id or {}
     transitions: List[Dict[str, Any]] = []
@@ -185,20 +100,3 @@ def hydrate_flow_edges_for_compose(
         )
 
     return transitions, alternative_outcomes
-
-
-def rebuild_ordered_states_from_edges(
-    transition_edge_ids: List[str],
-    candidate_edge_map: Dict[str, Dict[str, Any]],
-) -> List[str]:
-    if not transition_edge_ids:
-        return []
-    states: List[str] = []
-    for i, eid in enumerate(transition_edge_ids):
-        edge = candidate_edge_map.get(eid)
-        if not edge:
-            continue
-        if i == 0:
-            states.append(edge["from_state"])
-        states.append(edge["to_state"])
-    return states

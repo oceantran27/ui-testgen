@@ -11,6 +11,47 @@ from app.core.config import settings
 from app.core.logging import log_event
 from app.services.storage_service import storage_service
 
+
+def _exported_behaviour_scenarios(
+    scenario_pkg: Dict[str, Any],
+    validation_pkg: Dict[str, Any],
+) -> tuple[List[Dict[str, Any]], List[str]]:
+    """Keep draft scenarios accepted by Agent 7 with allowed validation_status."""
+    drafts = list(scenario_pkg.get("test_scenarios") or [])
+    validated = list(validation_pkg.get("validated_scenarios") or [])
+    allow = frozenset(
+        (s or "").strip().lower()
+        for s in (settings.RESEARCH_SCENARIO_EXPORT_VALIDATION_STATUSES or ["validated"])
+    )
+
+    verdict_by_id: Dict[str, Dict[str, Any]] = {}
+    for row in validated:
+        if isinstance(row, dict) and row.get("scenario_id"):
+            verdict_by_id[str(row["scenario_id"])] = row
+
+    exported: List[Dict[str, Any]] = []
+    excluded: List[str] = []
+    for d in drafts:
+        if not isinstance(d, dict):
+            continue
+        sid = str(d.get("scenario_id") or "")
+        verdict = verdict_by_id.get(sid)
+        if not verdict:
+            excluded.append(sid or "<missing_id>")
+            continue
+        status = str(verdict.get("validation_status") or "").lower()
+        if status not in allow:
+            excluded.append(sid)
+            continue
+        acc = verdict.get("acceptance_decision") or {}
+        if not acc.get("include_in_final_output", True):
+            excluded.append(sid)
+            continue
+        exported.append(d)
+
+    return exported, excluded
+
+
 async def run_research_output_assembly(
     _db: AsyncSession,
     run_id: str,
@@ -24,7 +65,6 @@ async def run_research_output_assembly(
 
     # 1. Gather all data from state
     screen_intent_pkg = state.get("screen_intent_package", {})
-    flow_context_pkg = state.get("flow_context_package", {})
     intent_pkg = state.get("intent_package", {})
     scenario_pkg = state.get("scenario_draft_package", {})
     validation_pkg = state.get("validated_scenario_package", {})
@@ -34,6 +74,16 @@ async def run_research_output_assembly(
         validation_report = {}
 
     audit_suggestions_flat = state.get("audit_revision_suggestions") or []
+
+    exported_scenarios, excluded_scenario_ids = _exported_behaviour_scenarios(scenario_pkg, validation_pkg)
+
+    fdr = state.get("flow_discovery_result") or {}
+
+    assembly_flow_method = (
+        "global_compressed_batch"
+        if fdr.get("discovery_engine") == "global_compressed_batch"
+        else "intent_aware_structured_reasoning"
+    )
 
     final_output = {
         "run_id": run_id,
@@ -49,13 +99,44 @@ async def run_research_output_assembly(
         },
         "state_catalog": state.get("state_catalog", []),
         "flow_discovery": {
-            "method": "intent_aware_structured_reasoning",
-            "candidate_flows": state.get("flow_discovery_result", {}).get("candidate_flows", []),
-            "warnings": state.get("flow_discovery_result", {}).get("discovery_warnings", [])
+            "method": assembly_flow_method,
+            "discovery_engine": fdr.get("discovery_engine"),
+            "candidate_flows": fdr.get("candidate_flows", []),
+            "warnings": fdr.get("discovery_warnings", []),
+            "global_discovery_result_summary": (
+                {
+                    "flow_count": len(
+                        (
+                            (fdr.get("global_discovery_result") or {}).get("candidate_flows")
+                            or (fdr.get("global_discovery_result") or {}).get("discovered_flows")
+                            or []
+                        )
+                    )
+                }
+                if isinstance(fdr.get("global_discovery_result"), dict)
+                else None
+            ),
+            "compressed_catalog_metrics": (
+                state.get("compressed_catalog_package") or {}
+            ).get("compression_stats")
+            if isinstance(state.get("compressed_catalog_package"), dict)
+            else None,
+            "transition_evidence": {
+                "package_id": (state.get("verified_transition_package") or {}).get("transition_evidence_package_id"),
+                "vlm_metrics": (state.get("verified_transition_package") or {}).get("vlm_metrics"),
+                "disabled": assembly_flow_method == "global_compressed_batch",
+            },
         },
         "screen_behaviour_intents": screen_intent_pkg.get("screen_intent_catalog", []),
         "behaviour_contracts": intent_pkg.get("behaviour_intents", []),
-        "behaviour_scenarios": scenario_pkg.get("test_scenarios", []),
+        "behaviour_scenarios": exported_scenarios,
+        "behaviour_scenarios_all_drafts": scenario_pkg.get("test_scenarios", []),
+        "scenario_export_meta": {
+            "validation_status_allowlist": settings.RESEARCH_SCENARIO_EXPORT_VALIDATION_STATUSES,
+            "exported_count": len(exported_scenarios),
+            "excluded_after_audit_count": len(excluded_scenario_ids),
+            "excluded_scenario_ids": excluded_scenario_ids[:200],
+        },
         "scenario_generation": {
             "mode": (scenario_pkg.get("report") or {}).get("mode", "deterministic_python"),
             "auto_revision_retry": False,
@@ -100,6 +181,15 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
         if scores:
             avg_grounding_score = sum(scores) / len(scores)
 
+    exported_raw, excluded_ids = _exported_behaviour_scenarios(scenario_pkg, validation_pkg)
+
+    vt = state.get("verified_transition_package") or {}
+    vlm = vt.get("vlm_metrics") or {}
+    cmp_pkg = state.get("compressed_catalog_package") or {}
+
+    comp_stats = cmp_pkg.get("compression_stats") or {}
+    gd_rep = flow_discovery.get("report") or {}
+
     return {
         "input_image_count": len(state.get("raw_image_ids", [])),
         "exact_duplicate_group_count": len(state.get("exact_duplicate_groups", [])),
@@ -108,6 +198,15 @@ def _calculate_metrics(state: Dict[str, Any]) -> Dict[str, Any]:
         "screen_intent_count": len(screen_intent_pkg.get("screen_intent_catalog", [])),
         "behaviour_contract_count": len(intent_pkg.get("behaviour_intents", [])),
         "scenario_count": len(scenario_pkg.get("test_scenarios", [])),
+        "scenario_export_count": len(exported_raw),
+        "scenario_audit_excluded_count": len(excluded_ids),
+        "compressed_catalog_screen_count": len(cmp_pkg.get("compressed_catalog") or []),
+        "compressed_catalog_token_estimate_div4": comp_stats.get("token_estimate_div4"),
+        "global_flow_discovery_catalog_char_len": gd_rep.get("global_discovery_input_catalog_char_len"),
+        "transition_evidence_verified_edges": int(vlm.get("verified_count") or 0),
+        "transition_evidence_rejected_edges": int(vlm.get("rejected_count") or 0),
+        "transition_evidence_pairwise_inputs": int(vlm.get("edge_input_count") or 0),
         "validated_scenario_count": len(validated_scenarios),
-        "average_grounding_score": avg_grounding_score,
+        "avg_grounding_score": float(avg_grounding_score),
     }
+

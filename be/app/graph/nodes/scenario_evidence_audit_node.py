@@ -41,6 +41,8 @@ async def scenario_evidence_audit_node(state: PipelineState, db: AsyncSession) -
         flow_discovery_result = state.get("flow_discovery_result", {})
         intent_package = state.get("intent_package", {})
         screen_intent_package = state.get("screen_intent_package", {})
+        state_catalog = state.get("state_catalog") or []
+        compressed_catalog_package = state.get("compressed_catalog_package") or {}
 
         result = await run_scenario_evidence_audit(
             db=db,
@@ -49,7 +51,9 @@ async def scenario_evidence_audit_node(state: PipelineState, db: AsyncSession) -
             ui_state_package=ui_state_package,
             flow_discovery_result=flow_discovery_result,
             intent_package=intent_package,
-            screen_intent_package=screen_intent_package
+            screen_intent_package=screen_intent_package,
+            state_catalog=state_catalog,
+            compressed_catalog_package=compressed_catalog_package,
         )
 
         hints = revision_hints_from_validated_package(result)

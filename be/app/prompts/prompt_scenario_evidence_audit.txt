@@ -12,8 +12,12 @@ You receive a JSON object containing outputs from previous pipeline stages.
   "behaviour_intents": [],
   "candidate_flows": [],
   "screen_intent_package": [],
-  "ui_state_evidence": []
+  "ui_state_evidence": [],
+  "compressed_catalog": [],
+  "global_discovery": {}
 }
+
+When **`compressed_catalog`** is present with **`global_discovery`**, grounding may rely on abbreviated per-screen intents and actions synthesized from Phase1+Phase2 compression—still enforce ID alignment with `candidate_flows`/`behaviour_intents`.
 
 ## Validation Layers:
 1. Traceability & Schema (Intent/Flow alignment).
@@ -22,6 +26,8 @@ You receive a JSON object containing outputs from previous pipeline stages.
 4. Status & Scoring (Final validation decision).
 
 When `pre_audit_results` is present per scenario (backend-calculated): `evidence_found_count` / `evidence_total_count` exclude technical assertions (`state_transition`, `ui_text_grounding_required: false`). They reflect **verbatim** UI text matches only for evidenced assertions—not whether the logical end-state is correct.
+
+When `pre_audit_results.keyword_anchor_grounding` is present, it records Agent 6 deterministic checks that mandatory blueprint anchor texts appear in the correct **`Given`/`When`/`Then`** sections (`keyword_anchor_coverage`, `missing_anchor_ids`, `grounding_passed`). Treat this as auxiliary evidence: high coverage supports grounding; missing anchors suggest higher hallucination risk even when UI pools partially match.
 
 ### Backend `pre_audit_results` — trigger grounding (layered)
 
