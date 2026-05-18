@@ -298,6 +298,53 @@ export function RunWorkspacePage() {
   const [tab, setTab] = useState<TabId>("overview");
   const [progressOpen, setProgressOpen] = useState(false);
 
+  // Real-time stopwatch for execution duration
+  const [elapsedMs, setElapsedMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    const startedStr = run?.started_at ?? graphStatus?.started_at;
+    const completedStr = run?.completed_at ?? graphStatus?.completed_at;
+
+    if (!startedStr) {
+      setElapsedMs(null);
+      return;
+    }
+
+    const start = new Date(startedStr).getTime();
+
+    // If run is terminal (completed, failed, cancelled)
+    const isTerminalStatus = ["completed", "failed", "cancelled"].includes(run?.status || "");
+    if (isTerminalStatus && completedStr) {
+      const end = new Date(completedStr).getTime();
+      setElapsedMs(Math.max(0, end - start));
+      return;
+    }
+
+    // Otherwise, actively poll/increment the timer
+    const updateTimer = () => {
+      setElapsedMs(Math.max(0, Date.now() - start));
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [run?.status, run?.started_at, run?.completed_at, graphStatus?.started_at, graphStatus?.completed_at]);
+
+  const formatDuration = (ms: number | null): string => {
+    if (ms === null) return "--:--";
+    const totalSecs = Math.floor(ms / 1000);
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    if (hrs > 0) {
+      return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+    }
+    return `${pad(mins)}:${pad(secs)}`;
+  };
+
   const handleCancelRun = async () => {
     if (!run) return;
     if (!window.confirm("Cancel this run?")) return;
@@ -588,7 +635,8 @@ export function RunWorkspacePage() {
     } finally {
       setTabLoading(false);
     }
-  }, [decodedId, tab]);
+    // Refetch when the run advances (e.g. overview final package after completion).
+  }, [decodedId, tab, run?.status]);
 
   useEffect(() => {
     void loadTab();
@@ -787,14 +835,161 @@ export function RunWorkspacePage() {
         )}
       </div>
 
-      <div className="card-dark mb-6">
-        <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-zinc-500">
-          Pipeline ({steps.length} steps)
-        </h2>
-        <p className="mb-3 text-[11px] text-zinc-500">
-          {steps.map((s) => s.label).join(" → ")}
-        </p>
-        <PipelineStrip run={run} graphStatus={graphStatus} hints={hints} />
+      {/* Premium Glassmorphic Task Progress Bar Panel */}
+      <div className="card-dark relative overflow-hidden border border-zinc-800 bg-zinc-950/80 p-5 shadow-xl backdrop-blur-md mb-6">
+        <style>{`
+          @keyframes progress-bar-stripes {
+            0% { background-position: 1rem 0; }
+            100% { background-position: 0 0; }
+          }
+        `}</style>
+        {/* Background glow effects */}
+        <div className="absolute -left-16 -top-16 -z-10 size-48 rounded-full bg-cyan-500/10 blur-[80px]" />
+        <div className="absolute -right-16 -bottom-16 -z-10 size-48 rounded-full bg-indigo-500/10 blur-[80px]" />
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-800/80 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+                Pipeline Execution
+              </h2>
+              {run?.status === "processing" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-cyan-950/40 px-2 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-800/30 animate-pulse">
+                  <span className="size-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  Active
+                </span>
+              )}
+            </div>
+            <p className="text-lg font-extrabold text-white tracking-tight">
+              {run?.project_name || "Unnamed Project"} 
+              <span className="ml-2 font-mono text-xs font-medium text-zinc-500">({run?.run_id})</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="rounded-lg bg-zinc-900/80 border border-zinc-800/60 px-3 py-2 text-center">
+              <span className="block text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Duration</span>
+              <span className="font-mono text-sm font-bold text-zinc-200">{formatDuration(elapsedMs)}</span>
+            </div>
+            <div className="rounded-lg bg-zinc-900/80 border border-zinc-800/60 px-3 py-2 text-center min-w-[70px]">
+              <span className="block text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Progress</span>
+              <span className="font-mono text-sm font-bold text-cyan-300">
+                {run?.progress_percentage ?? graphStatus?.progress_percentage ?? 0}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* The Progress Bar */}
+        <div className="my-5 space-y-2">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-900/90 border border-zinc-800/80">
+            <div
+              className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-cyan-500 via-teal-400 to-indigo-500 transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+              style={{ width: `${run?.progress_percentage ?? graphStatus?.progress_percentage ?? 0}%` }}
+            />
+            {run?.status === "processing" && (
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[size:1rem_1rem] animate-[progress-bar-stripes_1s_linear_infinite]" />
+            )}
+          </div>
+        </div>
+
+        {/* Horizontal scrollable steps indicator */}
+        <div className="overflow-x-auto pb-1">
+          <div className="flex min-w-max gap-3 py-2 px-1">
+            {steps.map((row, i) => {
+              const isActive = row.status === "running";
+              const isDone = row.status === "done";
+              const isFailed = row.status === "failed";
+              
+              let stepBg = "bg-zinc-950/40 border-zinc-900/80 text-zinc-500";
+              let badgeBg = "bg-zinc-800/60 text-zinc-500";
+              if (isActive) {
+                stepBg = "bg-cyan-950/20 border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.1)]";
+                badgeBg = "bg-cyan-500 text-black font-bold";
+              } else if (isDone) {
+                stepBg = "bg-zinc-900/30 border-emerald-500/30 text-emerald-400/90";
+                badgeBg = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+              } else if (isFailed) {
+                stepBg = "bg-red-950/15 border-red-500/30 text-red-400";
+                badgeBg = "bg-red-500/10 text-red-400 border border-red-500/20";
+              }
+
+              return (
+                <div
+                  key={row.id}
+                  className={`flex flex-col gap-2 rounded-xl border p-3 min-w-[125px] transition-all duration-300 ${stepBg}`}
+                  title={row.id}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex items-center justify-center size-5 rounded-lg text-[10px] ${badgeBg}`}>
+                      {isDone ? "✓" : isFailed ? "✕" : isActive ? "▶" : i + 1}
+                    </span>
+                    {isActive && (
+                      <span className="flex size-2 rounded-full bg-cyan-400">
+                        <span className="absolute size-2 rounded-full bg-cyan-400 animate-ping opacity-75" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="block text-[11px] font-bold leading-tight line-clamp-1">
+                      {row.label}
+                    </span>
+                    <span className="block font-mono text-[8px] opacity-40">
+                      {row.id.replace("_node", "")}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dynamic Context-Aware Alert Banners */}
+        {run?.status === "failed" && (
+          <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-950/20 p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+            <FiAlertCircle className="size-5 text-red-400 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-xs font-bold text-red-200">Execution Failed</h4>
+              <p className="mt-1 text-xs text-red-300/90 leading-relaxed font-mono">
+                {run.error_message || "Unknown LangGraph execution exception occurred."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {run?.status === "completed" && (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-950/15 p-3">
+            <FiCheckCircle className="size-5 text-emerald-400 shrink-0" />
+            <div>
+              <h4 className="text-xs font-bold text-emerald-200">Synthesized Successfully</h4>
+              <p className="mt-0.5 text-[11px] text-emerald-400/80">
+                All pipeline stages are complete. Behavior scenarios generated and audited.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {run?.status === "processing" && (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-cyan-500/20 bg-cyan-950/10 p-3">
+            <FiLoader className="size-4 animate-spin text-cyan-400 shrink-0" />
+            <div>
+              <h4 className="text-xs font-bold text-cyan-200">
+                {run.current_node === "init_run_context_node" && "Initializing execution context..."}
+                {run.current_node === "joint_screen_understanding_node" && "Analyzing screens..."}
+                {run.current_node === "representation_compression_node" && "Compressing screen semantics..."}
+                {run.current_node === "global_flow_discovery_node" && "Discovering end-to-end user flows..."}
+                {run.current_node === "generate_tests_node" && "Drafting behavior scenarion test steps..."}
+                {run.current_node === "scenario_evidence_audit_node" && "Auditing scenarios against ground truth..."}
+                {run.current_node === "output_assembly_node" && "Assembling BDD test suites..."}
+                {run.current_node === "graph_finalizer_node" && "Finalizing and saving artifacts..."}
+                {!run.current_node && "Orchestrating agent workflows..."}
+              </h4>
+              <p className="mt-0.5 text-[11px] text-cyan-400/80">
+                Please wait while the multi-agent system completes structured reasoning.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-zinc-800 pb-3">
@@ -854,6 +1049,29 @@ export function RunWorkspacePage() {
                 </div>
               ))}
             </div>
+            {!finalPackage && run && run.status === "processing" ? (
+              <p className="text-sm text-zinc-500">
+                Pipeline is running. Metrics here stay at zero until scenario validation finishes;{" "}
+                <code className="text-zinc-400">GET …/research-output</code> 404 until then is
+                normal. The first node after init calls vision/LLM and can sit with little console
+                output for minutes — watch this terminal, open <strong>Pipeline detail</strong>, or
+                the <strong>Log</strong> tab if <code className="text-zinc-400">PIPELINE_RUN_LOG_ENABLED</code>{" "}
+                is on.
+              </p>
+            ) : null}
+            {!finalPackage &&
+            run &&
+            (run.status === "queued" || run.status === "uploaded") ? (
+              <p className="text-sm text-zinc-500">
+                Final research metrics appear after scenario validation.{" "}
+                <code className="text-zinc-400">GET …/research-output</code> returns 404 until
+                then — that is expected. If status stays{" "}
+                <span className="font-semibold text-zinc-400">queued</span>, start the job worker:{" "}
+                <code className="text-zinc-400">arq app.workers.main_worker.WorkerSettings</code>{" "}
+                from <code className="text-zinc-400">be/</code> (API only enqueues jobs; it does not
+                run the graph).
+              </p>
+            ) : null}
             {finalPackage && (
               <div className="rounded-lg border border-emerald-500/20 bg-emerald-950/10 p-4">
                 <p className="text-sm font-semibold text-emerald-300 mb-2">Final Output Summary</p>

@@ -154,8 +154,7 @@ export type ModelCallDetailResponse = ModelCallSummary & {
 };
 
 export type PipelinePhaseModelKey =
-  | "ui_state_extraction"
-  | "screen_intent_extraction"
+  | "joint_screen_understanding"
   | "flow_context_builder"
   | "intent_aware_flow_discovery"
   | "behaviour_contract_builder"

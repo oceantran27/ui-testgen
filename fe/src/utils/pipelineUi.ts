@@ -1,8 +1,7 @@
 import type { GraphStatusResponse } from "../types/run";
 import type { RunResponse } from "../types/run";
 import {
-  PIPELINE_NODE_IDS_SEPARATED,
-  PIPELINE_NODE_IDS_JOINT,
+  PIPELINE_NODE_IDS,
   PIPELINE_STEP_LABELS,
   type PipelineNodeId,
 } from "../constants/pipeline";
@@ -21,9 +20,12 @@ export type PipelineHints = {
   scenarioCount: number;
 };
 
+/** Map legacy backend node / agent names to the single screen-understanding step. */
 const PIPELINE_NODE_ALIASES: Record<string, PipelineNodeId> = {
-  ui_state_evidence_extraction: "ui_state_evidence_extraction_node",
-  screen_intent_extraction_v2: "screen_intent_extraction_v2_node",
+  ui_state_evidence_extraction: "joint_screen_understanding_node",
+  ui_state_evidence_extraction_node: "joint_screen_understanding_node",
+  screen_intent_extraction_v2: "joint_screen_understanding_node",
+  screen_intent_extraction_v2_node: "joint_screen_understanding_node",
   joint_screen_understanding: "joint_screen_understanding_node",
   compressed_representation: "representation_compression_node",
   representation_compression: "representation_compression_node",
@@ -106,8 +108,7 @@ export function buildPipelineStepRows(
 ): PipelineStepRow[] {
   const eff = effectivePipelineFields(run, graph);
 
-  const mode = run?.config?.screen_understanding_mode === "joint" ? "joint" : "separated";
-  const nodeIds = mode === "joint" ? PIPELINE_NODE_IDS_JOINT : PIPELINE_NODE_IDS_SEPARATED;
+  const nodeIds = PIPELINE_NODE_IDS;
   const nodeIndex: Record<string, number> = Object.fromEntries(
     nodeIds.map((id, i) => [id, i]),
   );
