@@ -7,6 +7,7 @@ import re
 import uuid
 from typing import Any, Dict, List, Literal, Optional, Tuple, cast, get_args
 
+from app.constants.screen_intent_taxonomy import VISIBLE_STATUS_VALUES
 from app.constants.ui_screen_taxonomy import normalize_screen_type
 from app.model_providers.schemas import (
     A1ActionPriority,
@@ -16,6 +17,8 @@ from app.model_providers.schemas import (
     A1ScreenType,
     CompressedActionRef,
     CompressedCatalogPackage,
+    CompressedContinuityEntity,
+    CompressedContinuityEntityType,
     CompressedEvidenceRef,
     CompressedFormField,
     CompressedFormSelectionOption,
@@ -42,6 +45,21 @@ _MAX_BREADCRUMB_PARTS = 12
 
 _STEP_FRACTION_RE = re.compile(r"step\s*(\d+)\s*/\s*(\d+)", re.I)
 _STEP_OF_RE = re.compile(r"step\s*(\d+)\s+of\s+(\d+)", re.I)
+
+# Continuity: deterministic strings only (cap 8 / screen). See _build_continuity_entities docstring.
+_MAX_CONTINUITY_ENTITIES = 8
+_MAX_CONTINUITY_CANDIDATE_LEN = 200
+_RE_CONT_TIME = re.compile(r"\b\d{1,2}:\d{2}(?::\d{2})?(?:\s*[ap]\.?m\.?)?\b", re.I)
+_RE_CONT_DATE_ISO = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_RE_CONT_DATE_SLASH = re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b")
+_RE_CONT_AMOUNT = re.compile(
+    r"[$\u20AC\u00A3\u20BD]\s*\d[\d,]*(?:\.\d{2})?\b|\b\d[\d,]*(?:\.\d{2})?\s*(?:USD|EUR|GBP|VND)\b",
+    re.I,
+)
+_RE_CONT_ORDER = re.compile(r"\b(?:order|booking|confirmation|ref)\s*#?\s*[\w-]{3,}\b", re.I)
+_RE_CONT_ORDER_HASH = re.compile(r"#\s*[\dA-Z]{4,}\b")
+_RE_CONT_APPOINT = re.compile(r"\b(?:appointment|booking|reservation)\b", re.I)
+_ALLOWED_CONTINUITY_TYPES: frozenset[str] = frozenset(get_args(CompressedContinuityEntityType))
 
 
 def _norm_domain(raw: str | None) -> str:
@@ -293,6 +311,97 @@ def _build_form_state_summary(state: Dict[str, Any]) -> CompressedFormStateSumma
     )
 
 
+def _classify_continuity_entity_type(blob: str) -> str:
+    """Map free text to `CompressedContinuityEntityType` when patterns match; else unknown."""
+    b = blob.strip()
+    if not b:
+        return "unknown"
+    if _RE_CONT_ORDER.search(b) or _RE_CONT_ORDER_HASH.search(b):
+        return "order"
+    if _RE_CONT_AMOUNT.search(b):
+        return "amount"
+    if _RE_CONT_TIME.search(b):
+        return "time"
+    if _RE_CONT_DATE_ISO.search(b) or _RE_CONT_DATE_SLASH.search(b):
+        return "date"
+    if _RE_CONT_APPOINT.search(b):
+        return "appointment"
+    return "unknown"
+
+
+def _continuity_candidate_tuples_from_state(state: Dict[str, Any]) -> List[Tuple[str, Optional[str]]]:
+    """Yield (display_text, element_id) from visible elements and short feedback lines."""
+    out: List[Tuple[str, Optional[str]]] = []
+    for el in state.get("visible_elements") or []:
+        if not isinstance(el, dict):
+            continue
+        eid_raw = el.get("element_id")
+        eid = str(eid_raw) if eid_raw else None
+        et = str(el.get("element_type") or "")
+        rh = str(el.get("role_hint") or "")
+        texts = [str(t).strip() for t in (el.get("text") or []) if str(t).strip()]
+        if not texts:
+            continue
+        blob = " ".join(texts[:6])[:_MAX_CONTINUITY_CANDIDATE_LEN]
+        if et == "heading":
+            if len(blob) <= 140:
+                out.append((blob, eid))
+        elif et in ("input", "textarea", "select", "checkbox", "radio", "date_picker") or rh in (
+            "required_input",
+            "optional_input",
+            "primary_action",
+            "status_indicator",
+        ):
+            out.append((blob, eid))
+        elif et == "text" and rh in ("required_input", "optional_input", "status_indicator"):
+            out.append((blob, eid))
+    for fb in _feedback_rows(state):
+        ft = str(fb.get("feedback_type") or "").lower()
+        if ft not in ("error", "warning", "success", "info", "validation_error", "toast"):
+            continue
+        for t in fb.get("text") or []:
+            s = str(t).strip()
+            if 4 <= len(s) <= _MAX_CONTINUITY_CANDIDATE_LEN:
+                out.append((s, None))
+    return out
+
+
+def _build_continuity_entities(state: Dict[str, Any]) -> List[CompressedContinuityEntity]:
+    """Grounded continuity tokens for cross-screen discovery / blueprint anchors.
+
+    Heuristics: regex for time, date, amount, order/booking ref, appointment wording; otherwise
+    only short value-like strings with an element_id and a digit. At most
+    ``_MAX_CONTINUITY_ENTITIES`` per state; deduped by normalized text. No LLM.
+    """
+    seen_norm: set[str] = set()
+    entities: List[CompressedContinuityEntity] = []
+    for blob, eid in _continuity_candidate_tuples_from_state(state):
+        blob = blob.strip()
+        if not blob:
+            continue
+        nkey = " ".join(blob.lower().split())
+        if not nkey or nkey in seen_norm:
+            continue
+        ent_kind = _classify_continuity_entity_type(blob)
+        if ent_kind == "unknown":
+            if eid and len(blob) <= 55 and re.search(r"\d", blob):
+                pass
+            else:
+                continue
+        ent_kind = ent_kind if ent_kind in _ALLOWED_CONTINUITY_TYPES else "unknown"
+        seen_norm.add(nkey)
+        entities.append(
+            CompressedContinuityEntity(
+                entity_type=cast(CompressedContinuityEntityType, ent_kind),
+                text=[blob],
+                source_element_id=eid,
+            )
+        )
+        if len(entities) >= _MAX_CONTINUITY_ENTITIES:
+            break
+    return entities
+
+
 def _state_level_evidence_refs(state: Dict[str, Any]) -> List[CompressedEvidenceRef]:
     refs: List[CompressedEvidenceRef] = []
     for el in (state.get("visible_elements") or [])[:24]:
@@ -317,6 +426,78 @@ def _feedback_ids_from_evidence(evidence_refs: List[CompressedEvidenceRef]) -> L
             if sid and sid not in out:
                 out.append(sid)
     return out
+
+
+def _norm_visible_status_for_actions(raw: str) -> str:
+    s = (raw or "unknown").strip().lower()
+    if s in VISIBLE_STATUS_VALUES:
+        return s
+    return "unknown"
+
+
+def _action_text_and_value(option_texts: List[str], catalog_texts: List[str]) -> tuple[str, str]:
+    """Join option copy with catalogue; value prefers last line when multiple tokens."""
+    opt = [str(t).strip() for t in option_texts if str(t).strip()]
+    cat = [str(t).strip() for t in catalog_texts if str(t).strip()]
+    lines = opt if opt else cat
+    if not lines:
+        return "", ""
+    action_text = " ".join(lines)
+    value = lines[-1] if len(lines) >= 2 else lines[0]
+    return action_text, value
+
+
+def _intent_action_rows(
+    intent: Dict[str, Any],
+    actions_by_id: Dict[str, Dict[str, Any]],
+    pa_row: Dict[str, Any] | None,
+) -> List[Tuple[str, str, str, str, str]]:
+    """One row per selectable/action-backed option plus primary if missing: id, type, text, value, status."""
+    rows: List[Tuple[str, str, str, str, str]] = []
+    seen: set[str] = set()
+
+    for so in intent.get("selection_options") or []:
+        if not isinstance(so, dict):
+            continue
+        aid_raw = so.get("option_action_id")
+        if not aid_raw:
+            continue
+        aid = str(aid_raw).strip()
+        if not aid or aid in seen:
+            continue
+        merged = _merge_action_with_catalog(
+            {"action_id": aid},
+            actions_by_id,
+            default_priority="primary",
+        )
+        opt_texts = list(so.get("option_text") or so.get("text") or [])
+        cat_texts = list((merged or {}).get("text") or [])
+        action_text, value = _action_text_and_value(opt_texts, cat_texts)
+        if not action_text and merged:
+            action_text, value = _action_text_and_value(cat_texts, [])
+        if not action_text:
+            action_text = aid
+        if not value:
+            value = action_text
+        atype = str((merged or {}).get("action_type") or "unknown")
+        status = _norm_visible_status_for_actions(str(so.get("visible_status") or "unknown"))
+        rows.append((aid, atype, action_text, value, status))
+        seen.add(aid)
+
+    if isinstance(pa_row, dict):
+        pid = str(pa_row.get("action_id") or "").strip()
+        if pid and pid not in seen:
+            texts = [str(t) for t in (pa_row.get("text") or []) if str(t).strip()]
+            action_text, value = _action_text_and_value(texts, [])
+            if not action_text:
+                action_text = pid
+            if not value:
+                value = action_text
+            atype = str(pa_row.get("action_type") or "unknown")
+            rows.append((pid, atype, action_text, value, "unknown"))
+            seen.add(pid)
+
+    return rows
 
 
 def _flatten_local_action_sequence(intent: Dict[str, Any]) -> List[CompressedLocalActionStep]:
@@ -393,6 +574,7 @@ def _build_intent_groups(
                     )
                 )
 
+        action_rows = _intent_action_rows(intent, actions_by_id, pa_row)
         groups.append(
             CompressedIntentGroup(
                 intent_id=iid,
@@ -400,6 +582,7 @@ def _build_intent_groups(
                 intent_kind=str(intent.get("intent_kind") or ""),
                 intent_name=str(intent.get("intent_name") or ""),
                 local_user_goal=str(intent.get("local_user_goal") or ""),
+                actions=action_rows,
                 primary_action=_to_action_ref(pa_row, "primary") if pa_row else None,
                 commit_action=_to_action_ref(ca_row, "primary") if ca_row else None,
                 secondary_actions=secondary_refs,
@@ -462,7 +645,7 @@ def run_build_compressed_catalog(
             navigation_cues=_build_navigation_cues(state),
             state_feedback_summary=_build_state_feedback_summary(state),
             form_state_summary=_build_form_state_summary(state),
-            continuity_entities=[],  # v1: omit heuristics — avoid hallucinated entities
+            continuity_entities=_build_continuity_entities(state),
             intent_groups=igroups,
             evidence_refs=_state_level_evidence_refs(state),
         )

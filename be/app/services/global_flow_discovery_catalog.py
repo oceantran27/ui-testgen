@@ -5,6 +5,14 @@ from __future__ import annotations
 from typing import Any, Dict, List, Tuple
 
 
+def _serialize_action_rows(raw: Any) -> List[List[str]]:
+    out: List[List[str]] = []
+    for row in raw or []:
+        if isinstance(row, (list, tuple)) and len(row) >= 5:
+            out.append([str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])])
+    return out
+
+
 def build_llm_discovery_catalog(compressed_catalog_package: Dict[str, Any]) -> Dict[str, Any]:
     """
     Strip audit-heavy fields from compressed_catalog — only behavioural signals for composition.
@@ -33,12 +41,21 @@ def build_llm_discovery_catalog(compressed_catalog_package: Dict[str, Any]) -> D
                     "action_type": str(pa_raw.get("action_type") or ""),
                     "text": [str(x) for x in (pa_raw.get("text") or []) if x is not None],
                 }
+            primary_id = ""
+            if isinstance(pa_raw, dict):
+                primary_id = str(pa_raw.get("action_id") or "")
+
             igroups.append(
                 {
                     "intent_id": str(g.get("intent_id") or ""),
+                    "iid": str(g.get("intent_id") or ""),
                     "intent_kind": str(g.get("intent_kind") or ""),
+                    "kind": str(g.get("intent_kind") or ""),
                     "local_user_goal": str(g.get("local_user_goal") or ""),
+                    "goal": str(g.get("local_user_goal") or ""),
+                    "primary": primary_id,
                     "primary_action": primary,
+                    "actions": _serialize_action_rows(g.get("actions")),
                     "required_input_element_ids": [
                         str(x) for x in (g.get("required_input_element_ids") or []) if x is not None
                     ],

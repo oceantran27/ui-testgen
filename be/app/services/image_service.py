@@ -294,9 +294,10 @@ async def get_artifact_by_type(db: AsyncSession, run_id: str, artifact_type: str
 
 
 def get_image_thumbnail_url(image: Image, expiration: int = 3600) -> str | None:
-    """Generate a presigned URL for the image's thumbnail."""
-    if not image.thumbnail_uri:
+    """Generate a presigned URL for the image's thumbnail. Fallback to storage_uri if thumbnail not generated."""
+    uri = image.thumbnail_uri or image.storage_uri
+    if not uri:
         return None
-    object_key = image.thumbnail_uri.replace(f"s3://{storage_service.bucket_name}/", "")
+    object_key = uri.replace(f"s3://{storage_service.bucket_name}/", "")
     return storage_service.get_presigned_url(object_key, expiration=expiration)
 

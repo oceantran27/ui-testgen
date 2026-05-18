@@ -68,6 +68,9 @@ class StorageService:
 
     def download_file(self, object_name: str) -> bytes:
         """Download an object from storage and return its bytes."""
+        bucket, key = self.s3_uri_to_bucket_and_key(object_name)
+        if bucket is not None:
+            object_name = key
         try:
             response = self.s3.get_object(Bucket=self.bucket_name, Key=object_name)
             return response['Body'].read()

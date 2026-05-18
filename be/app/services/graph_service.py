@@ -1,11 +1,21 @@
 """
 Graph Execution Service — Phase 4 orchestration.
 """
+from __future__ import annotations
+
+import asyncio
 import logging
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import parse_qsl, urlparse, urlencode, urlunparse
+
 from sqlalchemy import select
+
+# LangGraph's AsyncPostgresSaver uses Psycopg async, which cannot use ProactorEventLoop on Windows.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
@@ -23,13 +33,19 @@ def _be_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def _postgres_checkpoint_conninfo(database_url: str) -> str:
+def _postgres_checkpoint_conninfo(database_url: str, connect_timeout_s: int = 30) -> str:
     """SQLAlchemy async URLs use postgresql+asyncpg://; libpq/psycopg expect postgresql://."""
     url = database_url.strip()
     for prefix in ("postgresql+asyncpg://", "postgres+asyncpg://"):
         if url.startswith(prefix):
-            return "postgresql://" + url[len(prefix) :]
-    return url
+            url = "postgresql://" + url[len(prefix) :]
+            break
+    parsed = urlparse(url)
+    pairs = list(parse_qsl(parsed.query, keep_blank_values=True))
+    if not any(k.lower() == "connect_timeout" for k, _ in pairs):
+        pairs.append(("connect_timeout", str(connect_timeout_s)))
+    new_query = urlencode(pairs)
+    return urlunparse(parsed._replace(query=new_query))
 
 
 CHECKPOINT_URI = _postgres_checkpoint_conninfo(settings.DATABASE_URL)
@@ -63,7 +79,13 @@ class GraphExecutionService:
             thread_id = run.graph_thread_id
             await db.commit()
 
-        # 2. Setup initial state
+        logger.info("run_entered_processing run_id=%s thread_id=%s", run_id, thread_id)
+        logger.info(
+            "graph_execute_config run_id=%s ENABLE_GRAPH_CHECKPOINT=%s PIPELINE_RUN_LOG_ENABLED=%s",
+            run_id,
+            settings.ENABLE_GRAPH_CHECKPOINT,
+            settings.PIPELINE_RUN_LOG_ENABLED,
+        )
         initial_state: PipelineState = {
             "run_id": run_id,
             "job_id": job_id,
@@ -79,6 +101,7 @@ class GraphExecutionService:
             session_dir = _be_root() / settings.PIPELINE_RUN_LOG_ROOT / f"{ts}_{run_id}"
             prl.activate(run_id, session_dir)
             pipeline_log_active = True
+            logger.info("pipeline_run_log_dir run_id=%s path=%s", run_id, session_dir)
 
         def _timing_file(note: str, **fields: object) -> None:
             if not (settings.PIPELINE_RUN_LOG_ENABLED and pipeline_log_active):
@@ -99,18 +122,24 @@ class GraphExecutionService:
                     db_tok = model_call_db_session.set(db)
                     job_tok = model_call_job_id.set(job_id)
                     try:
+                        logger.info("graph_build_start run_id=%s", run_id)
                         graph = await build_graph(db=db, run_id=run_id)
+                        logger.info("graph_build_done run_id=%s", run_id)
                         t0 = time.perf_counter()
 
                         # Use checkpointer if enabled
                         if settings.ENABLE_GRAPH_CHECKPOINT:
                             try:
+                                logger.info(
+                                    "graph_checkpoint_connect_start run_id=%s (psycopg; see connect_timeout in DATABASE_URL/query)",
+                                    run_id,
+                                )
                                 t_cp0 = time.perf_counter()
                                 async with AsyncPostgresSaver.from_conn_string(CHECKPOINT_URI) as checkpointer:
                                     await checkpointer.setup()
                                     t_cp1 = time.perf_counter()
                                     ms = int((t_cp1 - t_cp0) * 1000)
-                                    logger.debug(
+                                    logger.info(
                                         "graph_checkpoint_ready_ms=%d run_id=%s",
                                         ms,
                                         run_id,
@@ -118,12 +147,13 @@ class GraphExecutionService:
                                     _timing_file("graph_checkpoint_ready", ms=ms, run_id=run_id)
                                     graph.checkpointer = checkpointer
                                     compiled = graph.compile()
+                                    logger.info("graph_ainvoke_start run_id=%s", run_id)
                                     t_inv0 = time.perf_counter()
                                     final_state = await compiled.ainvoke(initial_state, config=config)
                                     t_inv1 = time.perf_counter()
                                     ms_inv = int((t_inv1 - t_inv0) * 1000)
-                                    logger.debug(
-                                        "graph_ainvoke_ms=%d run_id=%s",
+                                    logger.info(
+                                        "graph_ainvoke_done_ms=%d run_id=%s",
                                         ms_inv,
                                         run_id,
                                     )
@@ -145,10 +175,14 @@ class GraphExecutionService:
                                 checkpointer = MemorySaver()
                                 graph.checkpointer = checkpointer
                                 compiled = graph.compile()
+                                logger.info(
+                                    "graph_ainvoke_start_memory_checkpoint run_id=%s",
+                                    run_id,
+                                )
                                 final_state = await compiled.ainvoke(initial_state, config=config)
                                 t_fb1 = time.perf_counter()
                                 ms_fb = int((t_fb1 - t_fb0) * 1000)
-                                logger.debug(
+                                logger.info(
                                     "graph_ainvoke_memory_checkpoint_ms=%d run_id=%s",
                                     ms_fb,
                                     run_id,
@@ -156,11 +190,15 @@ class GraphExecutionService:
                                 _timing_file("graph_ainvoke_memory_checkpoint", ms=ms_fb, run_id=run_id)
                         else:
                             compiled = graph.compile()
+                            logger.info(
+                                "graph_ainvoke_start_no_checkpoint run_id=%s",
+                                run_id,
+                            )
                             t_inv0 = time.perf_counter()
                             final_state = await compiled.ainvoke(initial_state, config=config)
                             t_inv1 = time.perf_counter()
                             ms_nc = int((t_inv1 - t_inv0) * 1000)
-                            logger.debug(
+                            logger.info(
                                 "graph_ainvoke_no_checkpoint_ms=%d run_id=%s",
                                 ms_nc,
                                 run_id,
@@ -168,7 +206,7 @@ class GraphExecutionService:
                             _timing_file("graph_ainvoke_no_checkpoint", ms=ms_nc, run_id=run_id)
 
                         total_ms = int((time.perf_counter() - t0) * 1000)
-                        logger.debug(
+                        logger.info(
                             "graph_execute_total_ms=%d run_id=%s",
                             total_ms,
                             run_id,

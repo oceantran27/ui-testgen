@@ -33,9 +33,10 @@ from app.model_providers.schemas import (
     TestScenarioStepA6,
     UnresolvedScenarioItemA6,
 )
-from app.services.behaviour_contract_service import map_test_path
+from app.services.test_path_utils import map_test_path
 from app.services.scenario_blueprint_builder_service import build_scenario_blueprints
 from app.services.scenario_keyword_validator import validate_scenario_against_blueprint
+from app.services.ui_text_normalize import normalize_ui_text
 
 
 def _scenario_assumptions_with_seed(intent: BehaviourIntentA5) -> List[str]:
@@ -258,16 +259,6 @@ def build_deterministic_test_scenario_from_intent(intent: BehaviourIntentA5) -> 
         )
 
     for neg in intent.negative_expectations:
-        steps.append(
-            TestScenarioStepA6(
-                step_number=step_counter,
-                keyword="And",
-                text=f"The user should NOT see: {neg}",
-                source="negative_expectation",
-            )
-        )
-        step_counter += 1
-
         assertions.append(
             AssertionA6(
                 assertion_type=(
@@ -275,6 +266,8 @@ def build_deterministic_test_scenario_from_intent(intent: BehaviourIntentA5) -> 
                 ),
                 expected=neg,
                 source="negative_expectation",
+                ui_text_grounding_required=False,
+                render_in_gherkin=False,
             )
         )
 
@@ -361,6 +354,25 @@ def _merge_test_data_from_intent(scn: TestScenarioA6, intent: BehaviourIntentA5)
         )
 
 
+def _merge_hidden_assertions_into_scenario(scn: TestScenarioA6, blueprint: ScenarioWritingBlueprint) -> None:
+    """Append blueprint internal assertions (not for Gherkin) without duplicating intent-backed rows."""
+    existing = {(a.assertion_type, normalize_ui_text(a.expected)) for a in scn.assertions}
+    for h in blueprint.hidden_assertions:
+        key = (h.assertion_type, normalize_ui_text(h.expected))
+        if key in existing:
+            continue
+        existing.add(key)
+        scn.assertions.append(
+            AssertionA6(
+                assertion_type=h.assertion_type,
+                expected=h.expected,
+                source="hidden_assertion",
+                ui_text_grounding_required=h.ui_text_grounding_required,
+                render_in_gherkin=h.render_in_gherkin,
+            )
+        )
+
+
 async def _llm_write_from_blueprint(
     run_id: str,
     blueprint: ScenarioWritingBlueprint,
@@ -377,11 +389,20 @@ async def _llm_write_from_blueprint(
             f"{json.dumps(batch.model_dump(mode='python'), indent=2)}\n"
         )
     else:
-        user_instruction = (
-            "Repair the draft scenario so every missing or misplaced mandatory anchor appears "
-            "in the correct section. Return JSON only.\n"
-            f"{json.dumps(repair_context, indent=2)}\n"
-        )
+        mode = str(repair_context.get("repair_mode") or "anchor_fix")
+        if mode == "readability":
+            user_instruction = (
+                "Rewrite the scenario using shorter, user-facing BDD language while preserving "
+                "all mandatory anchor texts in the correct Given / When / Then sections.\n"
+                "Return JSON only.\n"
+                f"{json.dumps(repair_context, indent=2)}\n"
+            )
+        else:
+            user_instruction = (
+                "Repair the draft scenario so every missing or misplaced mandatory anchor appears "
+                "in the correct section. Return JSON only.\n"
+                f"{json.dumps(repair_context, indent=2)}\n"
+            )
 
     response = await model_adapter.call_text_structured(
         task_name="scenario_generation",
@@ -421,6 +442,7 @@ async def _generate_one_scenario_llm(
     written = await _llm_write_from_blueprint(run_id, blueprint)
     gen_method = "llm_anchor_grounded"
     repaired = False
+    readability_repaired = False
 
     if not written:
         det = build_deterministic_test_scenario_from_intent(intent)
@@ -486,7 +508,47 @@ async def _generate_one_scenario_llm(
         metrics.deterministic_fallback_count += 1
         return det, raw
 
-    scn.generation_method = gen_method if not repaired else "llm_anchor_grounded_repaired"
+    if raw["grounding_passed"] and not raw.get("readability_passed", True):
+        repair_ctx = {
+            "repair_mode": "readability",
+            "blueprint": blueprint.model_dump(mode="python"),
+            "draft_scenario": scn.model_dump(mode="python"),
+            "forbidden_pipeline_terms": raw.get("forbidden_pipeline_terms", []),
+            "overlong_step_numbers": raw.get("overlong_step_numbers", []),
+            "readability_hint": (
+                "Rewrite the scenario using shorter, user-facing BDD language while preserving all anchors."
+            ),
+        }
+        repaired_read = await _llm_write_from_blueprint(
+            run_id, blueprint, repair_context=repair_ctx, prompt_version="v2_repair_readability"
+        )
+        if repaired_read:
+            scn_r = _pick_scenario_for_intent(repaired_read, intent.intent_id)
+            if scn_r:
+                cand = scn_r
+                _apply_intent_overlay(cand, intent)
+                _merge_test_data_from_intent(cand, intent)
+                cand.source_blueprint_id = blueprint.blueprint_id
+                cand.status = "draft"
+                raw_try = validate_scenario_against_blueprint(
+                    cand.model_dump(mode="python"), blueprint.model_dump(mode="python")
+                )
+                if raw_try["grounding_passed"]:
+                    scn = cand
+                    raw = raw_try
+                    readability_repaired = True
+                    metrics.llm_readability_repair_count += 1
+
+    _merge_hidden_assertions_into_scenario(scn, blueprint)
+
+    if repaired and readability_repaired:
+        scn.generation_method = "llm_anchor_grounded_repaired_readability"
+    elif repaired:
+        scn.generation_method = "llm_anchor_grounded_repaired"
+    elif readability_repaired:
+        scn.generation_method = "llm_anchor_grounded_readability_repaired"
+    else:
+        scn.generation_method = gen_method
     _attach_grounding(scn, blueprint, raw)
     metrics.llm_generated_count += 1
     return scn, raw
@@ -501,26 +563,20 @@ def _accumulate_metrics(metrics: ScenarioGenerationMetricsA6, grounding_raw: Dic
     w = float(grounding_raw.get("section_coverage_when") or 0.0)
     t = float(grounding_raw.get("section_coverage_then") or 0.0)
     # Running mean — approximate by count of scenarios via external finalize; store sums in custom attrs
-    if not hasattr(metrics, "_sect_n"):
-        setattr(metrics, "_sect_n", 0)
-        setattr(metrics, "_g_sum", 0.0)
-        setattr(metrics, "_w_sum", 0.0)
-        setattr(metrics, "_t_sum", 0.0)
-    n = int(getattr(metrics, "_sect_n", 0)) + 1
-    setattr(metrics, "_sect_n", n)
-    setattr(metrics, "_g_sum", float(getattr(metrics, "_g_sum", 0.0)) + g)
-    setattr(metrics, "_w_sum", float(getattr(metrics, "_w_sum", 0.0)) + w)
-    setattr(metrics, "_t_sum", float(getattr(metrics, "_t_sum", 0.0)) + t)
+    metrics._section_count += 1
+    metrics._given_sum += g
+    metrics._when_sum += w
+    metrics._then_sum += t
 
 
 def _finalize_metrics(metrics: ScenarioGenerationMetricsA6) -> None:
     if metrics.required_anchor_count:
         metrics.anchor_coverage_rate = metrics.matched_anchor_count / metrics.required_anchor_count
-    n = int(getattr(metrics, "_sect_n", 0) or 0)
+    n = metrics._section_count
     if n:
-        metrics.given_anchor_coverage = float(getattr(metrics, "_g_sum", 0.0)) / n
-        metrics.when_anchor_coverage = float(getattr(metrics, "_w_sum", 0.0)) / n
-        metrics.then_anchor_coverage = float(getattr(metrics, "_t_sum", 0.0)) / n
+        metrics.given_anchor_coverage = metrics._given_sum / n
+        metrics.when_anchor_coverage = metrics._when_sum / n
+        metrics.then_anchor_coverage = metrics._then_sum / n
 
 
 def _persist_scenario_row(
@@ -642,9 +698,8 @@ async def run_bdd_scenario_generation(
 
     behaviour_intents = [BehaviourIntentA5.model_validate(i) for i in behaviour_intents_raw]
     blueprints = build_scenario_blueprints(
-        behaviour_intents,
-        compressed_catalog_package,
-        screen_intent_package=screen_intent_package,
+        behaviour_intents=behaviour_intents,
+        compressed_catalog_package=compressed_catalog_package,
     )
     blueprint_by_intent = {b.source_intent_id: b for b in blueprints}
 

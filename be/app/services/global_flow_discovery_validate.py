@@ -47,12 +47,22 @@ def _find_action_on_state(
     for g in state_row.get("intent_groups") or []:
         if not isinstance(g, dict):
             continue
-        gid = str(g.get("intent_id") or "")
+        gid = str(g.get("intent_id") or g.get("iid") or "")
         if iid_filter and gid != iid_filter:
             continue
         pa = g.get("primary_action")
         if isinstance(pa, dict) and str(pa.get("action_id") or "").strip() == aid:
             return pa, gid or None
+        for row in g.get("actions") or []:
+            if isinstance(row, (list, tuple)) and len(row) >= 1 and str(row[0]).strip() == aid:
+                action_type = str(row[1]) if len(row) > 1 else "unknown"
+                action_text = str(row[2]) if len(row) > 2 else ""
+                synthetic: Dict[str, Any] = {
+                    "action_id": aid,
+                    "action_type": action_type,
+                    "text": [action_text] if action_text else [],
+                }
+                return synthetic, gid or None
 
     return None, None
 
@@ -204,6 +214,9 @@ def validate_discovery_output(
     }
 
 
+def extract_ordered_states_from_steps(ordered_steps: List[Dict | FlowDiscoveryStep]) -> List[str]:
+    return [str(step.state_id if hasattr(step, "state_id") else step.get("state_id")) for step in ordered_steps]
+
 def repair_or_filter_discovery_output(
     parsed: GlobalFlowDiscoveryResult | Dict[str, Any],
     *,
@@ -321,6 +334,7 @@ def repair_or_filter_discovery_output(
                 user_goal=str(flow.user_goal or flow.flow_name or "")[:500],
                 flow_confidence=str(flow.flow_confidence or "medium"),
                 ordered_steps=filt_steps,
+                ordered_states=extract_ordered_states_from_steps(filt_steps),
                 alternative_outcomes=alt_rep,
                 flow_evidence=evid_rep,
                 entry_state_id=entry,

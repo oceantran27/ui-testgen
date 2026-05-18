@@ -15,6 +15,49 @@ _LEAK_ID_RE = re.compile(
     re.I,
 )
 
+_FORBIDDEN_GHERKIN_TERMS = [
+    "destination state",
+    "initial selection screen",
+    "flow does not",
+    "selected time as accepted",
+    "state_id",
+    "transition id",
+    "source intent",
+]
+
+_MAX_STEP_CHARS = 180
+
+
+def _readability_scan(steps: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Pipeline-ish wording and over-long steps (does not affect anchor grounding_passed)."""
+    forbidden_found: List[str] = []
+    overlong: List[int] = []
+    if not isinstance(steps, list):
+        return {
+            "readability_passed": True,
+            "forbidden_pipeline_terms": [],
+            "max_step_length": _MAX_STEP_CHARS,
+            "overlong_step_numbers": [],
+        }
+    for i, s in enumerate(steps):
+        if not isinstance(s, dict):
+            continue
+        text = str(s.get("text") or "")
+        low = text.lower()
+        for term in _FORBIDDEN_GHERKIN_TERMS:
+            if term in low and term not in forbidden_found:
+                forbidden_found.append(term)
+        sn = int(s.get("step_number") or 0) or (i + 1)
+        if len(text) > _MAX_STEP_CHARS:
+            overlong.append(sn)
+    readability_passed = not forbidden_found and not overlong
+    return {
+        "readability_passed": readability_passed,
+        "forbidden_pipeline_terms": forbidden_found,
+        "max_step_length": _MAX_STEP_CHARS,
+        "overlong_step_numbers": overlong,
+    }
+
 
 def _split_bdd_sections(steps: List[Dict[str, Any]]) -> Tuple[str, str, str]:
     phase = "given"
@@ -164,6 +207,10 @@ def validate_scenario_against_blueprint(scenario: Dict[str, Any], blueprint: Dic
         and not invalid_trace_refs
     )
 
+    read_scan = _readability_scan(steps_raw if isinstance(steps_raw, list) else [])
+    readability_passed = bool(read_scan["readability_passed"])
+    full_pre_audit_passed = bool(grounding_passed and readability_passed)
+
     return {
         "required_anchor_count": required_count,
         "matched_anchor_count": matched,
@@ -177,4 +224,9 @@ def validate_scenario_against_blueprint(scenario: Dict[str, Any], blueprint: Dic
         "section_coverage_given": cov_ratio(section_anchor_hit["given"], section_anchor_total["given"]),
         "section_coverage_when": cov_ratio(section_anchor_hit["when"], section_anchor_total["when"]),
         "section_coverage_then": cov_ratio(section_anchor_hit["then"], section_anchor_total["then"]),
+        "readability_passed": readability_passed,
+        "forbidden_pipeline_terms": read_scan["forbidden_pipeline_terms"],
+        "max_step_length": read_scan["max_step_length"],
+        "overlong_step_numbers": read_scan["overlong_step_numbers"],
+        "full_pre_audit_passed": full_pre_audit_passed,
     }

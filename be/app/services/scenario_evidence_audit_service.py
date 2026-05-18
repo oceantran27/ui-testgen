@@ -723,7 +723,6 @@ async def run_scenario_evidence_audit(
     db: AsyncSession,
     run_id: str,
     scenario_draft_package: Dict[str, Any],
-    ui_state_package: Optional[Dict[str, Any]] = None,
     flow_discovery_result: Optional[Dict[str, Any]] = None,
     intent_package: Optional[Dict[str, Any]] = None,
     screen_intent_package: Optional[Dict[str, Any]] = None,
@@ -746,7 +745,7 @@ async def run_scenario_evidence_audit(
         await db.commit()
         return empty
 
-    ui_for_audit = ui_state_package
+    ui_for_audit = {}
     if compressed_catalog_package and state_catalog:
         ui_for_audit = build_audit_ui_evidence_package_from_compressed(state_catalog, compressed_catalog_package)
 
@@ -831,18 +830,19 @@ async def run_scenario_evidence_audit(
                 total_batches,
                 response.error,
             )
-            err = ScenarioValidationResult(
-                validated_scenarios=[],
-                final_output_summary=FinalOutputSummaryA7(),
-                package_warnings=[
-                    f"BATCH_{batch_idx + 1}_OF_{total_batches}: {response.error or 'LLM_FAILED'}"
-                ],
-            ).model_dump()
-            err["report"] = {"error": str(response.error), "failed_batch": batch_idx + 1}
-            _merge_audit_pipeline_report_into_payload(err)
-            await _persist_scenario_validation_report(db, run_id, err)
-            await db.commit()
-            return err
+            warnings_accum.append(f"BATCH_{batch_idx+1}_FAILED: {response.error}")
+            for scn in chunk:
+                validated_accum.append(ValidatedScenarioA7(
+                    scenario_id=str(scn.get("scenario_id")),
+                    validation_status="rejected",
+                    final_reliability=0.0,
+                    scores=ScoresA7(grounding=0, accuracy=0, readability=0),
+                    acceptance_decision=ScenarioAcceptanceDecisionA7(
+                        include_in_final_output=False,
+                        reason=f"Batch {batch_idx+1} LLM audit failed"
+                    ),
+                ))
+            continue
 
         batch_result: ScenarioValidationResult = response.parsed_output
         issue = _batch_response_issues(chunk, batch_result)
@@ -866,22 +866,19 @@ async def run_scenario_evidence_audit(
                 total_batches,
                 issue,
             )
-            detail = f"BATCH_{batch_idx + 1}_OF_{total_batches}: INTEGRITY_OR_SEMANTICS: {issue}"
-            err = ScenarioValidationResult(
-                validated_scenarios=[],
-                final_output_summary=FinalOutputSummaryA7(),
-                package_warnings=[detail],
-            ).model_dump()
-            err["report"] = {
-                "failed_batch": batch_idx + 1,
-                "batch_failure_detail": issue,
-                "primary_model": primary_model,
-                "fallback_model": fallback_model,
-            }
-            _merge_audit_pipeline_report_into_payload(err)
-            await _persist_scenario_validation_report(db, run_id, err)
-            await db.commit()
-            return err
+            warnings_accum.append(f"BATCH_{batch_idx+1}_FAILED: INTEGRITY_OR_SEMANTICS: {issue}")
+            for scn in chunk:
+                validated_accum.append(ValidatedScenarioA7(
+                    scenario_id=str(scn.get("scenario_id")),
+                    validation_status="rejected",
+                    final_reliability=0.0,
+                    scores=ScoresA7(grounding=0, accuracy=0, readability=0),
+                    acceptance_decision=ScenarioAcceptanceDecisionA7(
+                        include_in_final_output=False,
+                        reason=f"Batch {batch_idx+1} integrity failed: {issue}"
+                    ),
+                ))
+            continue
 
         validated_accum.extend(batch_result.validated_scenarios)
         warnings_accum.extend(batch_result.package_warnings)

@@ -17,7 +17,6 @@ async def run_generate_tests(
     flow_discovery_result: Dict[str, Any],
     state_catalog: List[Dict[str, Any]],
     compressed_catalog_package: Dict[str, Any],
-    screen_intent_package: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Returns (intent_package, scenario_draft_package)."""
     intent_pkg = await run_behaviour_contract_builder(
@@ -31,6 +30,5 @@ async def run_generate_tests(
         run_id=run_id,
         intent_package=intent_pkg,
         compressed_catalog_package=compressed_catalog_package,
-        screen_intent_package=screen_intent_package,
     )
     return intent_pkg, scenario_pkg

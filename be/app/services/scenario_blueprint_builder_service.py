@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from app.model_providers.schemas import BehaviourIntentA5
 from app.model_providers.schemas import (
+    BlueprintHiddenAssertionA6,
     BlueprintTerminalStateRefA6,
     BlueprintTraceabilityA6,
     ForbiddenContentPolicyA6,
@@ -15,7 +16,7 @@ from app.model_providers.schemas import (
     MandatoryAnchorsBySectionA6,
     ScenarioWritingBlueprint,
 )
-from app.services.behaviour_contract_service import map_test_path
+from app.services.test_path_utils import map_test_path
 from app.services.ui_text_normalize import normalize_ui_text
 
 
@@ -113,73 +114,188 @@ def _first_feedback_texts(rows: Sequence[Dict[str, Any]]) -> List[str]:
     return texts
 
 
+_MAX_THEN_PRIMARY_TEXTS = 6
+_MAX_THEN_STATUS_TEXTS = 4
+_MAX_EVIDENCE_FRAGMENT_LEN = 120
+
+
+def _split_evidence_into_atomic_fragments(evidence: str) -> List[str]:
+    """Split long expected_ui_evidence into shorter fragments for atomic Then anchors."""
+    raw = str(evidence or "").strip()
+    if not raw:
+        return []
+    parts = re.split(r"[\n;.]+", raw)
+    out: List[str] = []
+    for p in parts:
+        chunk = p.strip()
+        if not chunk:
+            continue
+        if len(chunk) > _MAX_EVIDENCE_FRAGMENT_LEN:
+            chunk = chunk[:_MAX_EVIDENCE_FRAGMENT_LEN].rstrip()
+        if len(chunk) > 2:
+            out.append(chunk)
+    return out
+
+
+def _continuity_text_lines(card: Dict[str, Any]) -> List[str]:
+    lines: List[str] = []
+    for ent in card.get("continuity_entities") or []:
+        if not isinstance(ent, dict):
+            continue
+        for t in ent.get("text") or []:
+            c = _clean_headline(str(t))
+            if c:
+                lines.append(c)
+    return lines
+
+
+def _selected_option_display_texts(card: Dict[str, Any]) -> List[str]:
+    form = card.get("form_state_summary") or {}
+    if not isinstance(form, dict):
+        return []
+    out: List[str] = []
+    for opt in form.get("selected_options") or []:
+        if not isinstance(opt, dict):
+            continue
+        parts = [str(x).strip() for x in (opt.get("text") or []) if str(x).strip()]
+        if parts:
+            merged = " ".join(parts)
+            c = _clean_headline(merged)
+            if c:
+                out.append(c)
+    return out
+
+
 def _pick_then_anchors(intent: BehaviourIntentA5, end_card: Dict[str, Any]) -> List[MandatoryAnchorA6]:
     out: List[MandatoryAnchorA6] = []
-    feedback_rows = list(end_card.get("state_feedback_summary") or [])
-    ev_list = list(intent.expected_ui_evidence or [])
-    neg_list = list(intent.negative_expectations or [])
+    seen_norm: set[str] = set()
     idx = 0
 
-    for ev in ev_list:
-        lbl = _clean_headline(ev)
-        if lbl:
-            out.append(
-                MandatoryAnchorA6(
-                    anchor_id=f"then_expected_ui_evidence_{idx}",
-                    text=lbl,
-                    source="intent.expected_ui_evidence",
-                    match_type="exact_or_contained",
-                )
+    def _push(anchor_id: str, text: str, source: str) -> None:
+        nonlocal idx
+        lbl = _clean_headline(text)
+        if not lbl:
+            return
+        nn = normalize_ui_text(lbl)
+        if not nn or nn in seen_norm:
+            return
+        seen_norm.add(nn)
+        out.append(
+            MandatoryAnchorA6(
+                anchor_id=anchor_id if anchor_id else f"then_anchor_{idx}",
+                text=lbl,
+                source=source,
+                match_type="exact_or_contained",
             )
-            idx += 1
+        )
+        idx += 1
 
-    for neg in neg_list:
-        lbl = _clean_headline(neg)
-        if lbl:
-            out.append(
-                MandatoryAnchorA6(
-                    anchor_id=f"then_negative_expectation_{idx}",
-                    text=lbl,
-                    source="intent.negative_expectations",
-                    match_type="exact_or_contained",
-                )
-            )
-            idx += 1
+    # 1) End screen heading / label (visible)
+    heading = _first_heading(end_card)
+    if heading:
+        _push("then_screen_label", heading, "end_state.visible_signature.headings")
 
-    if not out:
-        fb_texts = _first_feedback_texts(feedback_rows)
-        err_like = []
-        for t in fb_texts:
-            norm = normalize_ui_text(t)
-            if "error" in norm or "invalid" in norm or "warn" in norm:
-                err_like.append(t)
-        pool = err_like if err_like else fb_texts[:2]
-        for lbl in pool:
-            c = _clean_headline(lbl)
-            if c:
-                out.append(
-                    MandatoryAnchorA6(
-                        anchor_id=f"then_state_feedback_summary_{idx}",
-                        text=c,
-                        source="end_state.state_feedback_summary",
-                        match_type="exact_or_contained",
-                    )
-                )
-                idx += 1
+    # 2) Feedback lines on end state
+    for t in _first_feedback_texts(list(end_card.get("state_feedback_summary") or [])):
+        _push(f"then_state_feedback_{idx}", t, "end_state.state_feedback_summary")
 
+    # 3) Primary / status texts (buttons, visible actions)
+    vis = end_card.get("visible_signature") or {}
+    n_pri = 0
+    for p in vis.get("primary_texts") or []:
+        if n_pri >= _MAX_THEN_PRIMARY_TEXTS:
+            break
+        _push(f"then_primary_text_{idx}", str(p), "end_state.visible_signature.primary_texts")
+        n_pri += 1
+    n_st = 0
+    for p in vis.get("status_texts") or []:
+        if n_st >= _MAX_THEN_STATUS_TEXTS:
+            break
+        _push(f"then_status_text_{idx}", str(p), "end_state.visible_signature.status_texts")
+        n_st += 1
+
+    # 4) Continuity entities on end card
+    for t in _continuity_text_lines(end_card):
+        _push(f"then_continuity_{idx}", t, "end_state.continuity_entities")
+
+    # 5) Fallback: atomic fragments from expected_ui_evidence (never full-paragraph single anchor if split helps)
+    for ev in intent.expected_ui_evidence or []:
+        for frag in _split_evidence_into_atomic_fragments(str(ev)):
+            _push(f"then_expected_ui_evidence_{idx}", frag, "intent.expected_ui_evidence")
+
+    # 6) Last resort: expected_result
     if not out and (intent.expected_result or "").strip():
-        er = _clean_headline(intent.expected_result)
-        if er:
-            out.append(
-                MandatoryAnchorA6(
-                    anchor_id="then_expected_result",
-                    text=er,
-                    source="intent.expected_result",
-                    match_type="exact_or_contained",
-                )
-            )
+        _push("then_expected_result", intent.expected_result, "intent.expected_result")
 
     return out
+
+
+def _hidden_assertions_from_intent(intent: BehaviourIntentA5) -> List[BlueprintHiddenAssertionA6]:
+    hidden: List[BlueprintHiddenAssertionA6] = []
+    for neg in intent.negative_expectations or []:
+        n = str(neg).strip()
+        if not n:
+            continue
+        a_type = "feedback_not_visible" if "feedback" in n.lower() else "state_not_reached"
+        hidden.append(
+            BlueprintHiddenAssertionA6(
+                assertion_type=a_type,
+                expected=n,
+                render_in_gherkin=False,
+                ui_text_grounding_required=False,
+            )
+        )
+    return hidden
+
+
+def _build_when_anchors(
+    intent: BehaviourIntentA5, start_card: Dict[str, Any]
+) -> tuple[List[MandatoryAnchorA6], List[str]]:
+    """Concrete selected values and trigger first; placeholders only for requirements without a concrete slot."""
+    placeholders: List[str] = []
+    when_anchors: List[MandatoryAnchorA6] = []
+
+    concrete = _selected_option_display_texts(start_card)
+    for i, t in enumerate(concrete):
+        when_anchors.append(
+            MandatoryAnchorA6(
+                anchor_id=f"when_selected_{i}",
+                text=t,
+                source="start_state.form_state_summary.selected_options",
+                match_type="exact_or_contained",
+            )
+        )
+
+    for ti, txt in enumerate(intent.trigger_action.text or []):
+        t = _clean_headline(txt)
+        if not t:
+            continue
+        when_anchors.append(
+            MandatoryAnchorA6(
+                anchor_id="when_trigger_action" if ti == 0 else f"when_trigger_action_{ti}",
+                text=t,
+                source="intent.trigger_action.text",
+                match_type="exact_or_contained",
+            )
+        )
+
+    ph_idx = 0
+    for req_i, td in enumerate(intent.test_data_requirements):
+        ph = _clean_headline(f"<{td.value_type}>")
+        if ph:
+            placeholders.append(ph)
+        if req_i >= len(concrete):
+            when_anchors.append(
+                MandatoryAnchorA6(
+                    anchor_id=f"when_placeholder_{ph_idx}",
+                    text=ph,
+                    source="intent.test_data_requirements",
+                    match_type="exact_or_contained",
+                )
+            )
+            ph_idx += 1
+
+    return when_anchors, placeholders
 
 
 def _slug(parts: Sequence[str]) -> str:
@@ -192,10 +308,7 @@ def _slug(parts: Sequence[str]) -> str:
 def build_scenario_blueprints(
     behaviour_intents: Sequence[BehaviourIntentA5],
     compressed_catalog_package: Dict[str, Any],
-    *,
-    screen_intent_package: Optional[Dict[str, Any]] = None,
 ) -> List[ScenarioWritingBlueprint]:
-    _ = screen_intent_package
 
     catalog_by_sid: Dict[str, Dict[str, Any]] = {}
     for row in compressed_catalog_package.get("compressed_catalog") or []:
@@ -228,6 +341,10 @@ def build_scenario_blueprints(
         if tax:
             outcome_type = str(tax.get("outcome_state_type") or "")
 
+        tax_s_raw = sc_s.get("taxonomy")
+        tax_s = tax_s_raw if isinstance(tax_s_raw, dict) else {}
+        start_outcome = str(tax_s.get("outcome_state_type") or "") if tax_s else ""
+
         given_anchors: List[MandatoryAnchorA6] = []
         if given_anchor_text:
             given_anchors.append(
@@ -239,36 +356,10 @@ def build_scenario_blueprints(
                 )
             )
 
-        when_anchors: List[MandatoryAnchorA6] = []
-        for wi, txt in enumerate(intent.trigger_action.text or []):
-            t = _clean_headline(txt)
-            if not t:
-                continue
-            when_anchors.append(
-                MandatoryAnchorA6(
-                    anchor_id="when_trigger_action" if wi == 0 else f"when_trigger_action_{wi}",
-                    text=t,
-                    source="intent.trigger_action.text",
-                    match_type="exact_or_contained",
-                )
-            )
-
-        placeholders: List[str] = []
-        ph_idx = 0
-        for td in intent.test_data_requirements:
-            ph = _clean_headline(f"<{td.value_type}>")
-            placeholders.append(ph)
-            when_anchors.append(
-                MandatoryAnchorA6(
-                    anchor_id=f"when_placeholder_{ph_idx}",
-                    text=ph,
-                    source="intent.test_data_requirements",
-                    match_type="exact_or_contained",
-                )
-            )
-            ph_idx += 1
+        when_anchors, placeholders = _build_when_anchors(intent, sc_s)
 
         then_anchors = _pick_then_anchors(intent, sc_e)
+        hidden_assertions = _hidden_assertions_from_intent(intent)
 
         trace = BlueprintTraceabilityA6(
             trigger_action_id=_resolve_trigger_action_id(sc_s, intent=intent),
@@ -292,7 +383,7 @@ def build_scenario_blueprints(
             start_state=BlueprintTerminalStateRefA6(
                 state_id=start_sid,
                 screen_label=given_heading or purpose or start_sid,
-                outcome_state_type=None,
+                outcome_state_type=start_outcome or None,
             ),
             end_state=BlueprintTerminalStateRefA6(
                 state_id=end_sid,
@@ -305,6 +396,7 @@ def build_scenario_blueprints(
             ),
             mandatory_anchors=MandatoryAnchorsBySectionA6(given=given_anchors, when=when_anchors, then=then_anchors),
             allowed_test_data_placeholders=placeholders,
+            hidden_assertions=hidden_assertions,
             forbidden_content_policy=ForbiddenContentPolicyA6(),
             traceability=trace,
         )

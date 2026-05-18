@@ -15,6 +15,7 @@ from app.core.prompt_manager import prompt_manager
 from app.db.models.flow import Flow
 from app.db.models.flow_transition import FlowTransition
 from app.model_providers import model_adapter
+from app.services.id_factory import generate_id
 from app.model_providers.schemas import (
     ComposedFlowInternal,
     FlowDiscoveryCandidateFlow,
@@ -308,15 +309,19 @@ async def _persist_bridge_flow_rows(db: AsyncSession, run_id: str, bridge: Dict[
     cmap = rep.get("candidate_edges") or []
     cmap_by_edge = {str(e.get("candidate_edge_id") or e.get("edge_id")): e for e in cmap}
 
+    flow_db_mapping = {}
+
     for flow_row_ui in candidate_flow_rows:
         flow_ui_id = str(flow_row_ui.get("flow_id") or "")
         if not flow_ui_id:
             continue
 
+        db_flow_id = generate_id("flw")
+        flow_db_mapping[flow_ui_id] = db_flow_id
+
         oid_path = list(flow_row_ui.get("ordered_states") or [])
         conf_val, conf_lbl = _confidence_numeric(flow_row_ui.get("confidence") or "medium")
 
-        db_flow_id = _generate_global_flow_db_id(run_id)
         fw = Flow(
             id=db_flow_id,
             run_id=run_id,
@@ -329,6 +334,11 @@ async def _persist_bridge_flow_rows(db: AsyncSession, run_id: str, bridge: Dict[
             user_goal=str(flow_row_ui.get("user_goal") or ""),
             confidence=float(conf_val),
             confidence_label=str(conf_lbl),
+            # discovery `flow_id` (e.g. flow_booking_…) ≠ DB PK; Agent 5 uses semantic id as trace key
+            flow_evidence_package_json={
+                "discovery_source_flow_id": flow_ui_id,
+                "bridge_engine": "compressed_global",
+            },
         )
         db.add(fw)
 
@@ -339,7 +349,7 @@ async def _persist_bridge_flow_rows(db: AsyncSession, run_id: str, bridge: Dict[
             trig = derive_trigger_from_edge(edge)
             step0 = (edge.get("action_sequence") or [{}])[0] if edge.get("action_sequence") else {}
 
-            db_tr_id = _generate_global_transition_id(run_id)
+            db_tr_id = generate_id("tx")
             tr_row = FlowTransition(
                 id=db_tr_id,
                 run_id=run_id,
@@ -364,6 +374,11 @@ async def _persist_bridge_flow_rows(db: AsyncSession, run_id: str, bridge: Dict[
     except Exception as exc:  # noqa: BLE001
         logger.error("persist global flow discovery failed run=%s: %s", run_id, exc)
         await db.rollback()
+
+    for pc in bridge.get("precomposed_flow_internals") or []:
+        sid = pc.get("source_flow_id")
+        if sid in flow_db_mapping:
+            pc["source_flow_id"] = flow_db_mapping[sid]
 
 
 def _failure_bridge(run_id: str, *, warnings: List[str], failure_type: str) -> Dict[str, Any]:

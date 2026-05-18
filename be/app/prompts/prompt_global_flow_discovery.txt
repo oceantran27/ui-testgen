@@ -9,9 +9,10 @@ Each state includes:
 - **`state_id`**, **`screen_purpose`**
 - **`taxonomy`**: `domain`, `screen_type`, `presentation_scope`, `outcome_state_type`
 - **`visible_signature`**, **`navigation_cues`**, **`continuity_entities`**, **`state_feedback_summary`**
-- **`intent_groups[]`**: trimmed intents with **`intent_id`**, **`intent_kind`**, **`local_user_goal`**, **`primary_action`** (`action_id`, `action_type`, `text`), **`required_input_element_ids`**
+- **`intent_groups[]`**: trimmed intents. Short keys (preferred for scanning) **`iid`** (= `intent_id`), **`kind`** (= `intent_kind`), **`goal`** (= `local_user_goal`), **`primary`** (string `action_id` for the main action). Canonical duplicates are kept for tooling: **`intent_id`**, **`intent_kind`**, **`local_user_goal`**, **`primary_action`** (`action_id`, `action_type`, `text[]`).
+- **`actions[]`**: optional per intent — each row is **`[action_id, action_type, action_text, value, status]`** where **`status`** is one of `selected` | `unselected` | `disabled` | `unknown`. Lists **every action-backed option** for **`kind` = `selection`** (not only **`primary`**).
 
-Every **`state_id`**, **`intent_id`**, and **`action_id`** you cite in your answer **must appear verbatim** in the input JSON.
+Every **`state_id`**, **`intent_id`** (or **`iid`**), and **`action_id`** you cite in your answer **must appear verbatim** in the input JSON.
 
 ---
 
@@ -19,7 +20,7 @@ Every **`state_id`**, **`intent_id`**, and **`action_id`** you cite in your answ
 
 1. Identify semantic task clusters (`semantic_clusters`): groups of states sharing domain / goals / compatible purposes.
 2. Within each cluster, identify likely entry states.
-3. Build **`candidate_flows`**: each flow has one **main spine** (`ordered_steps`) using **action–result compatibility** (source primary/commit action explains reaching the target card).
+3. Build **`candidate_flows`**: each flow has one **main spine** (`ordered_steps`) using **action–result compatibility** (source trigger action — often **`primary`** / commit, or a **`selection`** row from **`actions[]`** — explains reaching the target card).
 4. Attach **`alternative_outcomes`** from the **source** step that could produce validation errors, errors, confirmations, empty surfaces, etc. — **do not list divergent branches as consecutive spine steps**.
 5. Put isolated states into **`unassigned_state_ids`** with a **`reason_code`** (see enums below).
 6. Put plausible but weak links in **`uncertain_relations`** with **`reason_code`**.
@@ -55,7 +56,7 @@ Top-level keys:
   - `flow_id`, `flow_name`, `flow_type` ∈ { `single_step_outcome`, `ordered_sequence`, `branching_flow` }
   - `user_goal`, `flow_confidence` (`high`|`medium`|`low`)
   - **`ordered_steps[]`**: each entry `state_id`, **`step_role`** (see roles below), **`next_trigger_action`** toward the **next** spine state — nullable on terminal step:
-    - `intent_id` (optional), `action_id`, `action_type`, `text` — **`text[]` must match** the catalogue **`primary_action.text`** for that action on **that state**.
+    - `intent_id` (optional), `action_id`, `action_type`, `text` — **`text[]` must match** the catalogue line for that **`action_id`** on **that state**: either **`primary_action.text`** or the **`action_text`** field from the same **`action_id`** row inside **`actions[]`** (same tuple as in the input).
   - **`alternative_outcomes[]`**: `from_state_id`, `to_state_id`, `outcome_role`, `trigger_action` (same shape), `evidence_summary`
   - **`flow_evidence[]`** (optional): `evidence_type`, `from_state_id`, `to_state_id`, `source_refs`
   - Optional narrative fields: `entry_state_id`, `terminal_outcome`, `rationale`
