@@ -34,13 +34,8 @@ async def graph_finalizer_node(
     await persist_run_graph_progress(run_id, NODE_NAME)
     log_event("graph_node_started", run_id=run_id, node_name=NODE_NAME)
 
-    # Ensure any previous failures are rolled back before we try to use the session here
-    try:
-        await db.rollback()
-        # Expire all objects in the session to ensure we fetch fresh data and reset state
-        db.expire_all()
-    except Exception as e:
-        logger.warning(f"[{NODE_NAME}] Rollback/Expire failed in finalizer: {e}")
+    # Ensure any previous failures do not block the session (we just expire_all)
+    db.expire_all()
 
     if is_active():
         log_node(
@@ -60,101 +55,82 @@ async def graph_finalizer_node(
             state=state,
         )
 
-    try:
-        # Determine final status
-        if state.get("should_stop"):
-            final_status = "failed"
-        elif state.get("final_output"):
-            final_status = "completed"
-        elif state.get("draft_scenarios"):
-            final_status = "completed"
-        # Research pipeline uses scenario_draft_package / packages, not draft_scenarios.
-        elif state.get("scenario_draft_package") or state.get("validated_scenario_package"):
-            final_status = "completed"
+    # Determine final status (LangGraph packages only; legacy draft_scenarios removed)
+    if state.get("should_stop"):
+        final_status = "failed"
+    elif state.get("final_output"):
+        final_status = "completed"
+    elif state.get("scenario_draft_package") or state.get("validated_scenario_package"):
+        final_status = "completed"
+    else:
+        final_status = "failed"
+        
+    completed_at = datetime.now(timezone.utc)
+    
+    # Build Report
+    report = {
+        "run_id": run_id,
+        "job_id": job_id,
+        "graph_status": final_status,
+        "started_at": state.get("started_at"),
+        "completed_at": completed_at.isoformat(),
+        "completed_nodes": state.get("completed_nodes", []),
+        "failed_nodes": state.get("failed_nodes", []),
+        "warnings": state.get("warnings", []),
+        "errors": state.get("errors", []),
+        "metrics": state.get("metrics", {}),
+        "config_snapshot": state.get("config", {}),
+    }
+    
+    # Save Artifact
+    report_bytes = json.dumps(report, indent=2).encode("utf-8")
+    report_key = f"artifacts/{run_id}/graph/graph_execution_report.json"
+    report_uri = storage_service.upload_file(report_bytes, report_key, content_type="application/json")
+    
+    artifact = Artifact(
+        id=_generate_artifact_id(),
+        run_id=run_id,
+        artifact_type="graph_execution_report",
+        node_name=NODE_NAME,
+        storage_uri=report_uri,
+        metadata_json={"status": final_status},
+    )
+    db.add(artifact)
+    
+    # Update Run
+    result = await db.execute(select(Run).where(Run.id == run_id))
+    run = result.scalar_one_or_none()
+    if run:
+        run.graph_status = final_status
+        run.graph_completed_at = completed_at
+        if final_status == "failed":
+            run.status = "failed"
+            run.error_message = state.get("stop_reason", "GRAPH_EXECUTION_FAILED")
         else:
-            final_status = "failed"
-            
-        completed_at = datetime.now(timezone.utc)
-        
-        # Build Report
-        report = {
-            "run_id": run_id,
-            "job_id": job_id,
-            "graph_status": final_status,
-            "started_at": state.get("started_at"),
-            "completed_at": completed_at.isoformat(),
-            "completed_nodes": state.get("completed_nodes", []),
-            "failed_nodes": state.get("failed_nodes", []),
-            "warnings": state.get("warnings", []),
-            "errors": state.get("errors", []),
-            "metrics": state.get("metrics", {}),
-            "config_snapshot": state.get("config", {}),
-        }
-        
-        # Save Artifact
-        report_bytes = json.dumps(report, indent=2).encode("utf-8")
-        report_key = f"artifacts/{run_id}/graph/graph_execution_report.json"
-        report_uri = storage_service.upload_file(report_bytes, report_key, content_type="application/json")
-        
-        artifact = Artifact(
-            id=_generate_artifact_id(),
-            run_id=run_id,
-            artifact_type="graph_execution_report",
-            node_name=NODE_NAME,
-            storage_uri=report_uri,
-            metadata_json={"status": final_status},
-        )
-        db.add(artifact)
-        
-        # Update Run
-        result = await db.execute(select(Run).where(Run.id == run_id))
-        run = result.scalar_one_or_none()
-        if run:
-            run.graph_status = final_status
-            run.graph_completed_at = completed_at
-            if final_status == "failed":
-                run.status = "failed"
-                run.error_message = state.get("stop_reason", "GRAPH_EXECUTION_FAILED")
-            else:
-                run.current_phase = "research_completed_v1"
-                run.progress_percentage = 100
-                run.status = "completed"
-        
-        # Update Job
-        if job_id:
-            j_result = await db.execute(select(Job).where(Job.id == job_id))
-            job = j_result.scalar_one_or_none()
-            if job:
-                job.status = final_status if final_status == "failed" else "completed"
-                job.completed_at = completed_at
-                job.error_message = state.get("stop_reason")
+            run.current_phase = "pipeline_completed_v1"
+            run.progress_percentage = 100
+            run.status = "completed"
+    
+    # Update Job
+    if job_id:
+        j_result = await db.execute(select(Job).where(Job.id == job_id))
+        job = j_result.scalar_one_or_none()
+        if job:
+            job.status = final_status if final_status == "failed" else "completed"
+            job.completed_at = completed_at
+            job.error_message = state.get("stop_reason")
 
-        await db.commit()
+    await db.commit()
 
-        log_event("graph_node_completed", run_id=run_id, node_name=NODE_NAME)
+    log_event("graph_node_completed", run_id=run_id, node_name=NODE_NAME)
 
-        out = {
-            "current_node": NODE_NAME,
-            "graph_status": final_status,
-            "completed_at": completed_at.isoformat(),
-            "completed_nodes": [NODE_NAME],
-            "artifacts": [{"type": "graph_execution_report", "uri": report_uri}]
-        }
-        if is_active():
-            log_node_return(NODE_NAME, [f"status={final_status}"], out)
-        return out
-
-    except Exception as e:
-        logger.exception(f"[{NODE_NAME}] Error for run {run_id}: {e}")
-        if is_active():
-            console_err(f"{NODE_NAME}: {e}")
-        log_event("graph_node_failed", run_id=run_id, node_name=NODE_NAME, error_code=str(e))
-        fail = {
-            "current_node": NODE_NAME,
-            "errors": [f"{NODE_NAME}: {e}"],
-            "failed_nodes": [NODE_NAME],
-            "graph_status": "failed"
-        }
-        if is_active():
-            log_node_return(NODE_NAME, ["exception"], fail)
-        return fail
+    out = {
+        "current_node": NODE_NAME,
+        "graph_status": final_status,
+        "completed_at": completed_at.isoformat(),
+        "completed_nodes": [NODE_NAME],
+        "artifacts": [{"type": "graph_execution_report", "uri": report_uri}]
+    }
+    if is_active():
+        log_node_return(NODE_NAME, [f"status={final_status}"], out)
+    return out

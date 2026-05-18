@@ -28,38 +28,24 @@ async def joint_screen_understanding_node(state: PipelineState, db: AsyncSession
             state=state,
         )
 
-    try:
-        image_ids = state.get("raw_image_ids", [])
-        if not image_ids:
-            return {
-                "should_stop": True,
-                "stop_reason": "NO_IMAGE_IDS",
-                "graph_status": "failed",
-            }
-
-        result = await run_joint_screen_understanding(db=db, run_id=run_id, image_ids=image_ids)
-
-        out: Dict[str, Any] = {
-            "ui_state_package": result["ui_state_package"],
-            "state_catalog": result["state_catalog"],
-            "interaction_group_catalog": result["interaction_group_catalog"],
-            "screen_intent_package": result["screen_intent_package"],
-            "metrics": result.get("metrics") or {},
-            "current_node": node_name,
-            "completed_nodes": [node_name],
-        }
-        if is_active():
-            log_node_return(node_name, ["ok"], out)
-        return out
-    except Exception as e:
-        logger.exception(f"[{node_name}] Error for run {run_id}: {e}")
-        await db.rollback()
+    image_ids = state.get("raw_image_ids", [])
+    if not image_ids:
         return {
-            "current_node": node_name,
-            "failed_nodes": [node_name],
-            "errors": [f"{node_name}: {e}"],
             "should_stop": True,
-            "stop_reason": f"CRITICAL_NODE_ERROR: {e}",
+            "stop_reason": "NO_IMAGE_IDS",
             "graph_status": "failed",
         }
+
+    result = await run_joint_screen_understanding(db=db, run_id=run_id, image_ids=image_ids)
+
+    out: Dict[str, Any] = {
+        "state_catalog": result["state_catalog"],
+        "screen_intent_package": result["screen_intent_package"],
+        "metrics": result.get("metrics") or {},
+        "current_node": node_name,
+        "completed_nodes": [node_name],
+    }
+    if is_active():
+        log_node_return(node_name, ["ok"], out)
+    return out
 
