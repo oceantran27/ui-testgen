@@ -1,23 +1,15 @@
-"""Build trimmed `llm_discovery_catalog` for global flow discovery LLM input."""
+"""Build `llm_discovery_catalog` for global flow discovery LLM input."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
 
-def _serialize_action_rows(raw: Any) -> List[List[str]]:
-    out: List[List[str]] = []
-    for row in raw or []:
-        if isinstance(row, (list, tuple)) and len(row) >= 5:
-            out.append([str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])])
-    return out
-
-
 def build_llm_discovery_catalog(compressed_catalog_package: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Strip audit-heavy fields from compressed_catalog — only behavioural signals for composition.
+    Near pass-through of compressed_catalog_v3 cards into LLM-facing `states`.
 
-    Omits trace_index, compression_stats, evidence-heavy intent fields, form_state_summary, etc.
+    No reshaping of intents or synthetic action rows — Phase 1 + Phase 2 remain as packaged.
     """
     raw_cards = compressed_catalog_package.get("compressed_catalog") or []
     states: List[Dict[str, Any]] = []
@@ -29,54 +21,21 @@ def build_llm_discovery_catalog(compressed_catalog_package: Dict[str, Any]) -> D
         if not sid:
             continue
 
-        igroups: List[Dict[str, Any]] = []
-        for g in c.get("intent_groups") or []:
-            if not isinstance(g, dict):
-                continue
-            pa_raw = g.get("primary_action") or g.get("commit_action")
-            primary: Dict[str, Any] | None = None
-            if isinstance(pa_raw, dict):
-                primary = {
-                    "action_id": str(pa_raw.get("action_id") or ""),
-                    "action_type": str(pa_raw.get("action_type") or ""),
-                    "text": [str(x) for x in (pa_raw.get("text") or []) if x is not None],
-                }
-            primary_id = ""
-            if isinstance(pa_raw, dict):
-                primary_id = str(pa_raw.get("action_id") or "")
-
-            igroups.append(
-                {
-                    "intent_id": str(g.get("intent_id") or ""),
-                    "iid": str(g.get("intent_id") or ""),
-                    "intent_kind": str(g.get("intent_kind") or ""),
-                    "kind": str(g.get("intent_kind") or ""),
-                    "local_user_goal": str(g.get("local_user_goal") or ""),
-                    "goal": str(g.get("local_user_goal") or ""),
-                    "primary": primary_id,
-                    "primary_action": primary,
-                    "actions": _serialize_action_rows(g.get("actions")),
-                    "required_input_element_ids": [
-                        str(x) for x in (g.get("required_input_element_ids") or []) if x is not None
-                    ],
-                }
-            )
-
         states.append(
             {
                 "state_id": sid,
                 "screen_purpose": str(c.get("screen_purpose") or ""),
                 "taxonomy": dict(c.get("taxonomy") or {}),
-                "visible_signature": dict(c.get("visible_signature") or {}),
-                "navigation_cues": dict(c.get("navigation_cues") or {}),
-                "continuity_entities": list(c.get("continuity_entities") or []),
-                "state_feedback_summary": list(c.get("state_feedback_summary") or []),
-                "intent_groups": igroups,
+                "visible_elements": list(c.get("visible_elements") or []),
+                "available_actions": list(c.get("available_actions") or []),
+                "visible_feedback": list(c.get("visible_feedback") or []),
+                "interaction_groups": list(c.get("interaction_groups") or []),
+                "screen_intents": list(c.get("screen_intents") or []),
             }
         )
 
     return {
-        "catalog_version": compressed_catalog_package.get("catalog_version") or "compressed_catalog_v2",
+        "catalog_version": compressed_catalog_package.get("catalog_version") or "compressed_catalog_v3",
         "catalog_purpose": compressed_catalog_package.get("catalog_purpose") or "global_flow_discovery_input",
         "states": states,
     }

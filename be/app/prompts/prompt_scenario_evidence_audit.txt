@@ -17,7 +17,7 @@ You receive a JSON object containing outputs from previous pipeline stages.
   "global_discovery": {}
 }
 
-When **`compressed_catalog`** is present with **`global_discovery`**, grounding may rely on abbreviated per-screen intents and actions synthesized from Phase1+Phase2 compression—still enforce ID alignment with `candidate_flows`/`behaviour_intents`.
+When **`compressed_catalog`** is present with **`global_discovery`**, grounding uses Phase1 **`visible_elements`** / **`available_actions`** / **`visible_feedback`** plus Phase2 **`screen_intents`** from the discovery package — still enforce ID alignment with `candidate_flows`/`behaviour_intents`.
 
 ## Validation Layers:
 1. Traceability & Schema (Intent/Flow alignment).

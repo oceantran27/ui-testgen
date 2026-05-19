@@ -52,21 +52,59 @@ def _feedback_match_ids(
 
 
 def _first_heading(card: Dict[str, Any]) -> str:
-    vis = card.get("visible_signature") or {}
-    for h in vis.get("headings") or []:
-        c = _clean_headline(str(h))
-        if c:
-            return c
+    for el in card.get("visible_elements") or []:
+        if not isinstance(el, dict):
+            continue
+        et = str(el.get("element_type") or "")
+        if et not in ("heading", "title"):
+            continue
+        for h in el.get("text") or []:
+            c = _clean_headline(str(h))
+            if c:
+                return c
     return ""
 
 
 def _primary_text_fallback(card: Dict[str, Any]) -> str:
-    vis = card.get("visible_signature") or {}
-    for p in vis.get("primary_texts") or []:
-        c = _clean_headline(str(p))
-        if c and len(c) > 2:
-            return c
+    for el in card.get("visible_elements") or []:
+        if not isinstance(el, dict):
+            continue
+        et = str(el.get("element_type") or "")
+        rh = el.get("role_hint")
+        texts = [str(t).strip() for t in (el.get("text") or []) if str(t).strip()]
+        if not texts:
+            continue
+        if rh in ("primary_action", "required_input", "optional_input", "navigation"):
+            return _clean_headline(texts[0]) or _clean_headline(" ".join(texts))
+        if et in ("button", "link", "input", "select"):
+            return _clean_headline(texts[0]) or _clean_headline(" ".join(texts))
     return ""
+
+
+def _element_text_buckets_for_then(card: Dict[str, Any]) -> tuple[List[str], List[str]]:
+    """Primary-like vs status-like visible strings from elements + feedback (no pre-aggregated signature)."""
+    primary_texts: List[str] = []
+    status_texts: List[str] = []
+    for el in card.get("visible_elements") or []:
+        if not isinstance(el, dict):
+            continue
+        et = str(el.get("element_type") or "")
+        texts = [str(t).strip() for t in (el.get("text") or []) if str(t).strip()]
+        rh = el.get("role_hint")
+        if rh in ("primary_action", "required_input", "optional_input", "navigation") and texts:
+            primary_texts.extend(texts)
+        if et in ("button", "link", "input", "select") and texts:
+            primary_texts.extend(texts)
+        if (rh == "status_indicator" or et in ("badge", "status")) and texts:
+            status_texts.extend(texts)
+    for fb in card.get("visible_feedback") or []:
+        if not isinstance(fb, dict):
+            continue
+        for t in fb.get("text") or []:
+            s = str(t).strip()
+            if s:
+                status_texts.append(s)
+    return primary_texts, status_texts
 
 
 def _card_for_sid(catalog_by_sid: Dict[str, Dict[str, Any]], sid: str) -> Dict[str, Any]:
@@ -79,17 +117,22 @@ def _resolve_trigger_action_id(
     intent: BehaviourIntentA5,
 ) -> Optional[str]:
     ssi = intent.source_screen_intent_id
-    for ig in card_start.get("intent_groups") or []:
+    for ig in card_start.get("screen_intents") or []:
         if not isinstance(ig, dict):
             continue
-        if ssi and str(ig.get("intent_id") or "") == str(ssi):
-            for key in ("primary_action", "commit_action"):
-                pa = ig.get(key)
-                if isinstance(pa, dict) and pa.get("action_id"):
-                    return str(pa.get("action_id"))
+        row_ids = [
+            str(ig.get("screen_intent_id") or ""),
+            str(ig.get("intent_id") or ""),
+        ]
+        if ssi and str(ssi) not in row_ids:
+            continue
+        for key in ("primary_action", "commit_action"):
+            pa = ig.get(key)
+            if isinstance(pa, dict) and pa.get("action_id"):
+                return str(pa.get("action_id"))
     trigger_fragments = [str(t).strip().lower() for t in intent.trigger_action.text or []]
     trigger_joined = "".join(trigger_fragments)
-    for ig in card_start.get("intent_groups") or []:
+    for ig in card_start.get("screen_intents") or []:
         if not isinstance(ig, dict):
             continue
         for key in ("primary_action", "commit_action"):
@@ -137,32 +180,22 @@ def _split_evidence_into_atomic_fragments(evidence: str) -> List[str]:
     return out
 
 
-def _continuity_text_lines(card: Dict[str, Any]) -> List[str]:
-    lines: List[str] = []
-    for ent in card.get("continuity_entities") or []:
-        if not isinstance(ent, dict):
-            continue
-        for t in ent.get("text") or []:
-            c = _clean_headline(str(t))
-            if c:
-                lines.append(c)
-    return lines
-
-
 def _selected_option_display_texts(card: Dict[str, Any]) -> List[str]:
-    form = card.get("form_state_summary") or {}
-    if not isinstance(form, dict):
-        return []
     out: List[str] = []
-    for opt in form.get("selected_options") or []:
-        if not isinstance(opt, dict):
+    for intent in card.get("screen_intents") or []:
+        if not isinstance(intent, dict):
             continue
-        parts = [str(x).strip() for x in (opt.get("text") or []) if str(x).strip()]
-        if parts:
-            merged = " ".join(parts)
-            c = _clean_headline(merged)
-            if c:
-                out.append(c)
+        for opt in intent.get("selection_options") or []:
+            if not isinstance(opt, dict):
+                continue
+            if str(opt.get("visible_status") or "").lower() != "selected":
+                continue
+            parts = [str(x).strip() for x in (opt.get("option_text") or opt.get("text") or []) if str(x).strip()]
+            if parts:
+                merged = " ".join(parts)
+                c = _clean_headline(merged)
+                if c:
+                    out.append(c)
     return out
 
 
@@ -193,37 +226,33 @@ def _pick_then_anchors(intent: BehaviourIntentA5, end_card: Dict[str, Any]) -> L
     # 1) End screen heading / label (visible)
     heading = _first_heading(end_card)
     if heading:
-        _push("then_screen_label", heading, "end_state.visible_signature.headings")
+        _push("then_screen_label", heading, "end_state.visible_elements.headings")
 
     # 2) Feedback lines on end state
-    for t in _first_feedback_texts(list(end_card.get("state_feedback_summary") or [])):
-        _push(f"then_state_feedback_{idx}", t, "end_state.state_feedback_summary")
+    for t in _first_feedback_texts(list(end_card.get("visible_feedback") or [])):
+        _push(f"then_state_feedback_{idx}", t, "end_state.visible_feedback")
 
-    # 3) Primary / status texts (buttons, visible actions)
-    vis = end_card.get("visible_signature") or {}
+    # 3) Primary / status texts from visible elements (+ feedback counted in bucket)
+    pri_b, st_b = _element_text_buckets_for_then(end_card)
     n_pri = 0
-    for p in vis.get("primary_texts") or []:
+    for p in pri_b:
         if n_pri >= _MAX_THEN_PRIMARY_TEXTS:
             break
-        _push(f"then_primary_text_{idx}", str(p), "end_state.visible_signature.primary_texts")
+        _push(f"then_primary_text_{idx}", str(p), "end_state.visible_elements")
         n_pri += 1
     n_st = 0
-    for p in vis.get("status_texts") or []:
+    for p in st_b:
         if n_st >= _MAX_THEN_STATUS_TEXTS:
             break
-        _push(f"then_status_text_{idx}", str(p), "end_state.visible_signature.status_texts")
+        _push(f"then_status_text_{idx}", str(p), "end_state.visible_elements")
         n_st += 1
 
-    # 4) Continuity entities on end card
-    for t in _continuity_text_lines(end_card):
-        _push(f"then_continuity_{idx}", t, "end_state.continuity_entities")
-
-    # 5) Fallback: atomic fragments from expected_ui_evidence (never full-paragraph single anchor if split helps)
+    # 4) Fallback: atomic fragments from expected_ui_evidence (never full-paragraph single anchor if split helps)
     for ev in intent.expected_ui_evidence or []:
         for frag in _split_evidence_into_atomic_fragments(str(ev)):
             _push(f"then_expected_ui_evidence_{idx}", frag, "intent.expected_ui_evidence")
 
-    # 6) Last resort: expected_result
+    # 5) Last resort: expected_result
     if not out and (intent.expected_result or "").strip():
         _push("then_expected_result", intent.expected_result, "intent.expected_result")
 
@@ -261,7 +290,7 @@ def _build_when_anchors(
             MandatoryAnchorA6(
                 anchor_id=f"when_selected_{i}",
                 text=t,
-                source="start_state.form_state_summary.selected_options",
+                source="start_state.screen_intents.selection_options",
                 match_type="exact_or_contained",
             )
         )
@@ -351,7 +380,7 @@ def build_scenario_blueprints(
                 MandatoryAnchorA6(
                     anchor_id="given_start_screen",
                     text=given_anchor_text,
-                    source="start_state.visible_signature.headings_or_screen_purpose",
+                    source="start_state.visible_elements.headings_or_screen_purpose",
                     match_type="exact_or_contained",
                 )
             )
@@ -367,7 +396,7 @@ def build_scenario_blueprints(
             source_transition_ids=list(intent.source_transition_ids or []),
             expected_feedback_ids=_feedback_match_ids(
                 intent.expected_ui_evidence or [],
-                sc_e.get("state_feedback_summary") or [],
+                sc_e.get("visible_feedback") or [],
             ),
         )
 

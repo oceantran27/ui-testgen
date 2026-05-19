@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -587,21 +587,7 @@ class UIFlowDiscoveryResult(_PromptOutputBase):
     discovery_warnings: List[str] = Field(default_factory=list)
 
 
-# ── compressed_catalog_v2 (deterministic shrink for global_flow_discovery input) ──
-
-CompressedContinuityEntityType = Literal[
-    "product",
-    "service",
-    "user",
-    "order",
-    "appointment",
-    "date",
-    "time",
-    "amount",
-    "location",
-    "document",
-    "unknown",
-]
+# ── compressed_catalog_v3 (noise-stripped Phase1+2 evidence for global_flow_discovery) ──
 
 
 class CompressedTaxonomy(_PromptOutputBase):
@@ -611,104 +597,17 @@ class CompressedTaxonomy(_PromptOutputBase):
     outcome_state_type: A1OutcomeStateType
 
 
-class CompressedVisibleSignature(_PromptOutputBase):
-    headings: List[str] = Field(default_factory=list)
-    primary_texts: List[str] = Field(default_factory=list)
-    status_texts: List[str] = Field(default_factory=list)
+class CompressedDiscoveryEvidenceCard(_PromptOutputBase):
+    """Phase 1 state row + Phase 2 intents for one screen — layout/metadata noise dropped only."""
 
-
-class CompressedNavigationCues(_PromptOutputBase):
-    breadcrumb_texts: List[str] = Field(default_factory=list)
-    active_tab_text: Optional[str] = None
-    step_label_text: Optional[str] = None
-    step_index_visible: Optional[int] = None
-    step_total_visible: Optional[int] = None
-    progress_text: Optional[str] = None
-
-
-class CompressedStateFeedbackItem(_PromptOutputBase):
-    feedback_id: str
-    feedback_type: A1FeedbackType
-    text: List[str] = Field(default_factory=list)
-    related_element_ids: List[str] = Field(default_factory=list)
-    visual_region: str = "unknown"
-
-
-class CompressedFormField(_PromptOutputBase):
-    element_id: str
-    text: List[str] = Field(default_factory=list)
-
-
-class CompressedFormSelectionOption(_PromptOutputBase):
-    option_ref_type: Literal["element", "action"]
-    option_element_id: Optional[str] = None
-    option_action_id: Optional[str] = None
-    text: List[str] = Field(default_factory=list)
-    visible_status: str = "unknown"
-
-
-class CompressedFormStateSummary(_PromptOutputBase):
-    has_form: bool
-    required_inputs: List[CompressedFormField] = Field(default_factory=list)
-    optional_inputs: List[CompressedFormField] = Field(default_factory=list)
-    selected_options: List[CompressedFormSelectionOption] = Field(default_factory=list)
-    has_visible_values: bool
-    has_validation_feedback: bool
-
-
-class CompressedContinuityEntity(_PromptOutputBase):
-    entity_type: CompressedContinuityEntityType
-    text: List[str] = Field(default_factory=list)
-    source_element_id: Optional[str] = None
-
-
-class CompressedActionRef(_PromptOutputBase):
-    action_id: str
-    action_type: str
-    text: List[str] = Field(default_factory=list)
-    priority: A1ActionPriority
-
-
-class CompressedEvidenceRef(_PromptOutputBase):
-    evidence_type: str
-    source_id: str
-
-
-class CompressedLocalActionStep(_PromptOutputBase):
-    step_type: str
-    source_action_id: Optional[str] = None
-    source_element_id: Optional[str] = None
-
-
-class CompressedIntentGroup(_PromptOutputBase):
-    intent_id: str
-    source_group_id: str
-    intent_kind: str
-    intent_name: str
-    local_user_goal: str
-    # Each row: [action_id, action_type, action_text, value, status] for LLM / discovery (selection + primary).
-    actions: List[Tuple[str, str, str, str, str]] = Field(default_factory=list)
-    primary_action: Optional[CompressedActionRef] = None
-    commit_action: Optional[CompressedActionRef] = None
-    secondary_actions: List[CompressedActionRef] = Field(default_factory=list)
-    selection_options: List[CompressedFormSelectionOption] = Field(default_factory=list)
-    local_action_sequence: List[CompressedLocalActionStep] = Field(default_factory=list)
-    required_input_element_ids: List[str] = Field(default_factory=list)
-    feedback_refs: List[str] = Field(default_factory=list)
-    evidence_refs: List[CompressedEvidenceRef] = Field(default_factory=list)
-
-
-class CompressedScreenCard(_PromptOutputBase):
     state_id: str
     screen_purpose: str
     taxonomy: CompressedTaxonomy
-    visible_signature: CompressedVisibleSignature
-    navigation_cues: CompressedNavigationCues
-    state_feedback_summary: List[CompressedStateFeedbackItem] = Field(default_factory=list)
-    form_state_summary: CompressedFormStateSummary
-    continuity_entities: List[CompressedContinuityEntity] = Field(default_factory=list)
-    intent_groups: List[CompressedIntentGroup] = Field(default_factory=list)
-    evidence_refs: List[CompressedEvidenceRef] = Field(default_factory=list)
+    visible_elements: List[Dict[str, Any]] = Field(default_factory=list)
+    available_actions: List[Dict[str, Any]] = Field(default_factory=list)
+    visible_feedback: List[Dict[str, Any]] = Field(default_factory=list)
+    interaction_groups: List[Dict[str, Any]] = Field(default_factory=list)
+    screen_intents: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class CompressedTraceIndexEntry(_PromptOutputBase):
@@ -718,12 +617,12 @@ class CompressedTraceIndexEntry(_PromptOutputBase):
 
 
 class CompressedCatalogPackage(_PromptOutputBase):
-    """Phase 1+2 → token-shaped catalogue for batched global flow discovery (compressed_catalog_v2)."""
+    """Phase 1+2 → batched global flow discovery input (compressed_catalog_v3)."""
 
-    catalog_version: Literal["compressed_catalog_v2"] = "compressed_catalog_v2"
+    catalog_version: Literal["compressed_catalog_v3"] = "compressed_catalog_v3"
     catalog_purpose: Literal["global_flow_discovery_input"] = "global_flow_discovery_input"
     compressed_catalog_package_id: str = ""
-    compressed_catalog: List[CompressedScreenCard] = Field(default_factory=list)
+    compressed_catalog: List[CompressedDiscoveryEvidenceCard] = Field(default_factory=list)
     trace_index: Dict[str, CompressedTraceIndexEntry] = Field(default_factory=dict)
     compression_stats: Dict[str, Any] = Field(default_factory=dict)
 

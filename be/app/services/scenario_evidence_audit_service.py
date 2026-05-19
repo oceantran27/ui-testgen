@@ -71,11 +71,11 @@ def build_audit_ui_evidence_package_from_compressed(
             if sp:
                 ves.append({"element_id": f"{sid}_purpose", "element_type": "heading", "text": [sp]})
 
-            vis_sig = cc.get("visible_signature") or {}
-            for i, h in enumerate((vis_sig.get("headings") or [])[:6]):
-                if h:
-                    ves.append({"element_id": f"{sid}_sig_h{i}", "element_type": "heading", "text": [str(h)]})
-            for row in (cc.get("state_feedback_summary") or [])[:12]:
+            for el in cc.get("visible_elements") or []:
+                if isinstance(el, dict) and el.get("text"):
+                    ves.append(dict(el))
+
+            for row in cc.get("visible_feedback") or []:
                 if not isinstance(row, dict):
                     continue
                 fid = row.get("feedback_id")
@@ -88,7 +88,17 @@ def build_audit_ui_evidence_package_from_compressed(
                         }
                     )
 
-            for ig in cc.get("intent_groups") or []:
+            for act in cc.get("available_actions") or []:
+                if isinstance(act, dict) and act.get("action_id"):
+                    acts.append(
+                        {
+                            "action_id": str(act.get("action_id")),
+                            "action_type": str(act.get("action_type") or "click"),
+                            "text": [str(t) for t in (act.get("text") or []) if str(t).strip()],
+                        }
+                    )
+
+            for ig in cc.get("screen_intents") or []:
                 if not isinstance(ig, dict):
                     continue
                 gid = str(ig.get("source_group_id") or ig.get("group_id") or "grp")
@@ -117,7 +127,6 @@ def build_audit_ui_evidence_package_from_compressed(
                     if isinstance(sec, dict):
                         _add_action(sec, f"sa{j}")
 
-                # Legacy-shaped compressed rows (string lists)
                 for i, pa in enumerate(ig.get("primary_actions") or []):
                     if pa and not isinstance(pa, dict):
                         acts.append({"action_id": f"{sid}_{gid}_pa{i}", "action_type": "click", "text": [str(pa)]})

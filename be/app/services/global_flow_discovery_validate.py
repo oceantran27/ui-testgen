@@ -32,6 +32,53 @@ def _taxonomy_outcome(state_row: Dict[str, Any]) -> str:
     return ""
 
 
+def _catalog_action_row(state_row: Dict[str, Any], action_id: str) -> Optional[Dict[str, Any]]:
+    aid = str(action_id or "").strip()
+    if not aid:
+        return None
+    for a in state_row.get("available_actions") or []:
+        if isinstance(a, dict) and str(a.get("action_id") or "").strip() == aid:
+            return dict(a)
+    return None
+
+
+def _action_id_in_intent_fragment(frag: Any, aid: str) -> bool:
+    if not isinstance(frag, dict):
+        return False
+    return str(frag.get("action_id") or "").strip() == aid
+
+
+def _action_in_screen_intent(intent_row: Dict[str, Any], aid: str) -> bool:
+    if _action_id_in_intent_fragment(intent_row.get("primary_action"), aid):
+        return True
+    if _action_id_in_intent_fragment(intent_row.get("commit_action"), aid):
+        return True
+    for sec in intent_row.get("secondary_actions") or []:
+        if _action_id_in_intent_fragment(sec, aid):
+            return True
+    for so in intent_row.get("selection_options") or []:
+        if not isinstance(so, dict):
+            continue
+        if str(so.get("option_action_id") or "").strip() == aid:
+            return True
+        if _action_id_in_intent_fragment(so, aid):
+            return True
+    for tmpl in intent_row.get("local_action_sequence_templates") or []:
+        if not isinstance(tmpl, dict):
+            continue
+        for st in tmpl.get("steps") or []:
+            if isinstance(st, dict) and str(st.get("source_action_id") or "").strip() == aid:
+                return True
+    return False
+
+
+def _intent_id_matches(row: Dict[str, Any], iid_filter: str) -> bool:
+    for key in ("screen_intent_id", "intent_id", "iid"):
+        if str(row.get(key) or "").strip() == iid_filter:
+            return True
+    return False
+
+
 def _find_action_on_state(
     state_row: Dict[str, Any],
     *,
@@ -42,29 +89,33 @@ def _find_action_on_state(
     if not aid:
         return None, None
 
+    base = _catalog_action_row(state_row, aid)
+    if base is None:
+        return None, None
+
     iid_filter = str(intent_id).strip() if intent_id else ""
 
-    for g in state_row.get("intent_groups") or []:
-        if not isinstance(g, dict):
-            continue
-        gid = str(g.get("intent_id") or g.get("iid") or "")
-        if iid_filter and gid != iid_filter:
-            continue
-        pa = g.get("primary_action")
-        if isinstance(pa, dict) and str(pa.get("action_id") or "").strip() == aid:
-            return pa, gid or None
-        for row in g.get("actions") or []:
-            if isinstance(row, (list, tuple)) and len(row) >= 1 and str(row[0]).strip() == aid:
-                action_type = str(row[1]) if len(row) > 1 else "unknown"
-                action_text = str(row[2]) if len(row) > 2 else ""
-                synthetic: Dict[str, Any] = {
-                    "action_id": aid,
-                    "action_type": action_type,
-                    "text": [action_text] if action_text else [],
-                }
-                return synthetic, gid or None
+    intents_raw = state_row.get("screen_intents")
+    if not isinstance(intents_raw, list):
+        intents_raw = []
 
-    return None, None
+    if iid_filter:
+        for intent_row in intents_raw:
+            if not isinstance(intent_row, dict):
+                continue
+            if not _intent_id_matches(intent_row, iid_filter):
+                continue
+            if _action_in_screen_intent(intent_row, aid):
+                gid = str(intent_row.get("source_group_id") or intent_row.get("group_id") or "") or None
+                return base, gid
+        return None, None
+
+    for intent_row in intents_raw:
+        if isinstance(intent_row, dict) and _action_in_screen_intent(intent_row, aid):
+            gid = str(intent_row.get("screen_intent_id") or intent_row.get("intent_id") or "") or None
+            return base, gid
+
+    return base, None
 
 
 def _trigger_matches_catalog(state_row: Dict[str, Any], trig: FlowDiscoveryTriggerAction) -> bool:

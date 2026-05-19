@@ -74,7 +74,9 @@ def _outcome_type_from_card(card: Dict[str, Any]) -> str:
 
 
 def _pick_screen_intent_for_state(card: Dict[str, Any]) -> Tuple[str, str]:
-    for g in card.get("intent_groups") or []:
+    for g in card.get("screen_intents") or []:
+        if not isinstance(g, dict):
+            continue
         iid = str(g.get("intent_id") or g.get("screen_intent_id") or "")
         gid = str(g.get("source_group_id") or g.get("group_id") or "") or "__whole_state__"
         if iid or gid:

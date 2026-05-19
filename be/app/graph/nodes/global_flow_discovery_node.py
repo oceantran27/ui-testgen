@@ -24,7 +24,7 @@ async def global_flow_discovery_node(state: PipelineState, db: AsyncSession) -> 
             node_name,
             intent_lines=[
                 "Compose behaviour flow candidates from compressed UI behaviour cards "
-                "(semantic continuity, action-result compatibility, outcome branching, uncertainty).",
+                "(cross-screen visible alignment, action-result compatibility, outcome branching, uncertainty).",
                 "routing: generate_tests_node unless pipeline stopped.",
             ],
             state_keys=("run_id", "compressed_catalog_package"),
