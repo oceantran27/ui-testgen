@@ -8,18 +8,8 @@ def _minimal_compressed_catalog() -> dict:
     tax = {
         "domain": "test",
         "screen_type": "listing",
-        "presentation_scope": "primary_task",
+        "presentation_scope": "full_screen",
         "outcome_state_type": "success",
-    }
-    empty_form = {"has_form": False, "has_visible_values": False, "has_validation_feedback": False}
-    vis = {"headings": ["Heading"], "primary_texts": [], "status_texts": []}
-    nav = {
-        "breadcrumb_texts": [],
-        "active_tab_text": None,
-        "step_label_text": None,
-        "step_index_visible": None,
-        "step_total_visible": None,
-        "progress_text": None,
     }
     return {
         "compressed_catalog": [
@@ -27,27 +17,30 @@ def _minimal_compressed_catalog() -> dict:
                 "state_id": "sA",
                 "screen_purpose": "Booking",
                 "taxonomy": tax,
-                "visible_signature": vis,
-                "navigation_cues": nav,
-                "state_feedback_summary": [],
-                "form_state_summary": empty_form,
-                "continuity_entities": [],
-                "intent_groups": [],
-                "evidence_refs": [],
+                "visible_elements": [
+                    {
+                        "element_id": "h1",
+                        "element_type": "heading",
+                        "role_hint": "informative",
+                        "text": ["Heading"],
+                    },
+                ],
+                "available_actions": [],
+                "visible_feedback": [],
+                "interaction_groups": [],
+                "screen_intents": [],
             },
             {
                 "state_id": "sB",
                 "screen_purpose": "Done",
                 "taxonomy": tax,
-                "visible_signature": vis,
-                "navigation_cues": nav,
-                "state_feedback_summary": [
-                    {"feedback_id": "fb_ok", "feedback_type": "success", "text": ["Success banner"]}
+                "visible_elements": [],
+                "available_actions": [],
+                "visible_feedback": [
+                    {"feedback_id": "fb_ok", "feedback_type": "success", "text": ["Success banner"]},
                 ],
-                "form_state_summary": empty_form,
-                "continuity_entities": [],
-                "intent_groups": [],
-                "evidence_refs": [],
+                "interaction_groups": [],
+                "screen_intents": [],
             },
         ]
     }
@@ -83,7 +76,7 @@ def test_blueprint_builder_mandatory_sections() -> None:
     assert bp.mandatory_anchors.given
     assert bp.mandatory_anchors.when
     assert bp.mandatory_anchors.then
-    assert any("state_feedback" in a.source for a in bp.mandatory_anchors.then)
+    assert any("visible_feedback" in a.source for a in bp.mandatory_anchors.then)
     assert not bp.hidden_assertions
 
 
@@ -122,25 +115,32 @@ def test_blueprint_then_skips_negative_as_mandatory_anchor() -> None:
 
 def test_blueprint_when_uses_selected_options_before_trigger() -> None:
     cat = _minimal_compressed_catalog()
-    cat["compressed_catalog"][0]["form_state_summary"] = {
-        "has_form": True,
-        "has_visible_values": True,
-        "has_validation_feedback": False,
-        "selected_options": [
-            {
-                "option_ref_type": "element",
-                "option_element_id": "el1",
-                "text": ["05/20/2026"],
-                "visible_status": "selected",
-            },
-            {
-                "option_ref_type": "element",
-                "option_element_id": "el2",
-                "text": ["14:00"],
-                "visible_status": "selected",
-            },
-        ],
-    }
+    cat["compressed_catalog"][0]["screen_intents"] = [
+        {
+            "intent_id": "intent_pick",
+            "source_group_id": "g1",
+            "intent_kind": "selection",
+            "intent_name": "pick_slot",
+            "local_user_goal": "pick date/time",
+            "primary_action": {"action_id": "ac_go", "action_type": "submit", "text": ["Continue"]},
+            "secondary_actions": [],
+            "selection_options": [
+                {
+                    "option_ref_type": "element",
+                    "option_element_id": "el1",
+                    "option_text": ["05/20/2026"],
+                    "visible_status": "selected",
+                },
+                {
+                    "option_ref_type": "element",
+                    "option_element_id": "el2",
+                    "option_text": ["14:00"],
+                    "visible_status": "selected",
+                },
+            ],
+            "evidence_refs": [],
+        },
+    ]
     intent = BehaviourIntentA5.model_validate(
         {
             "intent_id": "bi_whenorder",
@@ -168,7 +168,7 @@ def test_blueprint_when_uses_selected_options_before_trigger() -> None:
     )
     bp = build_scenario_blueprints([intent], cat)[0]
     when = bp.mandatory_anchors.when
-    assert when[0].source == "start_state.form_state_summary.selected_options"
+    assert when[0].source == "start_state.screen_intents.selection_options"
     assert when[0].text == "05/20/2026"
     assert when[1].text == "14:00"
     assert when[2].source == "intent.trigger_action.text"

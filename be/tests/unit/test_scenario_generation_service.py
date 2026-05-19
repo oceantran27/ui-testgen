@@ -34,18 +34,8 @@ def _minimal_compressed_catalog() -> dict:
     tax = {
         "domain": "test",
         "screen_type": "listing",
-        "presentation_scope": "primary_task",
+        "presentation_scope": "full_screen",
         "outcome_state_type": "success",
-    }
-    empty_form = {"has_form": False, "has_visible_values": False, "has_validation_feedback": False}
-    vis = {"headings": [], "primary_texts": [], "status_texts": []}
-    nav = {
-        "breadcrumb_texts": [],
-        "active_tab_text": None,
-        "step_label_text": None,
-        "step_index_visible": None,
-        "step_total_visible": None,
-        "progress_text": None,
     }
     return {
         "compressed_catalog": [
@@ -53,27 +43,23 @@ def _minimal_compressed_catalog() -> dict:
                 "state_id": "sA",
                 "screen_purpose": "Booking",
                 "taxonomy": tax,
-                "visible_signature": vis,
-                "navigation_cues": nav,
-                "state_feedback_summary": [],
-                "form_state_summary": empty_form,
-                "continuity_entities": [],
-                "intent_groups": [],
-                "evidence_refs": [],
+                "visible_elements": [],
+                "available_actions": [],
+                "visible_feedback": [],
+                "interaction_groups": [],
+                "screen_intents": [],
             },
             {
                 "state_id": "sB",
                 "screen_purpose": "Done",
                 "taxonomy": tax,
-                "visible_signature": vis,
-                "navigation_cues": nav,
-                "state_feedback_summary": [
-                    {"feedback_id": "fb_ok", "feedback_type": "success", "text": ["Success banner"]}
+                "visible_elements": [],
+                "available_actions": [],
+                "visible_feedback": [
+                    {"feedback_id": "fb_ok", "feedback_type": "success", "text": ["Success banner"]},
                 ],
-                "form_state_summary": empty_form,
-                "continuity_entities": [],
-                "intent_groups": [],
-                "evidence_refs": [],
+                "interaction_groups": [],
+                "screen_intents": [],
             },
         ]
     }

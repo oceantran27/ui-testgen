@@ -243,11 +243,15 @@ def compressed_card_corpora(card: Mapping[str, Any]) -> str:
         str(tax.get("presentation_scope") or card.get("presentation_scope") or ""),
         str(tax.get("outcome_state_type") or card.get("outcome_state_type") or ""),
     ]
-    for row in card.get("state_feedback_summary") or []:
+    for row in card.get("visible_feedback") or card.get("state_feedback_summary") or []:
         if isinstance(row, dict):
             for t in row.get("text") or []:
                 bits.append(str(t))
-    for g in card.get("intent_groups") or []:
+    for el in card.get("visible_elements") or []:
+        if isinstance(el, dict):
+            for t in el.get("text") or []:
+                bits.append(str(t))
+    for g in card.get("screen_intents") or card.get("intent_groups") or []:
         if not isinstance(g, dict):
             continue
         bits.append(str(g.get("local_user_goal") or g.get("user_intent") or ""))
@@ -263,6 +267,9 @@ def compressed_card_corpora(card: Mapping[str, Any]) -> str:
             bits.append(str(x))
         for x in g.get("feedback_signals") or []:
             bits.append(str(x))
+        for so in g.get("selection_options") or []:
+            if isinstance(so, dict):
+                bits.extend(str(t) for t in (so.get("option_text") or so.get("text") or []) if t)
     return " ".join(x for x in bits if x).lower()
 
 

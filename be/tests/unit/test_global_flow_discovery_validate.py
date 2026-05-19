@@ -33,53 +33,46 @@ def _screen(state_id: str, outcome: str = "neutral") -> dict:
             "presentation_scope": "full_screen",
             "outcome_state_type": outcome,
         },
-        "visible_signature": {"headings": [], "primary_texts": [], "status_texts": []},
-        "navigation_cues": {},
-        "continuity_entities": [],
-        "state_feedback_summary": [],
-        "form_state_summary": {"has_form": False},
-        "intent_groups": [
+        "visible_elements": [],
+        "available_actions": [
+            {"action_id": "ac_go", "action_type": "submit", "text": ["Go"], "action_priority": "primary"},
+        ],
+        "visible_feedback": [],
+        "interaction_groups": [],
+        "screen_intents": [
             {
                 "intent_id": "intent_login",
                 "source_group_id": "g1",
                 "intent_kind": "submission",
                 "intent_name": "submit",
                 "local_user_goal": "login",
-                "primary_action": {
-                    "action_id": "ac_go",
-                    "action_type": "submit",
-                    "text": ["Go"],
-                    "priority": "primary",
-                },
+                "primary_action": {"action_id": "ac_go", "action_type": "submit", "text": ["Go"]},
                 "secondary_actions": [],
                 "evidence_refs": [],
             }
         ],
-        "evidence_refs": [],
     }
 
 
 def _compressed_pkg(*states: dict) -> dict:
     return {
-        "catalog_version": "compressed_catalog_v2",
+        "catalog_version": "compressed_catalog_v3",
         "catalog_purpose": "global_flow_discovery_input",
         "compressed_catalog": list(states),
     }
 
 
-def test_build_llm_discovery_catalog_trims_intent_noise():
-    pkg = _compressed_pkg(_screen("s_a"))
+def test_build_llm_discovery_catalog_pass_through():
+    row = _screen("s_a")
+    row["screen_intents"][0]["evidence_refs"] = [{"evidence_type": "heading", "source_id": "el_1"}]
+    pkg = _compressed_pkg(row)
     llm = build_llm_discovery_catalog(pkg)
     assert llm["states"][0]["state_id"] == "s_a"
-    ig = llm["states"][0]["intent_groups"][0]
-    assert "evidence_refs" not in ig
-    assert "source_group_id" not in ig
-    assert ig["primary_action"]["text"] == ["Go"]
-    assert ig["actions"] == []
-    assert ig["iid"] == "intent_login"
-    assert ig["kind"] == "submission"
-    assert ig["goal"] == "login"
-    assert ig["primary"] == "ac_go"
+    st = llm["states"][0]
+    assert st["available_actions"][0]["text"] == ["Go"]
+    si = st["screen_intents"][0]
+    assert si["intent_id"] == "intent_login"
+    assert si["evidence_refs"]
 
 
 def test_validate_discovery_input_duplicate_state_rejected():
@@ -176,10 +169,19 @@ def test_repair_trigger_text_mismatch_uses_catalog_copy():
     assert trig.text == ["Go"]
 
 
-def test_repair_trigger_text_mismatch_uses_actions_row():
+def test_repair_trigger_text_mismatch_uses_selection_option_action_catalog():
     def slot_screen(state_id: str) -> dict:
         s = _screen(state_id)
-        s["intent_groups"] = [
+        s["available_actions"] = [
+            {"action_id": "ac_primary", "action_type": "select", "text": ["Primary"], "action_priority": "primary"},
+            {
+                "action_id": "ac_opt",
+                "action_type": "select",
+                "text": ["Select 10:00", "10:00"],
+                "action_priority": "primary",
+            },
+        ]
+        s["screen_intents"] = [
             {
                 "intent_id": "intent_slot",
                 "source_group_id": "g1",
@@ -190,12 +192,15 @@ def test_repair_trigger_text_mismatch_uses_actions_row():
                     "action_id": "ac_primary",
                     "action_type": "select",
                     "text": ["Primary"],
-                    "priority": "primary",
                 },
-                "actions": [
-                    ["ac_opt", "select", "Select 10:00", "10:00", "selected"],
-                ],
                 "secondary_actions": [],
+                "selection_options": [
+                    {
+                        "option_action_id": "ac_opt",
+                        "option_text": ["Select 10:00", "10:00"],
+                        "visible_status": "selected",
+                    },
+                ],
                 "evidence_refs": [],
             }
         ]
@@ -229,7 +234,7 @@ def test_repair_trigger_text_mismatch_uses_actions_row():
     trig = repaired.candidate_flows[0].ordered_steps[0].next_trigger_action
     assert trig is not None
     assert trig.action_id == "ac_opt"
-    assert trig.text == ["Select 10:00"]
+    assert trig.text == ["Select 10:00", "10:00"]
 
 
 def test_unassigned_dropped_when_on_spine():
