@@ -12,10 +12,10 @@ ensure_sys_path()
 INPUT_IMAGES_DIR = Path(r"C:\sqa-workspace\ui-testgen\be\data\images") # EDIT THIS
 GT_OUTPUT_DIR = Path(__file__).resolve().parent / "ground_truth"
 CONCURRENCY = 5
-MODEL_NAME = "gpt-5.4-mini" # e.g., "gemini-1.5-flash", "gpt-4o"
-MODEL_PROVIDER = "openai"      # "gemini" or "openai"
+MODEL_NAME = "gemini-2.5-flash" # e.g., "gemini-1.5-flash", "gpt-4o"
+MODEL_PROVIDER = "gemini"      # "gemini" or "openai"
 ID_MIN = 1                     # Start index (1-based)
-ID_MAX = 999                   # End index (inclusive)
+ID_MAX = 5                   # End index (inclusive)
 # ───────────────────
 
 async def process_image(image_path: Path, output_dir: Path, semaphore: asyncio.Semaphore, run_id: str):

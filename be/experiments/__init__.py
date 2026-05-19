@@ -1,1 +1,1 @@
-"""Offline experiments and evaluation scripts (not part of the API package)."""
+"""Offline experiments and benchmarks (separate from production pipeline)."""

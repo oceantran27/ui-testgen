@@ -93,7 +93,7 @@ async def main_async() -> None:
     from app.core.config import settings
     from app.model_providers import model_adapter
     from app.model_providers.base import ImageInput, NonRetryableModelError
-    from app.model_providers.schemas import UIStateExtractionResult
+    from app.model_providers.schemas import UIStateA1, UIStateExtractionResult
     from app.services.preprocessing_service import (
         build_quality_report,
         run_preprocessing_pipeline_on_bytes,
@@ -101,6 +101,7 @@ async def main_async() -> None:
     )
     from app.services.ui_state_service import (
         _confidence_from_extraction,
+        _confidence_label,
         _convert_bbox,
         _generate_state_id,
         _generate_state_signature,
@@ -201,6 +202,8 @@ async def main_async() -> None:
                 output_schema=UIStateExtractionResult,
                 prompt_name="ui_state_extraction_prompt",
                 prompt_version="v1",
+                provider_override=settings.UI_STATE_EXTRACTION_PROVIDER,
+                model_name_override=settings.UI_STATE_EXTRACTION_MODEL_NAME,
             )
         except NonRetryableModelError as e:
             failed_extractions_count += 1
@@ -235,22 +238,39 @@ async def main_async() -> None:
             response.parsed_output,
             UIStateExtractionResult,
         )
+        raw_states = list(result_data.extracted_states or [])
+        state_model: Optional[UIStateA1] = next(
+            (s for s in raw_states if s.image_id == image_id), None
+        )
+        if state_model is None and raw_states:
+            state_model = raw_states[0]
+        if state_model is None:
+            failed_extractions_count += 1
+            failed_items.append(image_id)
+            extraction_per_image.append(
+                {
+                    **base_entry,
+                    "extraction_status": "failed",
+                    "model_response_status": response.status.value,
+                    "model_error": {"message": "EMPTY_EXTRACTED_STATES"},
+                    "latency_ms": response.latency_ms,
+                }
+            )
+            continue
+
+        extraction_status = "success" if state_model.ui_elements else "partial"
         state_id = _generate_state_id()
         state_ids.append(state_id)
 
-        conf = _confidence_from_extraction(result_data.extraction_status, result_data.state_quality)
-        conf_label = "low"
-        if conf >= 0.75:
-            conf_label = "high"
-        elif conf >= 0.5:
-            conf_label = "medium"
+        conf = _confidence_from_extraction(extraction_status, None)
+        conf_label = _confidence_label(conf)
 
-        signature = _generate_state_signature(result_data.page_type, result_data.ui_elements)
+        signature = _generate_state_signature(state_model.page_type, state_model.ui_elements)
 
         actionable_count = 0
         feedback_count = 0
         elements_out: List[Dict[str, Any]] = []
-        for el_data in result_data.ui_elements:
+        for el_data in state_model.ui_elements:
             bbox = _convert_bbox(el_data.bbox)
             elements_out.append(
                 {
@@ -272,26 +292,27 @@ async def main_async() -> None:
                 feedback_count += 1
                 total_feedback_elements += 1
 
-        total_ui_elements += len(result_data.ui_elements)
+        total_ui_elements += len(state_model.ui_elements)
         extracted_states_count += 1
-        page_type_distribution[result_data.page_type] = (
-            page_type_distribution.get(result_data.page_type, 0) + 1
+        page_type_distribution[state_model.page_type] = (
+            page_type_distribution.get(state_model.page_type, 0) + 1
         )
 
-        if result_data.state_quality.warnings:
-            warnings.extend([f"[{image_id}] {w}" for w in result_data.state_quality.warnings])
+        for w in result_data.extraction_warnings:
+            warnings.append(f"[{image_id}] {w}")
 
+        feedback_el_count = sum(1 for el in state_model.ui_elements if el.is_feedback)
         state_catalog.append(
             {
                 "state_id": state_id,
                 "image_id": image_id,
-                "extraction_status": result_data.extraction_status,
-                "page_type": result_data.page_type,
-                "state_summary": result_data.state_summary,
+                "extraction_status": extraction_status,
+                "page_type": state_model.page_type,
+                "state_summary": state_model.state_summary,
                 "state_signature": signature,
-                "visible_texts": [v.model_dump() for v in result_data.visible_texts[:10]],
-                "feedback_element_count": len(result_data.feedback_elements),
-                "element_count": len(result_data.ui_elements),
+                "visible_texts": [],
+                "feedback_element_count": feedback_el_count,
+                "element_count": len(state_model.ui_elements),
                 "actionable_element_count": actionable_count,
                 "feedback_ui_count": feedback_count,
                 "confidence": conf,
@@ -301,7 +322,7 @@ async def main_async() -> None:
         extraction_per_image.append(
             {
                 **base_entry,
-                "extraction_status": result_data.extraction_status,
+                "extraction_status": extraction_status,
                 "state_id": state_id,
                 "state_signature": signature,
                 "confidence_label": conf_label,

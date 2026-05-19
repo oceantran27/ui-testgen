@@ -61,6 +61,7 @@ async def call_ui_extraction(
         output_schema=UIStateExtractionResult,
         model_name_override=model_name or "",
         provider_override=provider or "",
+        temperature=0.0,
     )
     
     if response.status.value != "success" or not response.parsed_output:
@@ -113,9 +114,8 @@ def calculate_iou(bbox1: List[float], bbox2: List[float]) -> float:
 
 def match_elements(gt_el: Dict[str, Any], model_el: Dict[str, Any]) -> bool:
     """
-    Implements the dual matching logic:
-    1. If text/label is present: match by attributes + text/label.
-    2. If text/label is null: match by attributes + bbox IoU >= 0.5.
+    Implements the matching logic based on Type and Text/Label:
+    Match if type/flags match AND (text matches OR label matches).
     """
     # Core attributes must match
     if (gt_el["type"] != model_el["type"] or 
@@ -123,19 +123,13 @@ def match_elements(gt_el: Dict[str, Any], model_el: Dict[str, Any]) -> bool:
         gt_el["is_feedback"] != model_el["is_feedback"]):
         return False
 
-    gt_text = (gt_el.get("text") or "").strip()
-    gt_label = (gt_el.get("label") or "").strip()
-    model_text = (model_el.get("text") or "").strip()
-    model_label = (model_el.get("label") or "").strip()
+    gt_text = (gt_el.get("text") or "").strip().lower()
+    gt_label = (gt_el.get("label") or "").strip().lower()
+    model_text = (model_el.get("text") or "").strip().lower()
+    model_label = (model_el.get("label") or "").strip().lower()
 
-    has_gt_text = bool(gt_text or gt_label)
+    # Match if either text or label matches (and is not empty)
+    text_match = (gt_text == model_text) if gt_text else False
+    label_match = (gt_label == model_label) if gt_label else False
     
-    if has_gt_text:
-        # Match by text or label (case insensitive)
-        text_match = (gt_text.lower() == model_text.lower()) if gt_text else False
-        label_match = (gt_label.lower() == model_label.lower()) if gt_label else False
-        return text_match or label_match
-    else:
-        # Match by BBox overlap
-        iou = calculate_iou(gt_el["bbox"], model_el["bbox"])
-        return iou >= 0.5
+    return text_match or label_match
