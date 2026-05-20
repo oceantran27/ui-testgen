@@ -12,7 +12,7 @@ def test_run_build_compressed_catalog_shape():
             "state_id": "st_1",
             "source_image_id": "img_1",
             "upload_order": 1,
-            "domain": "booking",
+            "domain": "travel",
             "screen_type": "form",
             "screen_purpose": "Select service",
             "presentation_scope": "full_screen",
@@ -68,7 +68,7 @@ def test_run_build_compressed_catalog_shape():
     c0 = pkg["compressed_catalog"][0]
     assert c0["state_id"] == "st_1"
     assert "upload_order" not in c0
-    assert c0["taxonomy"]["domain"] == "booking"
+    assert c0["taxonomy"]["domain"] == "travel"
     assert c0["taxonomy"]["screen_type"] == "form"
     assert c0["visible_elements"][0]["text"] == ["Services"]
     assert c0["visible_feedback"][0]["feedback_id"] == "fb_1"
