@@ -24,7 +24,7 @@ Scope: `be/app/prompts`, `be/app/model_providers/schemas.py`, `be/app/services`,
 | Finding | Mitigation |
 |---------|------------|
 | `screen_type` drift | [`be/app/constants/ui_screen_taxonomy.py`](be/app/constants/ui_screen_taxonomy.py): canonical set + aliases (`list`/`search_results`→`listing`); normalize in [`ui_state_service`](be/app/services/ui_state_service.py), [`flow_context_builder_service`](be/app/services/flow_context_builder_service.py), [`behaviour_contract_service`](be/app/services/behaviour_contract_service.py), [`candidate_edge_resolver_service`](be/app/services/candidate_edge_resolver_service.py); prompt + [`schemas.py`](be/app/model_providers/schemas.py) comment aligned. |
-| `intent_kind` vs resolver | Documented intent: prompt §4.4 + resolver docstring — `data_entry`/`informative` are local-only by design (no blanket edge expansion). |
+| `intent_kind` vs resolver | Documented intent: prompt §4.4 + resolver docstring — `data_entry`/`informational` (legacy `informative`) are local-only by design (no blanket edge expansion). |
 | `alternative_branch` vs schema comment | `ComposedFlowA5.flow_type` comment includes `alternative_branch`. |
 | `Flow.flow_type` ORM comment | Updated to Agent 4 LLM vocabulary. |
 | Audit prompt `average_reliability` | Removed from example JSON (matches `FinalOutputSummaryA7`). |
@@ -32,10 +32,42 @@ Scope: `be/app/prompts`, `be/app/model_providers/schemas.py`, `be/app/services`,
 | `evidence_level` casing | `_normalize_ordering_strength` in [`intent_aware_flow_discovery_service`](be/app/services/intent_aware_flow_discovery_service.py). |
 | `BehaviourScenario.validation_status` comment | Extended with audit statuses. |
 | Dead-path prompts terminology | [`scenario_generation.txt`](be/app/prompts/scenario_generation.txt), [`prompt_behaviour_contract_builder.txt`](be/app/prompts/prompt_behaviour_contract_builder.txt), flow-discovery prompt evidence line tightened. |
+| Joint vision enums (`prompt_joint_screen_understanding_v1`) | Phase A enums + normalize in [`ui_state_taxonomy.py`](be/app/constants/ui_state_taxonomy.py); Phase B + action types in [`screen_intent_taxonomy.py`](be/app/constants/screen_intent_taxonomy.py); Pydantic `JointScreenUnderstandingResult` + field validators coerce legacy tokens (`confirmation_required`→`neutral`, `non_text_label`→`control_label`, legacy `step_type`, **`informative`→`informational`** for `intent_kind`, legacy `action_type`, unknown `element_type`→`other`, legacy visual regions). Runtime suffix [`screen_intent_prompt_render.py`](be/app/services/screen_intent_prompt_render.py) bullets match taxonomy (no conflicting enum lists). |
+
+---
+
+## Joint vision SSOT (`prompt_joint_screen_understanding_v1`)
+
+| Layer | Location |
+|-------|----------|
+| Prompt prose | [`be/app/prompts/prompt_joint_screen_understanding_v1.txt`](be/app/prompts/prompt_joint_screen_understanding_v1.txt) |
+| Phase A tuples + normalize | [`be/app/constants/ui_state_taxonomy.py`](be/app/constants/ui_state_taxonomy.py) |
+| `screen_type` aliases (no `wizard_step` canonical) | [`be/app/constants/ui_screen_taxonomy.py`](be/app/constants/ui_screen_taxonomy.py) |
+| Phase B + unresolved union | [`be/app/constants/screen_intent_taxonomy.py`](be/app/constants/screen_intent_taxonomy.py) |
+| Structured provider output | [`be/app/model_providers/schemas.py`](be/app/model_providers/schemas.py) (`JointScreenUnderstandingResult`, runtime asserts vs taxonomy) |
+| Persist belt-and-suspenders | [`be/app/services/ui_state_evidence_persist.py`](be/app/services/ui_state_evidence_persist.py) |
+
+**`unresolved_screen_groups.reason_code`**: union of prompt §4.6 strings **and** backend-only codes (`invalid_source_group_id`, `outcome_prediction_detected`, …) so validators can persist rejections while the LLM uses the shorter prompt list.
+
+Regression guard: [`be/tests/unit/test_joint_screen_understanding_schema_roundtrip.py`](be/tests/unit/test_joint_screen_understanding_schema_roundtrip.py).
+
+### Second pass — downstream alignment (post–prompt §4.1 refresh)
+
+| Layer | Updates |
+|-------|---------|
+| **`intent_kind`** | Canonical token **`informational`** per prompt; [`LEGACY_INTENT_KIND_MAP`](be/app/constants/screen_intent_taxonomy.py) maps **`informative`→`informational`**. Phase A **`role_hint`** still uses **`informative`**. |
+| **Joint Pydantic ingest** | [`schemas.py`](be/app/model_providers/schemas.py): `action_type` → `normalize_action_type`; `element_type` → `normalize_element_type`; visual region legacy map in [`ui_state_taxonomy.py`](be/app/constants/ui_state_taxonomy.py) (`header`→`top_bar`, `main_content`→`main`, `modal`→`dialog`); `reason_code` → `normalize_unresolved_reason_code`; `assert ACTION_TYPE_VALUES` vs `A1ActionType`. |
+| **Edge taxonomy** | [`edge_taxonomy.py`](be/app/constants/edge_taxonomy.py): `INTENT_TO_TARGET_OUTCOME_COMPATIBILITY` entries for **`filtering`**, **`creation`**. |
+| **Intent validation** | [`screen_intent_validation.py`](be/app/services/screen_intent_validation.py): **`confirmation`** requires `commit_action_id`; **`creation`** requires primary or commit; **`filtering`** requires filter/search affordance or group_type; **`informational`** branch (no commit; limited primary). |
+| **Experiments** | [`temp_ground_truth_builder_service.py`](be/experiments/ui_state_extraction/services/temp_ground_truth_builder_service.py), [`prediction_normalizer_service.py`](be/experiments/ui_state_extraction/services/prediction_normalizer_service.py): shared `normalize_action_type` + intent legacy map. |
 
 ---
 
 ## 1. Prompt inventory (enum-like fields)
+
+### `prompt_joint_screen_understanding_v1.txt` — **được dùng** (`joint_screen_understanding_service` → `JointScreenUnderstandingResult`)
+
+Single-call vision output: Phase A closed vocab matches [`ui_state_taxonomy.py`](be/app/constants/ui_state_taxonomy.py); Phase B matches [`screen_intent_taxonomy.py`](be/app/constants/screen_intent_taxonomy.py). Duplicate taxonomy bullets are appended via [`render_phase2_taxonomy_system_suffix()`](be/app/services/screen_intent_prompt_render.py) using those modules (aligned with parsing, not a divergent hard-coded list).
 
 ### `prompt_ui_state_evidence_extraction_v2.txt` — **được dùng** (`ui_state_service` → `UIStateExtractionV2Result`)
 
@@ -53,7 +85,7 @@ Scope: `be/app/prompts`, `be/app/model_providers/schemas.py`, `be/app/services`,
 
 | Field | Allowed values |
 |-------|----------------|
-| `intent_kind` | `navigation`, `data_entry`, `submission`, `selection`, `confirmation`, `cancellation`, `editing`, `deletion`, `search`, `feedback_acknowledgement`, `informative` |
+| `intent_kind` | `navigation`, `data_entry`, `submission`, `selection`, `confirmation`, `cancellation`, `editing`, `deletion`, `search`, `feedback_acknowledgement`, `informational` (joint v1); v2 prompt text may still say `informative` |
 | `visible_status` | `selected`, `unselected`, `disabled`, `unknown` |
 | `step_type` | `select_option`, `click_action`, `enter_input` |
 | `confidence` | `high`, `medium`, `low` |
@@ -115,6 +147,7 @@ Tất cả các field trên là **`str` runtime** — không có `Literal` enfor
 
 | Prompt file | Service | `output_schema` |
 |-------------|---------|-----------------|
+| `prompt_joint_screen_understanding_v1` | `joint_screen_understanding_service` | `JointScreenUnderstandingResult` |
 | `prompt_ui_state_evidence_extraction_v2` | `ui_state_service` | `UIStateExtractionV2Result` |
 | `prompt_screen_behaviour_intent_extraction_v2` | `screen_intent_service` | `ScreenIntentExtractionV2Result` |
 | `prompt_intent_aware_flow_discovery` | `intent_aware_flow_discovery_service` | `UIFlowDiscoveryResult` |
@@ -136,9 +169,9 @@ Canonical map lives in [`be/app/constants/edge_taxonomy.py`](be/app/constants/ed
 
 Kinds **có** map: `submission`, `confirmation`, `cancellation`, `selection`, `navigation`, `editing`, `deletion`, `search`, `feedback_acknowledgement`.
 
-Kinds prompt **không** có trong map (→ `eligible_outcomes == {}` → không edges): **`data_entry`**, **`informative`**.
+Kinds prompt **không** có trong map (→ `eligible_outcomes == {}` → không edges): **`data_entry`**, **`informational`** (và legacy **`informative`** nếu chưa qua normalize).
 
-(Khi `intent_kind` falsy hoặc `informative`/`data_entry`, code `continue` sớm hoặc skip — đã có nhánh riêng cho `informative`/`data_entry`.)
+(Khi `intent_kind` falsy hoặc `informational`/`data_entry`, code `continue` sớm hoặc skip — đã có nhánh riêng cho các kind local-only.)
 
 ### `flow_context_builder_service.py`
 
@@ -220,6 +253,7 @@ Khuyến nghị: viết script nhỏ Python đọc `steps/*.json` / `raw/model_*
 
 - Prompts: all `be/app/prompts/*.txt`
 - Schema: `be/app/model_providers/schemas.py`
+- Taxonomy: `be/app/constants/ui_screen_taxonomy.py`, `be/app/constants/ui_state_taxonomy.py`, `be/app/constants/screen_intent_taxonomy.py`, `be/app/constants/edge_taxonomy.py`
 - Services: `ui_state_service`, `screen_intent_service`, `flow_context_builder_service`, `candidate_edge_resolver_service`, `intent_aware_flow_discovery_service`, `behaviour_contract_service`, `scenario_generation_service`, `scenario_evidence_audit_service`
 - Graph nodes: `*_node.py` under `be/app/graph/nodes/`
 - Models: `flow.py`, `flow_transition.py`, `behaviour_intent.py`, `behaviour_scenario.py`, `ui_state.py`, `screen_intent.py`
