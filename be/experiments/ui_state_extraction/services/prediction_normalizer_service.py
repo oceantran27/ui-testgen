@@ -38,18 +38,23 @@ from experiments.ui_state_extraction.services.text_normalization_service import 
     text_matches,
 )
 
+from app.constants.screen_intent_taxonomy import LEGACY_INTENT_KIND_MAP, normalize_action_type
+
 _ACTION_TYPE_SET_A: frozenset[str] = frozenset({"click", "open", "close"})
 _ACTION_TYPE_SET_B: frozenset[str] = frozenset(
     {"type", "select", "toggle", "upload", "drag", "scroll"},
 )
-_LEGACY_ACTION_TYPES: frozenset[str] = frozenset({"submit", "navigate", "confirm", "cancel"})
 
 
 def _canonical_action_type(raw: str) -> str:
-    at = (raw or "unknown").strip().lower()
-    if at in _LEGACY_ACTION_TYPES:
-        return "click"
-    return at
+    return normalize_action_type(raw)
+
+
+def _canonical_intent_kind(raw: str) -> str:
+    s = (raw or "").strip().lower()
+    return LEGACY_INTENT_KIND_MAP.get(s, s)
+
+
 _INPUT_ROLE_HINTS: frozenset[str] = frozenset({"required_input", "optional_input"})
 
 
@@ -327,7 +332,7 @@ def normalize_raw_model_output(raw_model_output: dict[str, Any]) -> PredictionEv
         intents.append(
             PredIntentUnit(
                 pred_intent_index=idx,
-                intent_kind=str(intent.get("intent_kind", "")),
+                intent_kind=_canonical_intent_kind(str(intent.get("intent_kind", ""))),
                 source_pred_group_id=str(intent.get("source_group_id", "")),
                 primary_pred_action_id=str(pri) if pri is not None else None,
                 commit_pred_action_id=str(commit) if commit is not None else None,

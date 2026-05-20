@@ -53,18 +53,23 @@ from experiments.ui_state_extraction.services.validation_report_service import (
     sync_conversion_counts,
 )
 
+from app.constants.screen_intent_taxonomy import LEGACY_INTENT_KIND_MAP, normalize_action_type
+
 _ACTION_TYPE_SET_A: frozenset[str] = frozenset({"click", "open", "close"})
 _ACTION_TYPE_SET_B: frozenset[str] = frozenset(
     {"type", "select", "toggle", "upload", "drag", "scroll"},
 )
-_LEGACY_ACTION_TYPES: frozenset[str] = frozenset({"submit", "navigate", "confirm", "cancel"})
 
 
 def _canonical_action_type(raw: str) -> str:
-    at = (raw or "unknown").strip().lower()
-    if at in _LEGACY_ACTION_TYPES:
-        return "click"
-    return at
+    return normalize_action_type(raw)
+
+
+def _canonical_intent_kind(raw: str) -> str:
+    s = (raw or "").strip().lower()
+    return LEGACY_INTENT_KIND_MAP.get(s, s)
+
+
 _INPUT_ROLE_HINTS: frozenset[str] = frozenset({"required_input", "optional_input"})
 
 
@@ -519,7 +524,7 @@ def build_temp_ground_truth_from_raw(
             ScreenIntentRecord(
                 gt_intent_id=iid,
                 source_model_index=idx - 1,
-                intent_kind=str(intent.get("intent_kind", "")),
+                intent_kind=_canonical_intent_kind(str(intent.get("intent_kind", ""))),
                 source_group_id=gt_g,
                 primary_action_id=pri,
                 commit_action_id=commit,
@@ -637,17 +642,23 @@ def _map_evidence_ref(
     model_fb_to_gt: dict[str, str],
     model_ig_to_gt: dict[str, str],
 ) -> str | None:
-    if evidence_type == "element_text":
+    et = evidence_type.strip().lower()
+    if et in (
+        "element_text",
+        "control_label",
+        "control_value",
+        "control_state",
+        "visual_structure",
+        "non_text_icon",
+    ):
         return model_el_to_gt.get(source_id)
-    if evidence_type == "action_text":
+    if et == "action_text":
         return model_ac_to_gt.get(source_id)
-    if evidence_type == "feedback_text":
+    if et == "feedback_text":
         return model_fb_to_gt.get(source_id)
-    if evidence_type == "group_evidence":
+    if et == "group_evidence":
         return model_ig_to_gt.get(source_id)
-    if evidence_type == "control_state":
-        return model_el_to_gt.get(source_id)
-    if evidence_type == "non_text_label":
+    if et == "non_text_label":
         return None
     return model_el_to_gt.get(source_id) or model_ac_to_gt.get(source_id)
 
