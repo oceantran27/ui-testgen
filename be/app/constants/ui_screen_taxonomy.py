@@ -9,6 +9,26 @@ from __future__ import annotations
 
 from typing import FrozenSet
 
+# Ordered for docs / Literal construction (prompt §3.1 screen_type — no wizard_step).
+SCREEN_TYPES_ORDERED: tuple[str, ...] = (
+    "landing",
+    "auth",
+    "search",
+    "listing",
+    "detail",
+    "form",
+    "dashboard",
+    "table",
+    "cart",
+    "checkout",
+    "profile",
+    "settings",
+    "document",
+    "media",
+    "support",
+    "other",
+)
+
 # Must stay aligned with prompt_joint_screen_understanding_v1.txt (ui_state contract).
 SCREEN_TYPES_CANONICAL: FrozenSet[str] = frozenset(
     {
@@ -24,7 +44,6 @@ SCREEN_TYPES_CANONICAL: FrozenSet[str] = frozenset(
         "checkout",
         "profile",
         "settings",
-        "wizard_step",
         "document",
         "media",
         "support",
@@ -41,23 +60,24 @@ SCREEN_TYPE_ALIASES: dict[str, str] = {
     "results": "listing",
     "catalog": "listing",
     "browse": "listing",
-    "wizard": "wizard_step",
+    "wizard": "form",
+    "wizard_step": "form",
     "service_listing_page": "listing",
     "service_catalog": "listing",
     "service_detail_page": "detail",
-    "booking_time_selection_page": "wizard_step",
-    "appointment_time_selection": "wizard_step",
+    "booking_time_selection_page": "form",
+    "appointment_time_selection": "form",
     "booking_customer_information_page": "form",
     "booking_customer_information_error_page": "form",
-    "booking_review_page": "wizard_step",
-    "booking_confirmed_page": "wizard_step",
-    "booking_slot_unavailable_page": "wizard_step",
+    "booking_review_page": "checkout",
+    "booking_confirmed_page": "checkout",
+    "booking_slot_unavailable_page": "listing",
     "my_appointments_page": "listing",
     "appointment_cancelled_page": "listing",
-    "booking_flow_page": "wizard_step",
+    "booking_flow_page": "form",
 }
 
-# Legacy / forbidden-as-layout tokens from older prompts or models -> coerce to canonical layout or other.
+# Legacy layout token removed from canonical set; coerce if model still emits it.
 SCREEN_TYPE_LEGACY_COERCE: dict[str, str] = {
     # Former screen_types that are really outcome or chrome — drop to other
     "error": "other",
@@ -66,6 +86,7 @@ SCREEN_TYPE_LEGACY_COERCE: dict[str, str] = {
     "notification": "other",
     "empty_state": "other",
     "loading": "other",
+    "wizard_step": "form",
 }
 
 # Screens where structural empty-state text heuristics apply (formerly list/search_results/search).

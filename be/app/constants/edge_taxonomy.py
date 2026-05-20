@@ -44,6 +44,8 @@ INTENT_TO_TARGET_OUTCOME_COMPATIBILITY: Final[Dict[str, FrozenSet[str]]] = {
     "editing": frozenset({"success", "neutral", "validation_error"}),
     "deletion": frozenset({"success", "neutral", "empty", "confirmation_required"}),
     "search": frozenset({"neutral", "empty"}),
+    "filtering": frozenset({"neutral", "empty"}),
+    "creation": frozenset({"neutral", "empty", "success"}),
     "feedback_acknowledgement": frozenset({"neutral"}),
 }
 
@@ -81,27 +83,28 @@ TASK_PROGRESS_FORWARD_EDGE_KINDS: Final[FrozenSet[str]] = frozenset(
 
 # Target screen types (normalized) allowed for submission → neutral task_progress.
 TASK_PROGRESS_TARGET_SCREEN_TYPES: Final[FrozenSet[str]] = frozenset(
-    {"form", "detail", "wizard_step", "checkout", "listing"}
+    {"form", "detail", "checkout", "listing"}
 )
 
 # Allowed (source_screen_type, target_screen_type) neutral→neutral task progress probes (resolver sparse).
 WIZARD_PROGRESS_SCREEN_PAIRS: Final[FrozenSet[Tuple[str, str]]] = frozenset(
     {
         ("listing", "detail"),
-        ("detail", "wizard_step"),
         ("detail", "form"),
-        ("wizard_step", "wizard_step"),
-        ("wizard_step", "form"),
-        ("wizard_step", "listing"),
-        ("form", "wizard_step"),
+        ("detail", "checkout"),
         ("form", "form"),
         ("form", "listing"),
-        ("checkout", "wizard_step"),
+        ("form", "checkout"),
+        ("checkout", "form"),
+        ("form", "detail"),
+        ("checkout", "listing"),
+        ("checkout", "detail"),
+        ("checkout", "checkout"),
     }
 )
 
 NEUTRAL_WIZARD_FORWARD_SOURCE_SCREEN_TYPES: Final[FrozenSet[str]] = frozenset(
-    {"listing", "detail", "wizard_step", "form", "checkout", "search"}
+    {"listing", "detail", "form", "checkout", "search"}
 )
 
 SCENARIO_ROLE_VALUES: Final[FrozenSet[str]] = frozenset(
@@ -151,9 +154,8 @@ SCREEN_TRANSITION_BONUS_PAIRS: Final[FrozenSet[tuple[str, str]]] = frozenset(
         ("search", "listing"),
         ("search", "detail"),
         ("cart", "checkout"),
-        ("wizard_step", "wizard_step"),
-        ("wizard_step", "detail"),
-        ("wizard_step", "success"),
+        ("checkout", "form"),
+        ("checkout", "checkout"),
         ("dashboard", "detail"),
         ("profile", "settings"),
         ("detail", "form"),
