@@ -23,7 +23,7 @@ from experiments.ui_state_extraction.services.experiment_debug_log_service impor
 from experiments.ui_state_extraction.services.unit_matching_service import required_input_mapping_explain
 
 
-def test_required_input_mapping_explain_dropped_ids() -> None:
+def test_required_input_mapping_explain_unmapped_ids() -> None:
     p = PredIntentUnit(
         pred_intent_index=0,
         intent_kind="submission",
@@ -46,7 +46,7 @@ def test_required_input_mapping_explain_dropped_ids() -> None:
         ],
     )
     expl = required_input_mapping_explain(p, g, el_m, gt_doc)
-    assert expl["dropped_pred_ids"] == ["el_missing"]
+    assert expl["unmapped_pred_ids"] == ["el_missing"]
     assert expl["mapped_gt_ids"] == ["gt_el_a"]
     assert expl["gt_required_ids"] == ["gt_el_a", "gt_el_b"]
     assert expl["required_input_f1"] is not None
@@ -105,6 +105,7 @@ def test_append_module3_writes_jsonl(tmp_path: Path) -> None:
         raw_output_path="raw/a.raw.json",
         temp_ground_truth_path="gt/a.temp_gt.json",
         verbose_log=False,
+        raw_model_output=None,
     )
     lines = log_p.read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) == 1
@@ -112,6 +113,83 @@ def test_append_module3_writes_jsonl(tmp_path: Path) -> None:
     assert row["schema_version"] == EXPERIMENT_PIPELINE_DEBUG_SCHEMA_VERSION
     assert row["module"] == "m3"
     assert row["intent_required_input_explain"] == []
+    assert row["intent_step_debug"] == []
+    assert "eval_key_debug" not in row
+
+
+def test_append_module3_eval_key_debug_mismatch_elements(tmp_path: Path) -> None:
+    """Pred vs GT multiset keys diverge → extra_keys / missing_keys + summary lines."""
+    from experiments.ui_state_extraction.schemas.evaluation_result_schema import (
+        ElementMetricsBlock,
+        PerImageEvaluationResult,
+    )
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        TempGroundTruthDocument,
+    )
+
+    raw_model_output = {
+        "ui_state": {
+            "presentation_scope": "unknown",
+            "screen_type": "other",
+            "outcome_state_type": "neutral",
+            "domain": "",
+            "visible_elements": [
+                {"element_id": "e1", "element_type": "input", "text": ["wrong-label"]},
+            ],
+            "available_actions": [],
+            "visible_feedback": [],
+            "interaction_groups": [],
+        },
+        "screen_intents": {},
+    }
+    gt = TempGroundTruthDocument(
+        schema_version="t",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw.json"),
+        image=ImageMetaInTempGt(image_id="img_key_dbg", relative_path="s.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(
+                gt_element_id="gt1",
+                source_model_element_id="e1",
+                element_type="input",
+                anchor_texts=["Email"],
+            ),
+        ],
+    )
+    pred = PredictionEvaluationBundle(screen=PredScreenUnit(), elements=[])
+    res = PerImageEvaluationResult(
+        image_id="img_key_dbg",
+        relative_path="s.png",
+        element_metrics=ElementMetricsBlock(f1=None),
+    )
+    log_p = new_debug_log_path(tmp_path)
+    append_module3_event(
+        log_p,
+        pred=pred,
+        gt=gt,
+        per_image=res,
+        group_jaccard_threshold=0.6,
+        verbose_log=False,
+        raw_model_output=raw_model_output,
+    )
+    row = json.loads(log_p.read_text(encoding="utf-8").strip().splitlines()[0])
+    ed = row["eval_key_debug"]["element_debug"]
+    assert ed["pred_keys"] == [["input", "wrong-label"]]
+    assert ed["gt_keys"] == [["input", "email"]]
+    assert ed["extra_keys"] == [["input", "wrong-label"]]
+    assert ed["missing_keys"] == [["input", "email"]]
+    assert ed["matched_keys"] == []
+    summ = row.get("eval_key_debug_summary") or []
+    assert any("Pred extra (element):" in ln for ln in summ)
+    assert any("GT missing (element):" in ln for ln in summ)
 
 
 def test_append_jsonl_line_appends(tmp_path: Path) -> None:

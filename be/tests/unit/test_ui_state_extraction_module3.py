@@ -11,6 +11,7 @@ from experiments.ui_state_extraction.schemas.experiment_raw_output_schema import
     ModelCallMeta,
 )
 from experiments.ui_state_extraction.services.metric_calculation_service import (
+    aggregate_dataset_metrics_v4,
     evaluate_pair,
     micro_macro_from_per_image,
 )
@@ -65,6 +66,8 @@ def test_module3_evaluate_login_fixture_perfect_match() -> None:
     assert res.action_metrics.f1 == 1.0
     assert res.action_metrics.action_grounding_accuracy == 1.0
     assert res.screen_metrics.accuracy == 1.0
+    assert res.screen_metrics.total_fields == 3
+    assert res.screen_metrics.presentation_scope_match is True
     assert res.group_metrics.matched_count >= 1
     assert res.intent_metrics.matched_count >= 1
     micro, macro = micro_macro_from_per_image([res])
@@ -203,7 +206,7 @@ def test_module3_writes_reports_tmp(tmp_path: Path) -> None:
 
     pred = normalize_raw_model_output(raw)
     res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=False)
-    micro, macro = micro_macro_from_per_image([res])
+    micro, macro, diagnostic = aggregate_dataset_metrics_v4([res])
     out = tmp_path / "eval"
     out.mkdir()
     ds = DatasetSummary(
@@ -220,16 +223,31 @@ def test_module3_writes_reports_tmp(tmp_path: Path) -> None:
         micro=micro,
         macro=macro,
         skipped_items=[],
+        diagnostic=diagnostic,
     )
     write_per_image_json(out / "evaluation_per_image.json", [res])
-    write_csv(out / "evaluation_summary.csv", metrics_summary_csv_rows(micro, macro, count=1))
+    write_csv(
+        out / "evaluation_summary.csv",
+        metrics_summary_csv_rows(
+            micro,
+            macro,
+            diagnostic=diagnostic.model_dump(mode="json"),
+            count=1,
+        ),
+    )
     write_csv(out / "evaluation_per_image.csv", per_image_csv_rows([res]))
-    write_markdown_report(out / "evaluation_report.md", dataset_summary=ds, micro=micro)
+    write_markdown_report(out / "evaluation_report.md", dataset_summary=ds, micro=micro, macro=macro, results=[res])
 
     assert (out / "evaluation_summary.json").is_file()
     summary = json.loads((out / "evaluation_summary.json").read_text(encoding="utf-8"))
     assert summary.get("schema_version") == m3cfg.EVALUATION_SUMMARY_SCHEMA_VERSION
     assert "aggregate_metrics" in summary
+    assert "diagnostic_metrics" in summary
+    assert "group_f1" not in summary["aggregate_metrics"]
+    assert summary["diagnostic_metrics"].get("group_f1") is not None
+
+    for legacy_csv in ("element_metrics.csv", "action_metrics.csv", "feedback_metrics.csv", "group_metrics.csv", "intent_metrics.csv"):
+        assert not (out / legacy_csv).is_file(), f"legacy category CSV should not be written: {legacy_csv}"
 
 
 def test_module3_required_input_ignores_empty_anchor_gt_refs() -> None:
@@ -490,3 +508,587 @@ def test_module3_step_metric_skips_empty_anchor_element() -> None:
     assert res.intent_metrics.matched_count == 1
     assert res.intent_metrics.step_empty_anchor_excluded_count == 1
     assert res.intent_metrics.step_grounding_accuracy == 1.0
+
+
+def test_micro_required_input_dataset_micro_pooled_counts() -> None:
+    from experiments.ui_state_extraction.schemas.evaluation_result_schema import (
+        IntentMetricsBlock,
+        PerImageEvaluationResult,
+    )
+
+    a = PerImageEvaluationResult(
+        image_id="A",
+        relative_path="a.png",
+        intent_metrics=IntentMetricsBlock(
+            matched_count=1,
+            required_input_correct_count=2,
+            required_input_pred_count=2,
+            required_input_gt_count=2,
+        ),
+    )
+    b = PerImageEvaluationResult(
+        image_id="B",
+        relative_path="b.png",
+        intent_metrics=IntentMetricsBlock(
+            matched_count=1,
+            required_input_correct_count=0,
+            required_input_pred_count=0,
+            required_input_gt_count=0,
+        ),
+    )
+    c = PerImageEvaluationResult(
+        image_id="C",
+        relative_path="c.png",
+        intent_metrics=IntentMetricsBlock(
+            matched_count=1,
+            required_input_correct_count=2,
+            required_input_pred_count=2,
+            required_input_gt_count=3,
+        ),
+    )
+    micro, _ = micro_macro_from_per_image([a, b, c])
+    assert micro["required_input_correct_count"] == 4.0
+    assert micro["required_input_pred_count"] == 4.0
+    assert micro["required_input_gt_count"] == 5.0
+    assert micro["required_input_precision"] == 1.0
+    assert abs((micro["required_input_recall"] or 0.0) - 0.8) < 1e-9
+    assert abs((micro["required_input_f1"] or 0.0) - (16 / 18)) < 1e-9
+
+
+def test_required_input_unmapped_penalizes_precision() -> None:
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[PredGroupUnit(pred_group_id="g1", member_pred_element_ids=["p_ok"])],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                required_pred_element_ids=["p_ok", "p_missing"],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_ri_um", relative_path="ri.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_ok", source_model_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_ok"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int1",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                required_input_element_ids=["gt_ok"],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=False)
+    assert res.intent_metrics.required_input_pred_count == 2
+    assert res.intent_metrics.required_input_correct_count == 1
+    assert res.intent_metrics.required_input_precision == 0.5
+    assert res.intent_metrics.required_input_recall == 1.0
+
+
+def test_evidence_target_unmapped_penalizes_precision() -> None:
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[PredGroupUnit(pred_group_id="g1", member_pred_element_ids=["p_ok"])],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                evidence_pred_target_ids=["bogus_evidence"],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_ev_um", relative_path="ev.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_ok", source_model_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_ok"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int1",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                evidence_target_ids=["gt_ok"],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=False)
+    assert res.intent_metrics.evidence_target_pred_count == 1
+    assert res.intent_metrics.evidence_target_correct_count == 0
+    assert res.intent_metrics.evidence_target_precision == 0.0
+    assert res.intent_metrics.evidence_target_recall == 0.0
+
+
+def test_module3_step_multiset_order_invariant_when_all_match() -> None:
+    """Same multiset of steps → F1 = 1.0 even when order differs from GT."""
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredExpectedStepUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        ExpectedStepRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+
+    steps_gt = ["gt_pw", "gt_em", "gt_login"]
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_pw", anchor_texts=["pw"]),
+            PredElementUnit(pred_element_id="p_em", anchor_texts=["em"]),
+            PredElementUnit(pred_element_id="p_login", anchor_texts=["go"]),
+        ],
+        groups=[
+            PredGroupUnit(
+                pred_group_id="g1",
+                member_pred_element_ids=["p_pw", "p_em", "p_login"],
+            ),
+        ],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                expected_steps=[
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="p_pw",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="p_em",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="invoke_action",
+                        source_pred_element_id="p_login",
+                        source_pred_action_id=None,
+                    ),
+                ],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_ord", relative_path="ord.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_pw", source_model_element_id="p_pw", anchor_texts=["pw"]),
+            ElementRecord(gt_element_id="gt_em", source_model_element_id="p_em", anchor_texts=["em"]),
+            ElementRecord(gt_element_id="gt_login", source_model_element_id="p_login", anchor_texts=["go"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_pw", "gt_em", "gt_login"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int_ord",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                expected_steps=[
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id=steps_gt[1],
+                    ),
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id=steps_gt[0],
+                    ),
+                    ExpectedStepRecord(
+                        step_type="invoke_action",
+                        source_action_id=None,
+                        source_element_id=steps_gt[2],
+                    ),
+                ],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=False)
+    assert res.intent_metrics.step_f1 == 1.0
+    assert res.intent_metrics.step_grounding_accuracy == 1.0
+
+
+def test_module3_step_multiset_missing_lowers_recall() -> None:
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredExpectedStepUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        ExpectedStepRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_em", anchor_texts=["em"]),
+            PredElementUnit(pred_element_id="p_login", anchor_texts=["go"]),
+        ],
+        groups=[PredGroupUnit(pred_group_id="g1", member_pred_element_ids=["p_em", "p_login"])],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                expected_steps=[
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="p_em",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="invoke_action",
+                        source_pred_element_id="p_login",
+                        source_pred_action_id=None,
+                    ),
+                ],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_ms", relative_path="ms.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_pw", source_model_element_id="p_pw", anchor_texts=["pw"]),
+            ElementRecord(gt_element_id="gt_em", source_model_element_id="p_em", anchor_texts=["em"]),
+            ElementRecord(gt_element_id="gt_login", source_model_element_id="p_login", anchor_texts=["go"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_pw", "gt_em", "gt_login"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int_ms",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                expected_steps=[
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id="gt_em",
+                    ),
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id="gt_pw",
+                    ),
+                    ExpectedStepRecord(
+                        step_type="invoke_action",
+                        source_action_id=None,
+                        source_element_id="gt_login",
+                    ),
+                ],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=True)
+    assert res.intent_metrics.step_precision == 1.0
+    assert abs((res.intent_metrics.step_recall or 0) - (2 / 3)) < 1e-9
+    assert abs((res.intent_metrics.step_f1 or 0) - 0.8) < 1e-9
+    missing = []
+    for row in res.debug["intent_matches"]:
+        if sd := row.get("step_debug"):
+            missing.extend(sd.get("missing_steps") or [])
+    flat = {(tuple(x[:3])) for x in missing}
+    assert ("enter_input", None, "gt_pw") in flat
+
+
+def test_module3_step_multiset_extra_penalizes_precision() -> None:
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredExpectedStepUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        ExpectedStepRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_pw", anchor_texts=["pw"]),
+            PredElementUnit(pred_element_id="p_em", anchor_texts=["em"]),
+            PredElementUnit(pred_element_id="p_login", anchor_texts=["go"]),
+            PredElementUnit(pred_element_id="p_extra", anchor_texts=["rem"]),
+        ],
+        groups=[
+            PredGroupUnit(
+                pred_group_id="g1",
+                member_pred_element_ids=["p_pw", "p_em", "p_login", "p_extra"],
+            ),
+        ],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                expected_steps=[
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="p_em",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="p_pw",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="toggle_option",
+                        source_pred_element_id="p_extra",
+                        source_pred_action_id=None,
+                    ),
+                    PredExpectedStepUnit(
+                        step_type="invoke_action",
+                        source_pred_element_id="p_login",
+                        source_pred_action_id=None,
+                    ),
+                ],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_ex", relative_path="ex.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_pw", source_model_element_id="p_pw", anchor_texts=["pw"]),
+            ElementRecord(gt_element_id="gt_em", source_model_element_id="p_em", anchor_texts=["em"]),
+            ElementRecord(gt_element_id="gt_login", source_model_element_id="p_login", anchor_texts=["go"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_pw", "gt_em", "gt_login"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int_ex",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                expected_steps=[
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id="gt_em",
+                    ),
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id="gt_pw",
+                    ),
+                    ExpectedStepRecord(
+                        step_type="invoke_action",
+                        source_action_id=None,
+                        source_element_id="gt_login",
+                    ),
+                ],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=False)
+    assert abs((res.intent_metrics.step_precision or 0) - 0.75) < 1e-9
+    assert res.intent_metrics.step_recall == 1.0
+    assert abs((res.intent_metrics.step_f1 or 0) - (12 / 14)) < 1e-9
+
+
+def test_module3_step_counts_unmapped_element_in_predMultiset() -> None:
+    """Unmapped predicted element ids still occupy the multiset → extra / wrong."""
+    from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
+        PredElementUnit,
+        PredExpectedStepUnit,
+        PredGroupUnit,
+        PredIntentUnit,
+        PredScreenUnit,
+        PredictionEvaluationBundle,
+    )
+    from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
+        AnnotationMeta,
+        ElementRecord,
+        ExpectedStepRecord,
+        GroupRecord,
+        ImageMetaInTempGt,
+        ScreenBlock,
+        ScreenIntentRecord,
+        TempGroundTruthDocument,
+    )
+    from experiments.ui_state_extraction.services.unit_matching_service import UNMAPPED_ELEMENT_PREFIX
+
+    pred = PredictionEvaluationBundle(
+        screen=PredScreenUnit(),
+        elements=[
+            PredElementUnit(pred_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[PredGroupUnit(pred_group_id="g1", member_pred_element_ids=["p_ok"])],
+        intents=[
+            PredIntentUnit(
+                pred_intent_index=0,
+                intent_kind="form_fill",
+                source_pred_group_id="g1",
+                expected_steps=[
+                    PredExpectedStepUnit(
+                        step_type="enter_input",
+                        source_pred_element_id="no_such_el",
+                        source_pred_action_id=None,
+                    ),
+                ],
+            ),
+        ],
+    )
+    gt = TempGroundTruthDocument(
+        schema_version="temp_gt_test_v1",
+        annotation_meta=AnnotationMeta(source_raw_output_path="raw/x.json"),
+        image=ImageMetaInTempGt(image_id="img_um", relative_path="um.png"),
+        screen=ScreenBlock(),
+        elements=[
+            ElementRecord(gt_element_id="gt_ok", source_model_element_id="p_ok", anchor_texts=["ok"]),
+        ],
+        groups=[
+            GroupRecord(
+                gt_group_id="gg1",
+                source_model_group_id="g1",
+                member_element_ids=["gt_ok"],
+            ),
+        ],
+        screen_intents=[
+            ScreenIntentRecord(
+                gt_intent_id="int_um",
+                intent_kind="form_fill",
+                source_group_id="gg1",
+                expected_steps=[
+                    ExpectedStepRecord(
+                        step_type="enter_input",
+                        source_action_id=None,
+                        source_element_id="gt_ok",
+                    ),
+                ],
+            ),
+        ],
+    )
+    raw: dict = {"ui_state": {"visible_elements": [], "interaction_groups": []}, "screen_intents": {}}
+    res = evaluate_pair(pred, gt, raw, group_jaccard_threshold=0.6, include_debug=True)
+    assert res.intent_metrics.step_pred_count == 1
+    assert res.intent_metrics.step_gt_count == 1
+    assert res.intent_metrics.step_correct_count == 0
+    extras = []
+    for row in res.debug["intent_matches"]:
+        if sd := row.get("step_debug"):
+            extras.extend(sd.get("extra_steps") or [])
+    assert extras
+    assert any(row[2] == f"{UNMAPPED_ELEMENT_PREFIX}no_such_el" for row in extras)
