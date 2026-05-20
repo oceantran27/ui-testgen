@@ -5,6 +5,8 @@ from experiments.ui_state_extraction.schemas.experiment_raw_output_schema import
 )
 from experiments.ui_state_extraction.schemas.raw_output_manifest_schema import (
     ManifestItem,
+    ModelConfigSnapshot,
+    ModelLatencySummary,
     RawOutputManifest,
 )
 from experiments.ui_state_extraction.schemas.temp_ground_truth_manifest_schema import (
@@ -35,6 +37,8 @@ __all__ = [
     "ImageMetaInRawOutput",
     "ModelCallMeta",
     "ManifestItem",
+    "ModelConfigSnapshot",
+    "ModelLatencySummary",
     "RawOutputManifest",
     "TempGroundTruthDocument",
     "TempGroundTruthManifest",

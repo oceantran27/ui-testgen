@@ -16,8 +16,9 @@ python -m experiments.ui_state_extraction.module_1_generate_raw_outputs
 
 ### Outputs
 
-- Raw JSON per image: `raw_outputs/<mirrored path>/<stem>.raw.json`
-- Manifest: `reports/raw_output_manifest.json` (paths in the manifest are relative to this package root).
+- Raw JSON per image: `raw_outputs/<mirrored path>/<stem>.raw.json` (`experiment_raw_output_v2`). Each file’s `model_call` includes `provider`, `model_name`, `latency_ms` (when the adapter returned a response), and `retry_count`.
+- Manifest (schema `raw_output_manifest_v2`): `reports/raw_output_manifest.json` — paths are relative to this package root. The manifest adds `run_id`, **`experiment_model_settings`** (snapshot of `JOINT_SCREEN_UNDERSTANDING_*` + prompt + concurrency), **`model_latency_summary`** (mean/min/max `latency_ms` per actual provider/model), **`timing_notes`**, and per-item **`latency_ms` / `provider` / `model_name`** when a model call completed.
+- Human-readable report: `reports/raw_output_report.md` — same model and latency summary as the manifest.
 
 ### HTTP image roots
 

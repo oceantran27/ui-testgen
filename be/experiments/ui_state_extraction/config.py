@@ -8,7 +8,7 @@ _PACKAGE_ROOT = Path(__file__).resolve().parent
 PACKAGE_ROOT = _PACKAGE_ROOT
 
 # Set to your dataset root (local path or http(s) URL to a directory or single image).
-IMAGE_ROOT_URL_OR_PATH: str = r"C:\Users\daidu\Desktop\New folder"
+IMAGE_ROOT_URL_OR_PATH: str = r"C:\Users\daidu\Desktop\DataExp\DemoBooking"
 
 RAW_OUTPUT_DIR: Path = _PACKAGE_ROOT / "raw_outputs"
 TEMP_GROUND_TRUTH_DIR: Path = _PACKAGE_ROOT / "temp_ground_truth"
@@ -35,8 +35,9 @@ USE_STORAGE_UPLOAD: bool = False
 IMAGE_ID_MAX_LENGTH: int = 120
 
 EXPERIMENT_NAME: str = "ui_state_extraction"
-RAW_OUTPUT_SCHEMA_VERSION: str = "experiment_raw_output_v1"
-MANIFEST_SCHEMA_VERSION: str = "raw_output_manifest_v1"
+RAW_OUTPUT_SCHEMA_VERSION: str = "experiment_raw_output_v2"
+MANIFEST_SCHEMA_VERSION: str = "raw_output_manifest_v2"
+RAW_OUTPUT_REPORT_FILENAME: str = "raw_output_report.md"
 
 TEMP_GT_SCHEMA_VERSION: str = "ui_state_extraction_temp_ground_truth_v1"
 TEMP_GT_MANIFEST_SCHEMA_VERSION: str = "temp_ground_truth_manifest_v1"

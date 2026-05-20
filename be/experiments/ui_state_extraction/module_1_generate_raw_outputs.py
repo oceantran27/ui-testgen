@@ -35,6 +35,13 @@ from experiments.ui_state_extraction.services.image_discovery_service import (
     ImageDiscoveryError,
     discover_images,
 )
+from experiments.ui_state_extraction.services.module1_run_report_service import (
+    aggregate_model_latency,
+    build_model_config_snapshot,
+    build_timing_notes,
+    configured_primary_avg_ms,
+    write_raw_output_report_md,
+)
 from experiments.ui_state_extraction.services.raw_output_persistence_service import (
     path_for_manifest,
     raw_output_file_path,
@@ -177,6 +184,8 @@ async def _process_image(
                     status="failed",
                     error_message=str(exc),
                     created_at=utc_now_iso(),
+                    latency_ms=None,
+                    retry_count=0,
                 ),
                 raw_model_output=None,
             )
@@ -186,9 +195,18 @@ async def _process_image(
                 relative_path=relative_path,
                 raw_output_path=path_for_manifest(out_path),
                 status="failed",
+                latency_ms=None,
+                provider=None,
+                model_name=None,
             )
 
     created_at = utc_now_iso()
+    _lat = getattr(response, "latency_ms", None)
+    call_latency: int | None = int(_lat) if _lat is not None else None
+    call_retry = int(getattr(response, "retry_count", 0) or 0)
+    resp_provider = getattr(response, "provider", "") or ""
+    resp_model = getattr(response, "model_name", "") or ""
+
     if response.status == ModelCallStatus.SUCCESS and response.parsed_output is not None:
         raw_model = response.parsed_output.model_dump(mode="json")
         _warn_state_id(image_id, raw_model)
@@ -212,6 +230,8 @@ async def _process_image(
                 status="success",
                 error_message=None,
                 created_at=created_at,
+                latency_ms=call_latency,
+                retry_count=call_retry,
             ),
             raw_model_output=raw_model,
         )
@@ -221,6 +241,9 @@ async def _process_image(
             relative_path=relative_path,
             raw_output_path=path_for_manifest(out_path),
             status="success",
+            latency_ms=call_latency,
+            provider=resp_provider or None,
+            model_name=resp_model or None,
         )
 
     err = _model_error_message(response)
@@ -239,11 +262,13 @@ async def _process_image(
         model_call=ModelCallMeta(
             prompt_name=config.PROMPT_NAME,
             prompt_version="v1",
-            provider=getattr(response, "provider", ""),
-            model_name=getattr(response, "model_name", ""),
+            provider=resp_provider,
+            model_name=resp_model,
             status="failed",
             error_message=err,
             created_at=created_at,
+            latency_ms=call_latency,
+            retry_count=call_retry,
         ),
         raw_model_output=None,
     )
@@ -253,6 +278,9 @@ async def _process_image(
         relative_path=relative_path,
         raw_output_path=path_for_manifest(out_path),
         status="failed",
+        latency_ms=call_latency,
+        provider=resp_provider or None,
+        model_name=resp_model or None,
     )
 
 
@@ -296,12 +324,18 @@ async def run_async() -> RawOutputManifest:
         )
 
     items = await asyncio.gather(*tasks) if tasks else []
-    success = sum(1 for i in items if i.status == "success")
-    failed = sum(1 for i in items if i.status == "failed")
-    skipped = sum(1 for i in items if i.status == "skipped")
+    items_sorted = sorted(items, key=lambda x: x.relative_path)
+    success = sum(1 for i in items_sorted if i.status == "success")
+    failed = sum(1 for i in items_sorted if i.status == "failed")
+    skipped = sum(1 for i in items_sorted if i.status == "skipped")
+
+    model_cfg = build_model_config_snapshot()
+    latency_summary = aggregate_model_latency(items_sorted)
+    timing_notes = build_timing_notes(items_sorted)
 
     manifest = RawOutputManifest(
         schema_version=config.MANIFEST_SCHEMA_VERSION,
+        run_id=run_id,
         image_root_url_or_path=config.IMAGE_ROOT_URL_OR_PATH,
         total_images_discovered=total_discovered,
         total_images_enqueued=len(records),
@@ -309,12 +343,32 @@ async def run_async() -> RawOutputManifest:
         total_success=success,
         total_failed=failed,
         total_skipped=skipped,
-        items=sorted(items, key=lambda x: x.relative_path),
+        experiment_model_settings=model_cfg,
+        model_latency_summary=latency_summary,
+        timing_notes=timing_notes,
+        items=items_sorted,
     )
     m_path = config.REPORT_DIR / "raw_output_manifest.json"
     write_json_document(m_path, manifest.model_dump(mode="json"))
+
+    report_path = config.REPORT_DIR / config.RAW_OUTPUT_REPORT_FILENAME
+    write_raw_output_report_md(
+        report_path,
+        run_id=run_id,
+        model_config=model_cfg,
+        model_latency_summary=latency_summary,
+        timing_notes=timing_notes,
+        total_images_discovered=total_discovered,
+        total_images_enqueued=len(records),
+        total_success=success,
+        total_failed=failed,
+        total_skipped=skipped,
+    )
+
+    primary_avg = configured_primary_avg_ms(latency_summary, model_cfg)
     logger.info(
-        "Module 1 finished: run_id=%s discovered=%s enqueued=%s success=%s failed=%s skipped=%s manifest=%s",
+        "Module 1 finished: run_id=%s discovered=%s enqueued=%s success=%s failed=%s skipped=%s "
+        "manifest=%s report=%s configured_model_avg_latency_ms=%s",
         run_id,
         total_discovered,
         len(records),
@@ -322,6 +376,8 @@ async def run_async() -> RawOutputManifest:
         failed,
         skipped,
         m_path,
+        report_path,
+        primary_avg,
     )
     return manifest
 

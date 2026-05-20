@@ -23,6 +23,8 @@ class ModelCallMeta(BaseModel):
     status: str
     error_message: Optional[str] = None
     created_at: str = ""
+    latency_ms: Optional[int] = None
+    retry_count: int = 0
 
 
 class ExperimentRawOutputDocument(BaseModel):
