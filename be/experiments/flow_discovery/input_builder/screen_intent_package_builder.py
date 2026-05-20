@@ -20,9 +20,12 @@ def _first_group_id(state: dict[str, Any]) -> str:
     return ""
 
 
-def _first_submit_action(state: dict[str, Any]) -> dict[str, Any] | None:
+def _first_primary_commit_action(state: dict[str, Any]) -> dict[str, Any] | None:
     for a in state.get("available_actions") or []:
-        if isinstance(a, dict) and str(a.get("action_type") or "") == "submit":
+        if isinstance(a, dict) and str(a.get("action_priority") or "").lower() == "primary":
+            return a
+    for a in state.get("available_actions") or []:
+        if isinstance(a, dict) and str(a.get("action_type") or "") == "click" and a.get("action_id"):
             return a
     for a in state.get("available_actions") or []:
         if isinstance(a, dict) and a.get("action_id"):
@@ -35,9 +38,9 @@ def _synthetic_intent_row(
     id_factory: ExperimentIdFactory,
 ) -> dict[str, Any]:
     gid = _first_group_id(state_row)
-    act = _first_submit_action(state_row)
+    act = _first_primary_commit_action(state_row)
     action_id = str(act.get("action_id") or "") if act else ""
-    action_type = str(act.get("action_type") or "submit") if act else "submit"
+    action_type = str(act.get("action_type") or "click") if act else "click"
     text = act.get("text") if act and isinstance(act.get("text"), list) else (["Submit"] if act else [])
     primary = (
         {"action_id": action_id, "action_type": action_type, "text": text}

@@ -90,6 +90,25 @@ def test_normalizer_shapes() -> None:
     )
     assert "MISSING_SCREEN_INTENTS" in r4.warnings
 
+    r5 = norm.normalize(
+        JointRawFileRecord(
+            raw_file_path="/x",
+            raw_file_name="f.json",
+            source_image_id="s1",
+            raw_payload={
+                "schema_version": "experiment_raw_output_v1",
+                "experiment_name": "ui_state_extraction",
+                "image": {"image_id": "exp_x"},
+                "model_call": {"status": "success"},
+                "raw_model_output": {"ui_state": base_ui, "screen_intents": base_si},
+            },
+        ),
+    )
+    assert r5.ui_state.get("screen_purpose") == "p"
+    assert r5.ui_state.get("domain") == "d"
+    assert not any("MISSING_UI_STATE" in w for w in r5.warnings)
+    assert not any("MISSING_SCREEN_INTENTS" in w for w in r5.warnings)
+
 
 def test_input_build_runner_end_to_end(fixture_demoauth_dir: Path, tmp_path: Path) -> None:
     from experiments.flow_discovery.input_builder.input_build_runner import FlowDiscoveryInputBuildRunner

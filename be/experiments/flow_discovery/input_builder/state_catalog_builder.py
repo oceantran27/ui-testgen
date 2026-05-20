@@ -147,11 +147,15 @@ def _experiment_interaction_group_fallback(
     id_factory: ExperimentIdFactory,
     state_id: str,
 ) -> dict[str, Any]:
-    has_submit = any(str(a.get("action_type") or "") == "submit" for a in actions)
+    has_primary_commit = any(
+        str(a.get("action_priority") or "").lower() == "primary"
+        or str(a.get("action_type") or "") in ("click", "type", "select", "toggle")
+        for a in actions
+    )
     has_input = any(
         str(e.get("element_type") or "") in ("input", "textarea", "select", "checkbox", "radio") for e in elements
     )
-    if has_input or has_submit:
+    if has_input or has_primary_commit:
         el_ids = [str(e["element_id"]) for e in elements if e.get("element_id")]
         input_ids = [
             str(e["element_id"])
@@ -161,7 +165,7 @@ def _experiment_interaction_group_fallback(
         ]
         primary_aid = None
         for a in actions:
-            if str(a.get("action_type") or "") == "submit" and a.get("action_id"):
+            if str(a.get("action_priority") or "").lower() == "primary" and a.get("action_id"):
                 primary_aid = str(a["action_id"])
                 break
         if not primary_aid:

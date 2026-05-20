@@ -8,6 +8,12 @@ from typing import Any
 from experiments.flow_discovery.schemas.input_builder_schema import JointRawFileRecord, NormalizedJointOutput
 
 
+def _read_ui_si_from(inner: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    ui = inner.get("ui_state") if isinstance(inner.get("ui_state"), dict) else None
+    si = inner.get("screen_intents") if isinstance(inner.get("screen_intents"), dict) else None
+    return ui, si
+
+
 def _extract_payload(record: JointRawFileRecord) -> tuple[dict[str, Any] | None, dict[str, Any] | None, list[str]]:
     warnings: list[str] = []
     payload = dict(record.raw_payload)
@@ -16,17 +22,19 @@ def _extract_payload(record: JointRawFileRecord) -> tuple[dict[str, Any] | None,
 
     # Shape B — provider wrapper
     if isinstance(payload.get("parsed_output"), dict):
-        inner = payload["parsed_output"]
-        ui = inner.get("ui_state") if isinstance(inner.get("ui_state"), dict) else None
-        si = inner.get("screen_intents") if isinstance(inner.get("screen_intents"), dict) else None
+        ui, si = _read_ui_si_from(payload["parsed_output"])
         if ui is not None or si is not None:
             return ui, si, warnings
 
     # Shape C — nested output
     if isinstance(payload.get("output"), dict):
-        inner = payload["output"]
-        ui = inner.get("ui_state") if isinstance(inner.get("ui_state"), dict) else None
-        si = inner.get("screen_intents") if isinstance(inner.get("screen_intents"), dict) else None
+        ui, si = _read_ui_si_from(payload["output"])
+        if ui is not None or si is not None:
+            return ui, si, warnings
+
+    # Shape E — experiment_raw_output_v1-style envelope (joint raw files)
+    if isinstance(payload.get("raw_model_output"), dict):
+        ui, si = _read_ui_si_from(payload["raw_model_output"])
         if ui is not None or si is not None:
             return ui, si, warnings
 
@@ -39,14 +47,12 @@ def _extract_payload(record: JointRawFileRecord) -> tuple[dict[str, Any] | None,
             warnings.append("RAW_TEXT_JSON_PARSE_FAILED")
             parsed = None
         if isinstance(parsed, dict):
-            ui = parsed.get("ui_state") if isinstance(parsed.get("ui_state"), dict) else None
-            si = parsed.get("screen_intents") if isinstance(parsed.get("screen_intents"), dict) else None
+            ui, si = _read_ui_si_from(parsed)
             if ui is not None or si is not None:
                 return ui, si, warnings
 
     # Shape A — direct
-    ui = payload.get("ui_state") if isinstance(payload.get("ui_state"), dict) else None
-    si = payload.get("screen_intents") if isinstance(payload.get("screen_intents"), dict) else None
+    ui, si = _read_ui_si_from(payload)
     return ui, si, warnings
 
 

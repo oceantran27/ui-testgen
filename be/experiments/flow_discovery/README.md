@@ -74,7 +74,7 @@ Hàm [`resolve_cli_path`](config.py) resolve chuỗi relative theo `PACKAGE_ROOT
 
 ### Luồng joint raw → compressed (`input_builder`)
 
-Khi chỉ có output raw từ `prompt_joint_screen_understanding_v1` (`*.raw.json`), dùng `build-compressed` (sau khi cấu hình `CLI_RAW_JOINT_DIR` + `CLI_INPUT_BUILDER_OUT_DIR`) rồi `raw-capture` như bình thường.
+Khi chỉ có output raw từ `prompt_joint_screen_understanding_v1` (`*.raw.json`), dùng `build-compressed` (sau khi cấu hình `CLI_RAW_JOINT_DIR` + `CLI_INPUT_BUILDER_OUT_DIR`) rồi `raw-capture` như bình thường. Mỗi file joint có thể đặt `ui_state` / `screen_intents` ở root, lồng trong `parsed_output` / `output`, hoặc trong `raw_model_output` (envelope `experiment_raw_output_v1`).
 
 Luồng một lệnh tới GT draft (không evaluate): **`run-one-from-joint-raw`** — ghi:
 

@@ -16,7 +16,7 @@ _PACKAGE_ROOT = Path(__file__).resolve().parent
 PACKAGE_ROOT = _PACKAGE_ROOT
 
 EXPERIMENT_NAME = "flow_discovery"
-DEFAULT_APP_ID = "demoauth"
+DEFAULT_APP_ID = "ADM-S"
 
 RAW_OUTPUT_SCHEMA_VERSION = "raw_flow_discovery_experiment_v1"
 GROUND_TRUTH_SCHEMA_VERSION = "ground_truth_flow_package_v2"
@@ -41,13 +41,13 @@ CLI_APP_ID: str = DEFAULT_APP_ID
 CLI_WORK_DIR: str = "outputs/cli_work/demoauth"
 
 # --- input_builder → compressed catalog ---
-CLI_RAW_JOINT_DIR: str = "fixtures/demoauth/raw_joint_outputs"
+CLI_RAW_JOINT_DIR: str = r"C:\Users\daidu\Desktop\tmp\ADM-S"
 CLI_INPUT_BUILDER_OUT_DIR: str = "outputs/cli_work/demoauth/input_builder"
 CLI_IMAGE_MAP_PATH: Optional[str] = "fixtures/demoauth/image_map.sample.json"
 CLI_INPUT_BUILDER_STRICT: bool = False
 
 # --- raw-capture ---
-CLI_COMPRESSED_CATALOG_PATH: str = "fixtures/demoauth/compressed_catalog_package.json"
+CLI_COMPRESSED_CATALOG_PATH: str = r"C:\sqa-workspace\ui-testgen\be\experiments\flow_discovery\outputs\cli_work\demoauth\input_builder\compressed_catalog_package.json"
 CLI_RAW_CAPTURE_OUTPUT_PATH: str = "outputs/cli_work/demoauth/raw_model_output.json"
 
 # --- ground truth / evaluation (đường dẫn mẫu trỏ fixtures; đổi sang dataset thật khi cần) ---
