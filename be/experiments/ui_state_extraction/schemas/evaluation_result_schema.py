@@ -17,10 +17,15 @@ class ScreenMetricsBlock(BaseModel):
     total_fields: int = 0
     correct_fields: int = 0
     accuracy: Optional[float] = None
+    # Sprint 6 key-metrics: populated when MODULE3_USE_PRED_EVAL_VIEW_FOR_MAIN_METRICS=True
+    presentation_scope_match: Optional[bool] = None
+    screen_type_match: Optional[bool] = None
+    outcome_state_type_match: Optional[bool] = None
+    screen_enum_mean_accuracy: Optional[float] = None
 
 
 class ElementMetricsBlock(BaseModel):
-    """Element P/R/F1 are text-grounded only (normalize_text_list(anchors) non-empty)."""
+    """Element P/R/F1 are text-grounded only (evaluable element key; see evaluation_key_service)."""
 
     gt_count: int = 0
     pred_count: int = 0
@@ -98,14 +103,26 @@ class IntentMetricsBlock(BaseModel):
     required_input_precision: Optional[float] = None
     required_input_recall: Optional[float] = None
     required_input_f1: Optional[float] = None
+    required_input_correct_count: int = 0
+    required_input_pred_count: int = 0
+    required_input_gt_count: int = 0
     required_input_empty_anchor_excluded_gt_refs: int = 0
     required_input_empty_anchor_excluded_pred_refs: int = 0
     evidence_target_precision: Optional[float] = None
     evidence_target_recall: Optional[float] = None
     evidence_target_f1: Optional[float] = None
+    evidence_target_correct_count: int = 0
+    evidence_target_pred_count: int = 0
+    evidence_target_gt_count: int = 0
     evidence_empty_anchor_excluded_gt_refs: int = 0
     evidence_empty_anchor_excluded_pred_refs: int = 0
     step_grounding_accuracy: Optional[float] = None
+    step_precision: Optional[float] = None
+    step_recall: Optional[float] = None
+    step_f1: Optional[float] = None
+    step_correct_count: int = 0
+    step_pred_count: int = 0
+    step_gt_count: int = 0
     step_empty_anchor_excluded_count: int = 0
 
 
@@ -124,6 +141,15 @@ class ConsistencyMetricsBlock(BaseModel):
     hallucination_rate: Optional[float] = None
 
 
+class KeyDiagnosticsBlock(BaseModel):
+    """Multiset evaluation-key skips (Sprint 10 exports); pred-side skips + combined intent misses."""
+
+    skipped_empty_key_element_count: int = 0
+    skipped_empty_key_action_count: int = 0
+    skipped_empty_key_feedback_count: int = 0
+    intent_key_missing_count: int = 0
+
+
 class PerImageEvaluationResult(BaseModel):
     image_id: str
     relative_path: str
@@ -136,6 +162,7 @@ class PerImageEvaluationResult(BaseModel):
     group_metrics: GroupMetricsBlock = Field(default_factory=GroupMetricsBlock)
     intent_metrics: IntentMetricsBlock = Field(default_factory=IntentMetricsBlock)
     consistency_metrics: ConsistencyMetricsBlock = Field(default_factory=ConsistencyMetricsBlock)
+    key_diagnostics: KeyDiagnosticsBlock = Field(default_factory=KeyDiagnosticsBlock)
 
     debug: dict[str, Any] = Field(default_factory=dict)
 

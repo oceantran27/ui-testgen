@@ -20,7 +20,6 @@ from experiments.ui_state_extraction.services.experiment_debug_log_service impor
     new_debug_log_path,
 )
 from experiments.ui_state_extraction.services.evaluation_report_service import (
-    category_metric_csv_rows,
     metrics_summary_csv_rows,
     per_image_csv_rows,
     write_csv,
@@ -29,8 +28,8 @@ from experiments.ui_state_extraction.services.evaluation_report_service import (
     write_per_image_json,
 )
 from experiments.ui_state_extraction.services.metric_calculation_service import (
+    aggregate_dataset_metrics_v4,
     evaluate_pair,
-    micro_macro_from_per_image,
 )
 from experiments.ui_state_extraction.services.prediction_normalizer_service import (
     normalize_raw_model_output,
@@ -63,6 +62,11 @@ def main() -> None:
         "--debug-log-verbose",
         action="store_true",
         help="More fields in JSONL and extra logger lines",
+    )
+    p.add_argument(
+        "--key-metrics",
+        action="store_true",
+        help="Use multiset Counter P/R/F1 from evaluation keys (PredEvaluationView vs GtEvaluationView)",
     )
     args = p.parse_args()
 
@@ -98,6 +102,7 @@ def main() -> None:
             raw_out,
             group_jaccard_threshold=float(args.group_threshold),
             include_debug=include_debug,
+            use_key_counters=True if args.key_metrics else None,
         )
         if not include_debug:
             res.debug = {}
@@ -112,9 +117,10 @@ def main() -> None:
                 raw_output_path=path_for_manifest(pair.raw_path),
                 temp_ground_truth_path=path_for_manifest(pair.gt_path),
                 verbose_log=dbg_verbose,
+                raw_model_output=raw_out,
             )
 
-    micro, macro = micro_macro_from_per_image(results)
+    micro, macro, diagnostic = aggregate_dataset_metrics_v4(results)
     n_eval = len(results)
     total_skipped = loaded.total_raw_outputs - n_eval
 
@@ -137,14 +143,27 @@ def main() -> None:
         micro=micro,
         macro=macro,
         skipped_items=skipped_eval_all,
+        diagnostic=diagnostic,
     )
     write_per_image_json(out / "evaluation_per_image.json", results)
 
-    write_csv(out / "evaluation_summary.csv", metrics_summary_csv_rows(micro, macro, count=n_eval))
+    write_csv(
+        out / "evaluation_summary.csv",
+        metrics_summary_csv_rows(
+            micro,
+            macro,
+            diagnostic=diagnostic.model_dump(mode="json"),
+            count=n_eval,
+        ),
+    )
     write_csv(out / "evaluation_per_image.csv", per_image_csv_rows(results))
-    for cat in ("element", "action", "feedback", "group", "intent"):
-        write_csv(out / f"{cat}_metrics.csv", category_metric_csv_rows(cat, results))
-    write_markdown_report(out / "evaluation_report.md", dataset_summary=dataset_summary, micro=micro)
+    write_markdown_report(
+        out / "evaluation_report.md",
+        dataset_summary=dataset_summary,
+        micro=micro,
+        macro=macro,
+        results=results,
+    )
 
     logger.info(
         "Evaluation complete: evaluated=%s total_skipped=%s report_dir=%s",

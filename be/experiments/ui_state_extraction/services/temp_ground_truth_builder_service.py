@@ -28,6 +28,21 @@ from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
     TempGroundTruthDocument,
     UnresolvedGroupRecord,
 )
+from experiments.ui_state_extraction.services.control_label_first_heuristics import (
+    control_label_first_flags_for_element,
+)
+from experiments.ui_state_extraction.services.evaluation_key_service import (
+    action_key,
+    build_action_lookup_by_id,
+    element_key,
+    feedback_key,
+    intent_key,
+)
+from experiments.ui_state_extraction.services.joint_raw_parse_helpers import (
+    as_str_list,
+    safe_dict,
+    safe_list,
+)
 from experiments.ui_state_extraction.services.text_normalization_service import (
     normalized_join_contains,
     normalize_for_match,
@@ -45,18 +60,6 @@ _ACTION_TYPE_SET_B: frozenset[str] = frozenset(
     {"type", "select", "toggle", "upload", "drag", "scroll"},
 )
 _INPUT_ROLE_HINTS: frozenset[str] = frozenset({"required_input", "optional_input"})
-
-
-def _safe_dict(v: Any) -> dict[str, Any]:
-    return v if isinstance(v, dict) else {}
-
-
-def _as_str_list(v: Any) -> list[str]:
-    if v is None:
-        return []
-    if isinstance(v, list):
-        return [str(x) for x in v]
-    return [str(v)]
 
 
 def _gt_el(i: int) -> str:
@@ -98,6 +101,48 @@ def _anchor_texts_from_model(texts: list[str], *, report: ConversionReport, kind
     return out
 
 
+def _apply_evaluation_key_flags(
+    report: ConversionReport,
+    *,
+    elements: list[ElementRecord],
+    actions: list[ActionRecord],
+    feedback: list[FeedbackRecord],
+    intents: list[ScreenIntentRecord],
+) -> None:
+    for el in elements:
+        if element_key(el) is None:
+            report.auto_flags.append(f"element_key_missing:{el.gt_element_id}")
+    for ac in actions:
+        if action_key(ac) is None:
+            report.auto_flags.append(f"action_key_missing:{ac.gt_action_id}")
+    for fb in feedback:
+        if feedback_key(fb) is None:
+            report.auto_flags.append(f"feedback_key_missing:{fb.gt_feedback_id}")
+    ac_lut = build_action_lookup_by_id(actions)
+    for it in intents:
+        if intent_key(it, ac_lut) is None:
+            report.auto_flags.append(f"intent_key_missing:{it.gt_intent_id}")
+
+
+def _apply_control_label_first_flags(
+    report: ConversionReport,
+    visible_elements_raw: Any,
+) -> None:
+    for idx, el in enumerate(safe_list(visible_elements_raw), start=1):
+        e = safe_dict(el)
+        gid = _gt_el(idx)
+        texts = as_str_list(e.get("text"))
+        et = str(e.get("element_type", "other"))
+        rh = e.get("role_hint")
+        for flag in control_label_first_flags_for_element(
+            gid,
+            texts,
+            element_type=et,
+            role_hint=rh,
+        ):
+            report.auto_flags.append(flag)
+
+
 def build_temp_ground_truth_from_raw(
     doc: ExperimentRawOutputDocument,
     *,
@@ -116,8 +161,8 @@ def build_temp_ground_truth_from_raw(
     if validate_joint_schema:
         JointScreenUnderstandingResult.model_validate(raw_out)
 
-    ui = _safe_dict(raw_out.get("ui_state"))
-    si = _safe_dict(raw_out.get("screen_intents"))
+    ui = safe_dict(raw_out.get("ui_state"))
+    si = safe_dict(raw_out.get("screen_intents"))
 
     report = ConversionReport(status="converted", warnings=[], invalid_references=[], auto_flags=[])
 
@@ -144,13 +189,13 @@ def build_temp_ground_truth_from_raw(
     model_ig_to_gt: dict[str, str] = {}
 
     elements_out: list[ElementRecord] = []
-    for idx, el in enumerate(_safe_list(ui.get("visible_elements")), start=1):
-        e = _safe_dict(el)
+    for idx, el in enumerate(safe_list(ui.get("visible_elements")), start=1):
+        e = safe_dict(el)
         mid = str(e.get("element_id", ""))
         gid = _gt_el(idx)
         if mid:
             model_el_to_gt[mid] = gid
-        texts = _as_str_list(e.get("text"))
+        texts = as_str_list(e.get("text"))
         anchors = _anchor_texts_from_model(texts, report=report, kind="element", gt_id=gid)
         elements_out.append(
             ElementRecord(
@@ -165,27 +210,27 @@ def build_temp_ground_truth_from_raw(
 
     # group -> action lookup (first group wins if overlap; flag multi membership separately)
     action_to_group: dict[str, dict[str, Any]] = {}
-    for g in _safe_list(ui.get("interaction_groups")):
-        gd = _safe_dict(g)
-        for aid in _as_str_list(gd.get("action_ids")):
+    for g in safe_list(ui.get("interaction_groups")):
+        gd = safe_dict(g)
+        for aid in as_str_list(gd.get("action_ids")):
             if aid and aid not in action_to_group:
                 action_to_group[aid] = gd
 
     element_by_model_id: dict[str, dict[str, Any]] = {}
-    for el in _safe_list(ui.get("visible_elements")):
-        ed = _safe_dict(el)
+    for el in safe_list(ui.get("visible_elements")):
+        ed = safe_dict(el)
         mid = str(ed.get("element_id", ""))
         if mid:
             element_by_model_id[mid] = ed
 
     actions_out: list[ActionRecord] = []
-    for idx, ac in enumerate(_safe_list(ui.get("available_actions")), start=1):
-        a = _safe_dict(ac)
+    for idx, ac in enumerate(safe_list(ui.get("available_actions")), start=1):
+        a = safe_dict(ac)
         mid = str(a.get("action_id", ""))
         gid = _gt_ac(idx)
         if mid:
             model_ac_to_gt[mid] = gid
-        texts = _as_str_list(a.get("text"))
+        texts = as_str_list(a.get("text"))
         atype = str(a.get("action_type", "unknown"))
 
         anchor_texts: list[str] = list(texts)
@@ -225,14 +270,14 @@ def build_temp_ground_truth_from_raw(
         )
 
     feedback_out: list[FeedbackRecord] = []
-    for idx, fb in enumerate(_safe_list(ui.get("visible_feedback")), start=1):
-        f = _safe_dict(fb)
+    for idx, fb in enumerate(safe_list(ui.get("visible_feedback")), start=1):
+        f = safe_dict(fb)
         mid = str(f.get("feedback_id", ""))
         gid = _gt_fb(idx)
         if mid:
             model_fb_to_gt[mid] = gid
-        texts = _as_str_list(f.get("text"))
-        rel_in = _as_str_list(f.get("related_element_ids"))
+        texts = as_str_list(f.get("text"))
+        rel_in = as_str_list(f.get("related_element_ids"))
         rel_gt: list[str] = []
         for rid in rel_in:
             gtid = model_el_to_gt.get(rid)
@@ -258,8 +303,8 @@ def build_temp_ground_truth_from_raw(
         )
 
     groups_out: list[GroupRecord] = []
-    for idx, gr in enumerate(_safe_list(ui.get("interaction_groups")), start=1):
-        g = _safe_dict(gr)
+    for idx, gr in enumerate(safe_list(ui.get("interaction_groups")), start=1):
+        g = safe_dict(gr)
         mid = str(g.get("group_id", ""))
         ggid = _gt_ig(idx)
         if mid:
@@ -274,11 +319,11 @@ def build_temp_ground_truth_from_raw(
         def _map_fb(rid: str) -> str | None:
             return model_fb_to_gt.get(rid)
 
-        mem_el = [_map_el(x) for x in _as_str_list(g.get("element_ids"))]
-        mem_ac = [_map_ac(x) for x in _as_str_list(g.get("action_ids"))]
-        mem_fb = [_map_fb(x) for x in _as_str_list(g.get("feedback_ids"))]
+        mem_el = [_map_el(x) for x in as_str_list(g.get("element_ids"))]
+        mem_ac = [_map_ac(x) for x in as_str_list(g.get("action_ids"))]
+        mem_fb = [_map_fb(x) for x in as_str_list(g.get("feedback_ids"))]
 
-        for i, raw_id in enumerate(_as_str_list(g.get("element_ids"))):
+        for i, raw_id in enumerate(as_str_list(g.get("element_ids"))):
             if mem_el[i] is None:
                 report.auto_flags.append(f"group_invalid_element_ref:{ggid}:{raw_id}")
                 report.invalid_references.append(
@@ -288,7 +333,7 @@ def build_temp_ground_truth_from_raw(
                         reason="element id not found",
                     )
                 )
-        for i, raw_id in enumerate(_as_str_list(g.get("action_ids"))):
+        for i, raw_id in enumerate(as_str_list(g.get("action_ids"))):
             if mem_ac[i] is None:
                 report.auto_flags.append(f"group_invalid_action_ref:{ggid}:{raw_id}")
                 report.invalid_references.append(
@@ -298,7 +343,7 @@ def build_temp_ground_truth_from_raw(
                         reason="action id not found",
                     )
                 )
-        for i, raw_id in enumerate(_as_str_list(g.get("feedback_ids"))):
+        for i, raw_id in enumerate(as_str_list(g.get("feedback_ids"))):
             if mem_fb[i] is None:
                 report.auto_flags.append(f"group_invalid_feedback_ref:{ggid}:{raw_id}")
                 report.invalid_references.append(
@@ -354,8 +399,8 @@ def build_temp_ground_truth_from_raw(
     )
 
     intents_out: list[ScreenIntentRecord] = []
-    for idx, it in enumerate(_safe_list(si.get("screen_behaviour_intents")), start=1):
-        intent = _safe_dict(it)
+    for idx, it in enumerate(safe_list(si.get("screen_behaviour_intents")), start=1):
+        intent = safe_dict(it)
         iid = _gt_intent(idx)
         src_g = str(intent.get("source_group_id", ""))
         gt_g = model_ig_to_gt.get(src_g)
@@ -386,14 +431,14 @@ def build_temp_ground_truth_from_raw(
 
         pri = _ac_gt(intent.get("primary_action_id"))
         commit = _ac_gt(intent.get("commit_action_id"))
-        sec_raw = _as_str_list(intent.get("secondary_action_ids"))
+        sec_raw = as_str_list(intent.get("secondary_action_ids"))
         sec_gt = []
         for sr in sec_raw:
             x = _ac_gt(sr)
             if x:
                 sec_gt.append(x)
 
-        req_raw = _as_str_list(intent.get("required_input_element_ids"))
+        req_raw = as_str_list(intent.get("required_input_element_ids"))
         req_gt: list[str] = []
         for rr in req_raw:
             ge = model_el_to_gt.get(rr)
@@ -409,8 +454,8 @@ def build_temp_ground_truth_from_raw(
                 )
 
         evidence_targets: list[str] = []
-        for eref in _safe_list(intent.get("evidence_refs")):
-            er = _safe_dict(eref)
+        for eref in safe_list(intent.get("evidence_refs")):
+            er = safe_dict(eref)
             et = str(er.get("evidence_type", ""))
             sid = str(er.get("source_id", ""))
             mapped = _map_evidence_ref(et, sid, model_el_to_gt, model_ac_to_gt, model_fb_to_gt, model_ig_to_gt)
@@ -428,16 +473,16 @@ def build_temp_ground_truth_from_raw(
                     )
                 )
 
-        templates = _safe_list(intent.get("local_action_sequence_templates"))
+        templates = safe_list(intent.get("local_action_sequence_templates"))
         steps_out: list[ExpectedStepRecord] = []
         if len(templates) > 1:
             report.auto_flags.append(f"multiple_sequence_templates_review_needed:{iid}")
         if templates:
-            t0 = _safe_dict(templates[0])
+            t0 = safe_dict(templates[0])
             if t0.get("outcome_prediction_allowed") is not False:
                 report.auto_flags.append("outcome_prediction_allowed_not_false")
-            for st in _safe_list(t0.get("steps")):
-                sd = _safe_dict(st)
+            for st in safe_list(t0.get("steps")):
+                sd = safe_dict(st)
                 sar = sd.get("source_action_id")
                 ser = sd.get("source_element_id")
                 steps_out.append(
@@ -480,8 +525,8 @@ def build_temp_ground_truth_from_raw(
         )
 
     unresolved_out: list[UnresolvedGroupRecord] = []
-    for idx, ug in enumerate(_safe_list(si.get("unresolved_screen_groups")), start=1):
-        u = _safe_dict(ug)
+    for idx, ug in enumerate(safe_list(si.get("unresolved_screen_groups")), start=1):
+        u = safe_dict(ug)
         raw_gid = str(u.get("group_id", ""))
         gtg = model_ig_to_gt.get(raw_gid, "")
         unresolved_out.append(
@@ -492,6 +537,15 @@ def build_temp_ground_truth_from_raw(
                 reason_code=str(u.get("reason_code", "")),
             )
         )
+
+    _apply_evaluation_key_flags(
+        report,
+        elements=elements_out,
+        actions=actions_out,
+        feedback=feedback_out,
+        intents=intents_out,
+    )
+    _apply_control_label_first_flags(report, ui.get("visible_elements"))
 
     if include_debug:
         report.debug_id_maps = DebugIdMaps(
@@ -522,22 +576,14 @@ def build_temp_ground_truth_from_raw(
     return out
 
 
-def _safe_list(v: Any) -> list[Any]:
-    if v is None:
-        return []
-    if isinstance(v, list):
-        return v
-    return []
-
-
 def _ground_type_a(
     action: Mapping[str, Any],
     element_by_model_id: dict[str, dict[str, Any]],
     model_el_to_gt: dict[str, str],
 ) -> tuple[list[str], str] | None:
-    texts = _as_str_list(action.get("text"))
+    texts = as_str_list(action.get("text"))
     for _eid, el in element_by_model_id.items():
-        el_texts = _as_str_list(el.get("text"))
+        el_texts = as_str_list(el.get("text"))
         for at in texts:
             for et in el_texts:
                 if text_matches(at, et):
@@ -558,16 +604,16 @@ def _ground_type_b(
     grp = action_to_group.get(aid)
     if not grp:
         return None
-    texts = _as_str_list(action.get("text"))
+    texts = as_str_list(action.get("text"))
     joined = " ".join(texts)
-    for eid in _as_str_list(grp.get("element_ids")):
+    for eid in as_str_list(grp.get("element_ids")):
         el = element_by_model_id.get(str(eid))
         if not el:
             continue
         rh = el.get("role_hint")
         if str(rh) not in _INPUT_ROLE_HINTS:
             continue
-        el_texts = _as_str_list(el.get("text"))
+        el_texts = as_str_list(el.get("text"))
         for et in el_texts:
             if normalized_join_contains(joined, et):
                 gid = model_el_to_gt.get(str(el.get("element_id", "")))
@@ -607,29 +653,29 @@ def _validate_group_membership(
     model_fb_to_gt: dict[str, str],
     report: ConversionReport,
 ) -> None:
-    groups = _safe_list(ui.get("interaction_groups"))
+    groups = safe_list(ui.get("interaction_groups"))
 
     def count_el(eid: str) -> int:
         n = 0
         for g in groups:
-            gd = _safe_dict(g)
-            if eid in _as_str_list(gd.get("element_ids")):
+            gd = safe_dict(g)
+            if eid in as_str_list(gd.get("element_ids")):
                 n += 1
         return n
 
     def count_ac(aid: str) -> int:
         n = 0
         for g in groups:
-            gd = _safe_dict(g)
-            if aid in _as_str_list(gd.get("action_ids")):
+            gd = safe_dict(g)
+            if aid in as_str_list(gd.get("action_ids")):
                 n += 1
         return n
 
     def count_fb(fid: str) -> int:
         n = 0
         for g in groups:
-            gd = _safe_dict(g)
-            if fid in _as_str_list(gd.get("feedback_ids")):
+            gd = safe_dict(g)
+            if fid in as_str_list(gd.get("feedback_ids")):
                 n += 1
         return n
 

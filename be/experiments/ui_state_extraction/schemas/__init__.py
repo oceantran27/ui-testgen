@@ -13,10 +13,13 @@ from experiments.ui_state_extraction.schemas.temp_ground_truth_manifest_schema i
 )
 from experiments.ui_state_extraction.schemas.evaluation_metric_schema import (
     AggregateMetrics,
+    AggregateMetricsV4,
     DatasetSummary,
+    DiagnosticMetrics,
     EvaluationSummaryDocument,
 )
 from experiments.ui_state_extraction.schemas.evaluation_result_schema import (
+    KeyDiagnosticsBlock,
     PerImageEvaluationResult,
     SkipItem,
 )
@@ -37,9 +40,12 @@ __all__ = [
     "TempGroundTruthManifest",
     "TempGroundTruthManifestItem",
     "PredictionEvaluationBundle",
+    "KeyDiagnosticsBlock",
     "PerImageEvaluationResult",
     "SkipItem",
     "EvaluationSummaryDocument",
     "DatasetSummary",
     "AggregateMetrics",
+    "AggregateMetricsV4",
+    "DiagnosticMetrics",
 ]

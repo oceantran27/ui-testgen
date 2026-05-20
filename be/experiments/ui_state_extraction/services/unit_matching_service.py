@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
 
 from experiments.ui_state_extraction.schemas.evaluation_unit_schema import (
     PredActionUnit,
     PredElementUnit,
+    PredExpectedStepUnit,
     PredFeedbackUnit,
     PredGroupUnit,
     PredIntentUnit,
@@ -22,20 +24,132 @@ from experiments.ui_state_extraction.schemas.temp_ground_truth_schema import (
     ScreenIntentRecord,
     TempGroundTruthDocument,
 )
+from experiments.ui_state_extraction.services.evaluation_key_service import has_evaluable_key
+from experiments.ui_state_extraction.services.key_metric_service import counter_prf
 from experiments.ui_state_extraction.services.text_match_service import (
     longest_anchor_overlap_score,
-    normalize_text_list,
     text_anchor_match,
 )
 
+# Prediction refs that do not resolve through unit maps appear as sentinel tokens so
+# micro precision/recall count hallucinated / unmatched references.
+UNMAPPED_ELEMENT_PREFIX = "UNMAPPED_ELEMENT::"
+UNMAPPED_EVIDENCE_PREFIX = "UNMAPPED_EVIDENCE::"
+UNMAPPED_ACTION_PREFIX = "UNMAPPED_ACTION::"
+
+
+def _safe_div_micro(num: float, den: int) -> float | None:
+    if den == 0:
+        return None
+    return num / den
+
+
+def _prf_from_counts(matched: int, pred_n: int, gt_n: int) -> tuple[float | None, float | None, float | None]:
+    prec = _safe_div_micro(float(matched), pred_n) if pred_n else None
+    rec = _safe_div_micro(float(matched), gt_n) if gt_n else None
+    if prec is None or rec is None:
+        return prec, rec, None
+    if prec + rec == 0:
+        return prec, rec, 0.0
+    return prec, rec, 2 * prec * rec / (prec + rec)
+
+
+def map_pred_element_ref(raw_id: str, el_m: dict[str, str]) -> str:
+    rid = (raw_id or "").strip()
+    if not rid:
+        return rid
+    return el_m.get(rid) or f"{UNMAPPED_ELEMENT_PREFIX}{rid}"
+
+
+def map_pred_evidence_ref(
+    raw_id: str,
+    el_m: dict[str, str],
+    ac_m: dict[str, str],
+    fb_m: dict[str, str],
+    ig_m: dict[str, str],
+) -> str:
+    rid = (raw_id or "").strip()
+    if not rid:
+        return rid
+    mid = map_raw_evidence_to_gt(rid, el_m, ac_m, fb_m, ig_m)
+    return mid if mid else f"{UNMAPPED_EVIDENCE_PREFIX}{rid}"
+
+
+def canonical_step_type(step_type: str) -> str:
+    t = (step_type or "").strip().lower()
+    if t == "tap":
+        return "invoke_action"
+    return t
+
+
+StepKey = tuple[str, str | None, str | None]
+
+
+def _gt_step_key(gs: ExpectedStepRecord) -> StepKey:
+    return (
+        canonical_step_type(gs.step_type),
+        gs.source_action_id,
+        gs.source_element_id,
+    )
+
+
+def _pred_step_key(ps: PredExpectedStepUnit, ac_m: dict[str, str], el_m: dict[str, str]) -> StepKey:
+    st = canonical_step_type(ps.step_type)
+    ra = (ps.source_pred_action_id or "").strip()
+    re = (ps.source_pred_element_id or "").strip()
+    mapped_action: str | None = None
+    if ra:
+        mapped_action = ac_m.get(ra) or f"{UNMAPPED_ACTION_PREFIX}{ra}"
+    mapped_el: str | None = None
+    if re:
+        mapped_el = el_m.get(re) or f"{UNMAPPED_ELEMENT_PREFIX}{re}"
+    return st, mapped_action, mapped_el
+
+
+def multiset_step_prf(pred_counter: Counter[StepKey], gt_counter: Counter[StepKey]) -> dict[str, Any]:
+    core = counter_prf(pred_counter, gt_counter)
+    matched = core.correct_count
+    precision, recall, f1 = core.precision, core.recall, core.f1
+    extra = core.extra
+    missing = core.missing
+
+    def _expand(cnt: Counter[StepKey]) -> list[list[str | None]]:
+        out: list[list[str | None]] = []
+        for k, mult in cnt.items():
+            row: list[str | None] = [k[0], k[1], k[2]]
+            for _ in range(mult):
+                out.append(row)
+        return out
+
+    return {
+        "correct_count": matched,
+        "pred_count": core.pred_count,
+        "gt_count": core.gt_count,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "extra_steps": _expand(extra),
+        "missing_steps": _expand(missing),
+    }
+
+
+def counter_step_keys_as_lists(cnt: Counter[StepKey]) -> list[list[str | None]]:
+    """Multiset keys serialized for JSON (repeat rows for multiplicity); keys sorted lexicographically."""
+    out: list[list[str | None]] = []
+    for k in sorted(cnt.keys(), key=lambda t: (t[0], t[1] or "", t[2] or "")):
+        row = [k[0], k[1], k[2]]
+        for _ in range(cnt[k]):
+            out.append(list(row))
+    return out
+
 
 def grounded_and_all_gt_element_ids(gt: TempGroundTruthDocument) -> tuple[set[str], set[str]]:
-    """Text-grounded GT element ids (non-empty anchors after normalization) and all GT element ids."""
+    """Text-grounded GT element ids (evaluable element key) and all GT element ids."""
     all_ids: set[str] = set()
     grounded: set[str] = set()
     for e in gt.elements:
         all_ids.add(e.gt_element_id)
-        if normalize_text_list(e.anchor_texts):
+        if has_evaluable_key(e, kind="element"):
             grounded.add(e.gt_element_id)
     return grounded, all_ids
 
@@ -66,7 +180,7 @@ def _gt_step_skipped_for_empty_anchor_element(
     el = el_by_id.get(gs_source_element_id)
     if el is None:
         return False
-    return not bool(normalize_text_list(el.anchor_texts))
+    return not has_evaluable_key(el, kind="element")
 
 
 def _action_grounding_correct(
@@ -543,23 +657,35 @@ def map_raw_evidence_to_gt(
     return None
 
 
+def set_eff_metrics(pred_eff: set[str], gt_eff: set[str]) -> dict[str, Any]:
+    """P/R/F1 and counts after empty-anchor filtering. Both empty sets → no metric (N/A)."""
+    if not pred_eff and not gt_eff:
+        return {
+            "correct_count": 0,
+            "pred_count": 0,
+            "gt_count": 0,
+            "precision": None,
+            "recall": None,
+            "f1": None,
+        }
+    inter = pred_eff & gt_eff
+    c = len(inter)
+    p_n = len(pred_eff)
+    g_n = len(gt_eff)
+    prec, rec, f1 = _prf_from_counts(c, p_n, g_n)
+    return {
+        "correct_count": c,
+        "pred_count": p_n,
+        "gt_count": g_n,
+        "precision": prec,
+        "recall": rec,
+        "f1": f1,
+    }
+
+
 def set_f1(pred_set: set[str], gt_set: set[str]) -> tuple[float | None, float | None, float | None]:
-    if not pred_set and not gt_set:
-        return None, None, None
-    inter = pred_set & gt_set
-    if not pred_set:
-        p: float | None = None
-    else:
-        p = len(inter) / len(pred_set)
-    if not gt_set:
-        r = None
-    else:
-        r = len(inter) / len(gt_set)
-    if p is None or r is None:
-        return p, r, None
-    if p + r == 0:
-        return p, r, 0.0
-    return p, r, 2 * p * r / (p + r)
+    m = set_eff_metrics(pred_set, gt_set)
+    return m["precision"], m["recall"], m["f1"]
 
 
 def required_input_mapping_explain(
@@ -570,11 +696,13 @@ def required_input_mapping_explain(
 ) -> dict[str, Any]:
     """Debug: raw required element ids vs mapped GT ids after element match (el_m)."""
     grounded_gt_el_ids, all_gt_el_ids = grounded_and_all_gt_element_ids(gt_doc)
-    pred_raw = [str(x) for x in p.required_pred_element_ids]
-    dropped_pred_ids = [x for x in pred_raw if x not in el_m]
-    mapped_gt_ids = sorted({el_m[x] for x in pred_raw if x in el_m})
+    pred_raw = [str(x) for x in p.required_pred_element_ids if x and str(x).strip()]
+    pred_req_set = {map_pred_element_ref(x, el_m) for x in pred_raw}
+    unmapped_pred_ids = [x for x in pred_raw if not el_m.get(x)]
+
     gt_required_ids = sorted(set(g.required_input_element_ids))
-    pred_req_set = {el_m[x] for x in pred_raw if x in el_m}
+    mapped_gt_no_unmapped = sorted({map_pred_element_ref(x, el_m) for x in pred_raw if el_m.get(x)})
+
     gt_req_set = set(g.required_input_element_ids)
     pred_eff, _pred_ex = _filter_empty_anchor_element_refs(
         pred_req_set,
@@ -586,15 +714,25 @@ def required_input_mapping_explain(
         all_gt_el_ids=all_gt_el_ids,
         grounded_gt_el_ids=grounded_gt_el_ids,
     )
-    _rq_p, _rq_r, rq_f1 = set_f1(pred_eff, gt_eff)
+    rq = set_eff_metrics(pred_eff, gt_eff)
+
+    pred_effective_sorted = sorted(pred_eff)
+
     return {
         "pred_intent_index": p.pred_intent_index,
         "gt_intent_id": g.gt_intent_id,
         "pred_raw_ids": pred_raw,
-        "mapped_gt_ids": mapped_gt_ids,
+        # GT ids reachable from preds that mapped through el_m (excluding UNMAPPED tokens)
+        "mapped_gt_ids": mapped_gt_no_unmapped,
         "gt_required_ids": gt_required_ids,
-        "dropped_pred_ids": dropped_pred_ids,
-        "required_input_f1": rq_f1,
+        "unmapped_pred_ids": unmapped_pred_ids,
+        "pred_effective_ids": pred_effective_sorted,
+        "required_input_correct_count": rq["correct_count"],
+        "required_input_pred_count": rq["pred_count"],
+        "required_input_gt_count": rq["gt_count"],
+        "required_input_precision": rq["precision"],
+        "required_input_recall": rq["recall"],
+        "required_input_f1": rq["f1"],
     }
 
 
@@ -615,7 +753,10 @@ def compute_intent_field_metrics(
     gt_sec = set(g.secondary_action_ids)
     sp, sr, sf1 = set_f1(pred_sec, gt_sec)
 
-    pred_req = {el_m[x] for x in p.required_pred_element_ids if x in el_m}
+    pred_raw_req = [
+        str(x) for x in p.required_pred_element_ids if x and str(x).strip()
+    ]
+    pred_req = {map_pred_element_ref(x, el_m) for x in pred_raw_req}
     gt_req = set(g.required_input_element_ids)
     pred_req_eff, pred_req_excl = _filter_empty_anchor_element_refs(
         pred_req,
@@ -627,13 +768,14 @@ def compute_intent_field_metrics(
         all_gt_el_ids=all_gt_el_ids,
         grounded_gt_el_ids=grounded_gt_el_ids,
     )
-    rq_p, rq_r, rq_f1 = set_f1(pred_req_eff, gt_req_eff)
+    rq_met = set_eff_metrics(pred_req_eff, gt_req_eff)
+    rq_p, rq_r, rq_f1 = rq_met["precision"], rq_met["recall"], rq_met["f1"]
 
-    pred_evid: set[str] = set()
-    for sid in p.evidence_pred_target_ids:
-        mid = map_raw_evidence_to_gt(sid, el_m, ac_m, fb_m, ig_m)
-        if mid:
-            pred_evid.add(mid)
+    pred_evid_raw = [
+        str(sid) for sid in p.evidence_pred_target_ids if sid and str(sid).strip()
+    ]
+    pred_evid = {map_pred_evidence_ref(sid, el_m, ac_m, fb_m, ig_m) for sid in pred_evid_raw}
+    pred_evid.discard("")  # empty map_evidence refs already skipped
     gt_evid = set(g.evidence_target_ids)
     pred_evid_eff, pred_evid_excl = _filter_empty_anchor_element_refs(
         pred_evid,
@@ -645,7 +787,8 @@ def compute_intent_field_metrics(
         all_gt_el_ids=all_gt_el_ids,
         grounded_gt_el_ids=grounded_gt_el_ids,
     )
-    ev_p, ev_r, ev_f1 = set_f1(pred_evid_eff, gt_evid_eff)
+    ev_met = set_eff_metrics(pred_evid_eff, gt_evid_eff)
+    ev_p, ev_r, ev_f1 = ev_met["precision"], ev_met["recall"], ev_met["f1"]
 
     gt_steps_eff: list[ExpectedStepRecord] = []
     steps_excluded_empty_anchor = 0
@@ -655,20 +798,26 @@ def compute_intent_field_metrics(
             continue
         gt_steps_eff.append(gs)
 
-    steps_total = 0
-    steps_ok = 0
-    for i, ps in enumerate(p.expected_steps):
-        if i >= len(gt_steps_eff):
-            break
-        gs = gt_steps_eff[i]
-        steps_total += 1
-        pa = ac_m.get(ps.source_pred_action_id or "") if ps.source_pred_action_id else None
-        pe = el_m.get(ps.source_pred_element_id or "") if ps.source_pred_element_id else None
-        ok_a = (pa is None and gs.source_action_id is None) or (pa == gs.source_action_id)
-        ok_e = (pe is None and gs.source_element_id is None) or (pe == gs.source_element_id)
-        if ok_a and ok_e:
-            steps_ok += 1
-    step_acc = steps_ok / steps_total if steps_total else None
+    pred_ctr: Counter[StepKey] = Counter()
+    for ps in p.expected_steps:
+        pred_ctr[_pred_step_key(ps, ac_m, el_m)] += 1
+    gt_ctr: Counter[StepKey] = Counter()
+    for gs in gt_steps_eff:
+        gt_ctr[_gt_step_key(gs)] += 1
+    step_met = multiset_step_prf(pred_ctr, gt_ctr)
+    pred_step_keys_dbg = counter_step_keys_as_lists(pred_ctr)
+    gt_step_keys_dbg = counter_step_keys_as_lists(gt_ctr)
+
+    step_debug = {
+        "pred_step_keys": pred_step_keys_dbg,
+        "gt_step_keys": gt_step_keys_dbg,
+        "matched_count": step_met["correct_count"],
+        "pred_count": step_met["pred_count"],
+        "gt_count": step_met["gt_count"],
+        "missing_steps": step_met["missing_steps"],
+        "extra_steps": step_met["extra_steps"],
+        "empty_anchor_excluded_count": steps_excluded_empty_anchor,
+    }
 
     return {
         "source_group_ok": ig_m.get(p.source_pred_group_id) == g.source_group_id,
@@ -681,6 +830,9 @@ def compute_intent_field_metrics(
         "secondary_precision": sp,
         "secondary_recall": sr,
         "secondary_f1": sf1,
+        "required_input_correct_count": rq_met["correct_count"],
+        "required_input_pred_count": rq_met["pred_count"],
+        "required_input_gt_count": rq_met["gt_count"],
         "required_input_precision": rq_p,
         "required_input_recall": rq_r,
         "required_input_f1": rq_f1,
@@ -689,10 +841,25 @@ def compute_intent_field_metrics(
         "evidence_precision": ev_p,
         "evidence_recall": ev_r,
         "evidence_f1": ev_f1,
+        "evidence_target_correct_count": ev_met["correct_count"],
+        "evidence_target_pred_count": ev_met["pred_count"],
+        "evidence_target_gt_count": ev_met["gt_count"],
+        "evidence_target_precision": ev_p,
+        "evidence_target_recall": ev_r,
+        "evidence_target_f1": ev_f1,
         "evidence_empty_anchor_excluded_pred_refs": pred_evid_excl,
         "evidence_empty_anchor_excluded_gt_refs": gt_evid_excl,
-        "step_grounding_accuracy": step_acc,
-        "steps_correct": steps_ok,
-        "steps_total": steps_total,
+        "step_correct_count": step_met["correct_count"],
+        "step_pred_count": step_met["pred_count"],
+        "step_gt_count": step_met["gt_count"],
+        "step_precision": step_met["precision"],
+        "step_recall": step_met["recall"],
+        "step_f1": step_met["f1"],
+        "step_grounding_accuracy": step_met["f1"],
         "step_empty_anchor_excluded_count": steps_excluded_empty_anchor,
+        "step_missing_steps": step_met["missing_steps"],
+        "step_extra_steps": step_met["extra_steps"],
+        "step_debug": step_debug,
+        "steps_correct": step_met["correct_count"],
+        "steps_total": step_met["pred_count"],
     }

@@ -29,6 +29,13 @@ _MEDIUM_FLAG_PREFIXES: tuple[str, ...] = (
     "multiple_sequence_templates_review_needed:",
     "outcome_prediction_allowed_not_false",
     "non_text_label_skipped:",
+    "element_key_missing:",
+    "action_key_missing:",
+    "feedback_key_missing:",
+    "intent_key_missing:",
+    "control_primary_text_looks_like_value:",
+    "control_primary_text_masked_value:",
+    "control_label_maybe_missing:",
 )
 
 

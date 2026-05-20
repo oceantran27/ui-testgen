@@ -8,7 +8,7 @@ _PACKAGE_ROOT = Path(__file__).resolve().parent
 PACKAGE_ROOT = _PACKAGE_ROOT
 
 # Set to your dataset root (local path or http(s) URL to a directory or single image).
-IMAGE_ROOT_URL_OR_PATH: str = r"C:\Users\daidu\Desktop\DataExp\DemoAuth"
+IMAGE_ROOT_URL_OR_PATH: str = r"C:\Users\daidu\Desktop\New folder"
 
 RAW_OUTPUT_DIR: Path = _PACKAGE_ROOT / "raw_outputs"
 TEMP_GROUND_TRUTH_DIR: Path = _PACKAGE_ROOT / "temp_ground_truth"
@@ -54,7 +54,7 @@ INCLUDE_DEBUG_ID_MAPS: bool = False
 
 # Module 3: evaluation
 EVALUATION_REPORT_DIR: Path = _PACKAGE_ROOT / "evaluation_reports"
-EVALUATION_SUMMARY_SCHEMA_VERSION: str = "ui_state_extraction_evaluation_summary_v2"
+EVALUATION_SUMMARY_SCHEMA_VERSION: str = "ui_state_extraction_evaluation_summary_v4"
 
 TEXT_MATCH_MODE: str = "contains"
 TEXT_MATCH_CASE_INSENSITIVE: bool = True
@@ -66,4 +66,8 @@ EVALUATE_UNRESOLVED_GROUPS: bool = False
 EVALUATE_SELECTION_OPTIONS: bool = False
 
 INCLUDE_DEBUG_MATCH_TABLES: bool = True
+
+# When True, evaluate_pair prefers multiset Counter P/R/F1 (`key_metric_service`) over greedy ID matching.
+# CLI `--key-metrics` overrides per run. Synthetic tests often use hand-built bundles with minimal raw JSON; leave False unless raw matches Joint payload.
+MODULE3_USE_PRED_EVAL_VIEW_FOR_MAIN_METRICS: bool = False
 

@@ -305,6 +305,7 @@ def run(
                 review_priority=pri,
                 conversion_report=gt_doc.conversion_report,
                 verbose_log=debug_log_verbose,
+                gt_document=gt_doc,
             )
 
     skipped = sum(1 for i in manifest_items if i.conversion_status == "skipped")

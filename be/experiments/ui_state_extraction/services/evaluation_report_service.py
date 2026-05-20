@@ -5,14 +5,58 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from experiments.ui_state_extraction.schemas.evaluation_metric_schema import (
     AggregateMetrics,
+    AggregateMetricsV4,
     DatasetSummary,
+    DiagnosticMetrics,
     EvaluationSummaryDocument,
 )
 from experiments.ui_state_extraction.schemas.evaluation_result_schema import PerImageEvaluationResult
+
+SPRINT10_PER_IMAGE_CSV_HEADER: list[str] = [
+    "image_id",
+    "screen_type_accuracy",
+    "presentation_scope_accuracy",
+    "outcome_state_type_accuracy",
+    "screen_enum_accuracy",
+    "element_precision",
+    "element_recall",
+    "element_f1",
+    "element_correct_count",
+    "element_pred_count",
+    "element_gt_count",
+    "action_precision",
+    "action_recall",
+    "action_f1",
+    "action_correct_count",
+    "action_pred_count",
+    "action_gt_count",
+    "feedback_precision",
+    "feedback_recall",
+    "feedback_f1",
+    "feedback_correct_count",
+    "feedback_pred_count",
+    "feedback_gt_count",
+    "intent_precision",
+    "intent_recall",
+    "intent_f1",
+    "intent_correct_count",
+    "intent_pred_count",
+    "intent_gt_count",
+    "skipped_empty_key_element_count",
+    "skipped_empty_key_action_count",
+    "skipped_empty_key_feedback_count",
+    "intent_key_missing_count",
+]
+
+
+def _screen_bool_to_accuracy(value: Optional[bool]) -> Optional[float]:
+    if value is None:
+        return None
+    return 1.0 if value else 0.0
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -24,8 +68,14 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     tmp.replace(path)
 
 
+def aggregate_metrics_v4_from_flat_dict(data: dict[str, float | None]) -> AggregateMetricsV4:
+    """Populate Sprint 8 summary aggregate_metrics / aggregate_metrics_macro blocks."""
+    fields = set(AggregateMetricsV4.model_fields.keys())
+    return AggregateMetricsV4(**{k: v for k, v in data.items() if k in fields})
+
+
 def aggregate_metrics_from_flat_dict(data: dict[str, float | None]) -> AggregateMetrics:
-    """Populate AggregateMetrics from micro/macro flat keys; ignore unknown keys."""
+    """Populate DiagnosticMetrics from legacy flat keys (alias: AggregateMetrics)."""
     fields = set(AggregateMetrics.model_fields.keys())
     return AggregateMetrics(**{k: v for k, v in data.items() if k in fields})
 
@@ -43,12 +93,14 @@ def write_evaluation_summary_json(
     micro: dict[str, float | None],
     macro: dict[str, float | None],
     skipped_items: list[dict[str, Any]],
+    diagnostic: DiagnosticMetrics | None = None,
 ) -> None:
     doc = EvaluationSummaryDocument(
         schema_version=schema_version,
         dataset_summary=dataset_summary,
-        aggregate_metrics=aggregate_metrics_from_flat_dict(micro),
-        aggregate_metrics_macro=aggregate_metrics_from_flat_dict(macro),
+        aggregate_metrics=aggregate_metrics_v4_from_flat_dict(micro),
+        aggregate_metrics_macro=aggregate_metrics_v4_from_flat_dict(macro),
+        diagnostic_metrics=diagnostic,
         skipped_items=skipped_items,
     )
     _write_json(path, doc.model_dump(mode="json"))
@@ -59,11 +111,15 @@ def metrics_summary_csv_rows(
     macro: dict[str, float | None],
     *,
     count: int,
+    diagnostic: dict[str, Any] | None = None,
 ) -> list[list[Any]]:
-    rows: list[list[Any]] = [["metric_name", "micro_value", "macro_value", "count", "notes"]]
-    keys = sorted(set(micro.keys()) | set(macro.keys()))
+    diag = diagnostic or {}
+    rows: list[list[Any]] = [
+        ["metric_name", "aggregate_micro_v4", "aggregate_macro_v4", "diagnostic_micro_legacy", "count", "notes"],
+    ]
+    keys = sorted(set(micro.keys()) | set(macro.keys()) | set(diag.keys()))
     for name in keys:
-        rows.append([name, micro.get(name), macro.get(name), count, ""])
+        rows.append([name, micro.get(name), macro.get(name), diag.get(name), count, ""])
     return rows
 
 
@@ -76,214 +132,61 @@ def write_csv(path: Path, rows: Iterable[Iterable[Any]]) -> None:
 
 
 def per_image_csv_rows(results: list[PerImageEvaluationResult]) -> list[list[Any]]:
-    header = [
-        "image_id",
-        "relative_path",
-        "screen_enum_accuracy",
-        "element_precision",
-        "element_recall",
-        "element_f1",
-        "element_type_accuracy",
-        "role_hint_accuracy",
-        "pred_empty_anchor_element_count",
-        "gt_empty_anchor_element_count",
-        "empty_anchor_element_delta",
-        "pred_empty_anchor_element_rate",
-        "gt_empty_anchor_element_rate",
-        "text_grounded_pred_count",
-        "text_grounded_gt_count",
-        "text_grounded_matched_count",
-        "action_precision",
-        "action_recall",
-        "action_f1",
-        "action_type_accuracy",
-        "action_grounding_accuracy",
-        "feedback_precision",
-        "feedback_recall",
-        "feedback_f1",
-        "feedback_type_accuracy",
-        "group_precision",
-        "group_recall",
-        "group_f1",
-        "group_membership_f1",
-        "group_primary_action_accuracy",
-        "intent_precision",
-        "intent_recall",
-        "intent_f1",
-        "intent_kind_accuracy",
-        "commit_action_accuracy",
-        "required_input_f1",
-        "evidence_target_f1",
-        "invalid_reference_rate",
-        "hallucination_rate",
-    ]
-    out: list[list[Any]] = [header]
+    """Sprint 10: one row per image, main UI-unit metrics and key-skip diagnostics only."""
+    out: list[list[Any]] = [list(SPRINT10_PER_IMAGE_CSV_HEADER)]
     for r in results:
+        sm = r.screen_metrics
         em = r.element_metrics
         am = r.action_metrics
         fm = r.feedback_metrics
-        gm = r.group_metrics
         im = r.intent_metrics
-        cm = r.consistency_metrics
+        kd = r.key_diagnostics
         out.append(
             [
                 r.image_id,
-                r.relative_path,
-                r.screen_metrics.accuracy,
+                _screen_bool_to_accuracy(sm.screen_type_match),
+                _screen_bool_to_accuracy(sm.presentation_scope_match),
+                _screen_bool_to_accuracy(sm.outcome_state_type_match),
+                sm.accuracy,
                 em.precision,
                 em.recall,
                 em.f1,
-                em.element_type_accuracy,
-                em.role_hint_accuracy,
-                em.pred_empty_anchor_element_count,
-                em.gt_empty_anchor_element_count,
-                em.empty_anchor_element_delta,
-                em.pred_empty_anchor_element_rate,
-                em.gt_empty_anchor_element_rate,
+                em.text_grounded_matched_count,
                 em.text_grounded_pred_count,
                 em.text_grounded_gt_count,
-                em.text_grounded_matched_count,
                 am.precision,
                 am.recall,
                 am.f1,
-                am.action_type_accuracy,
-                am.action_grounding_accuracy,
+                am.matched_count,
+                am.pred_count,
+                am.gt_count,
                 fm.precision,
                 fm.recall,
                 fm.f1,
-                fm.feedback_type_accuracy,
-                gm.precision,
-                gm.recall,
-                gm.f1,
-                gm.group_membership_f1,
-                gm.primary_action_accuracy,
+                fm.matched_count,
+                fm.pred_count,
+                fm.gt_count,
                 im.precision,
                 im.recall,
                 im.f1,
-                im.intent_kind_accuracy,
-                im.intent_commit_action_accuracy,
-                im.required_input_f1,
-                im.evidence_target_f1,
-                cm.invalid_reference_rate,
-                cm.hallucination_rate,
+                im.matched_count,
+                im.pred_count,
+                im.gt_count,
+                kd.skipped_empty_key_element_count,
+                kd.skipped_empty_key_action_count,
+                kd.skipped_empty_key_feedback_count,
+                kd.intent_key_missing_count,
             ]
         )
     return out
 
 
-def category_metric_csv_rows(
-    category: str,
-    results: list[PerImageEvaluationResult],
-) -> list[list[Any]]:
-    """One row per image with key metrics for a category (for thesis tables)."""
-    if category == "element":
-        header = [
-            "image_id",
-            "precision",
-            "recall",
-            "f1",
-            "type_acc",
-            "role_acc",
-            "region_acc",
-            "pred_empty_n",
-            "gt_empty_n",
-            "pred_empty_rate",
-        ]
-        rows = [header]
-        for r in results:
-            m = r.element_metrics
-            rows.append(
-                [
-                    r.image_id,
-                    m.precision,
-                    m.recall,
-                    m.f1,
-                    m.element_type_accuracy,
-                    m.role_hint_accuracy,
-                    m.visual_region_accuracy,
-                    m.pred_empty_anchor_element_count,
-                    m.gt_empty_anchor_element_count,
-                    m.pred_empty_anchor_element_rate,
-                ]
-            )
-    elif category == "action":
-        header = ["image_id", "precision", "recall", "f1", "type_acc", "ground_acc", "region_acc"]
-        rows = [header]
-        for r in results:
-            m = r.action_metrics
-            rows.append(
-                [
-                    r.image_id,
-                    m.precision,
-                    m.recall,
-                    m.f1,
-                    m.action_type_accuracy,
-                    m.action_grounding_accuracy,
-                    m.action_region_accuracy,
-                ]
-            )
-    elif category == "feedback":
-        header = ["image_id", "precision", "recall", "f1", "type_acc", "related_el_acc"]
-        rows = [header]
-        for r in results:
-            m = r.feedback_metrics
-            rows.append(
-                [
-                    r.image_id,
-                    m.precision,
-                    m.recall,
-                    m.f1,
-                    m.feedback_type_accuracy,
-                    m.feedback_related_element_accuracy,
-                ]
-            )
-    elif category == "group":
-        header = ["image_id", "precision", "recall", "f1", "membership_f1", "type_acc", "primary_acc"]
-        rows = [header]
-        for r in results:
-            m = r.group_metrics
-            rows.append(
-                [
-                    r.image_id,
-                    m.precision,
-                    m.recall,
-                    m.f1,
-                    m.group_membership_f1,
-                    m.group_type_accuracy,
-                    m.primary_action_accuracy,
-                ]
-            )
-    elif category == "intent":
-        header = [
-            "image_id",
-            "precision",
-            "recall",
-            "f1",
-            "kind_acc",
-            "commit_acc",
-            "req_input_f1",
-            "evidence_f1",
-            "step_acc",
-        ]
-        rows = [header]
-        for r in results:
-            m = r.intent_metrics
-            rows.append(
-                [
-                    r.image_id,
-                    m.precision,
-                    m.recall,
-                    m.f1,
-                    m.intent_kind_accuracy,
-                    m.intent_commit_action_accuracy,
-                    m.required_input_f1,
-                    m.evidence_target_f1,
-                    m.step_grounding_accuracy,
-                ]
-            )
-    else:
-        rows = [["error", f"unknown category {category}"]]
-    return rows
+def _fmt_metric_val(v: float | None, *, counts: bool = False) -> str:
+    if v is None:
+        return ""
+    if counts:
+        return str(int(round(float(v))))
+    return f"{float(v):.4f}"
 
 
 def write_markdown_report(
@@ -291,11 +194,14 @@ def write_markdown_report(
     *,
     dataset_summary: DatasetSummary,
     micro: dict[str, float | None],
+    macro: dict[str, float | None] | None = None,
+    results: list[PerImageEvaluationResult] | None = None,
 ) -> None:
+    """Sprint 10: eight sections; dataset-level aggregates only (no long auxiliary metric tables)."""
     lines = [
         "# UI State Extraction Evaluation Report",
         "",
-        "## Dataset Summary",
+        "## 1. Dataset summary",
         "",
         "| Item | Count |",
         "|---|---:|",
@@ -304,49 +210,144 @@ def write_markdown_report(
         f"| Evaluated pairs | {dataset_summary.total_evaluated} |",
         f"| Skipped | {dataset_summary.total_skipped} |",
         "",
-        "## Main Metrics",
-        "",
-        "| Metric | Value |",
-        "|---|---:|",
     ]
+    reasons = dataset_summary.skip_reasons or {}
+    if reasons:
+        lines.extend(["### Skip reasons", "", "| Reason | Count |", "|---|---:|"])
+        for reason, cnt in sorted(reasons.items(), key=lambda x: (-x[1], x[0])):
+            lines.append(f"| {reason} | {cnt} |")
+        lines.append("")
 
-    def pick(key: str) -> str:
-        v = micro.get(key)
-        if v is None:
-            return ""
-        return f"{float(v):.4f}"
+    use_macro = macro is not None
 
-    pairs = [
-        ("Screen enum accuracy", "screen_enum_accuracy"),
-        ("Element F1 (text-grounded only)", "element_f1"),
-        ("Pred empty-anchor element rate", "pred_empty_anchor_element_rate"),
-        ("GT empty-anchor element rate", "gt_empty_anchor_element_rate"),
-        ("Action F1", "action_f1"),
-        ("Action grounding accuracy", "action_grounding_accuracy"),
-        ("Feedback F1", "feedback_f1"),
-        ("Group membership F1", "group_membership_f1"),
-        ("Intent F1", "intent_f1"),
-        ("Commit action accuracy", "commit_action_accuracy"),
-        ("Required input F1", "required_input_f1"),
-        ("Evidence target F1", "evidence_target_f1"),
-        ("Invalid reference rate", "invalid_reference_rate"),
-        ("Hallucination rate", "hallucination_rate"),
-    ]
-    for label, key in pairs:
-        lines.append(f"| {label} | {pick(key)} |")
+    def row_screen(label: str, micro_key: str) -> str:
+        mv = _fmt_metric_val(micro.get(micro_key))
+        if not use_macro:
+            return f"| {label} | {mv} |"
+        mac = _fmt_metric_val(macro.get(micro_key) if macro else None)
+        return f"| {label} | {mv} | {mac} |"
 
     lines.extend(
         [
-            "",
-            "## Notes",
-            "",
-            "- Element precision / recall / F1 count only **text-grounded** elements (non-empty anchors after normalization). Empty-anchor elements are reported separately (counts and rates).",
-            "- Required-input / evidence / step grounding / group membership / feedback `related_element_ids` metrics use only **text-grounded** GT element references. References to empty-anchor elements are excluded from F1/accuracy and summarized as `*_empty_anchor_excluded_*` counts in per-image results and aggregates.",
-            "- Action grounding accuracy includes only matched actions whose GT `grounded_element_id` is absent or points to a text-grounded element (empty-anchor targets are excluded from the denominator).",
-            "- Free-text fields such as `intent_name`, `local_user_goal`, `group_label` are not evaluated.",
-            "- No-label icons and ungrounded visual controls are excluded from the dataset.",
+            "## 2. Screen classification results",
             "",
         ]
     )
+    if use_macro:
+        lines.extend(["| Metric | Micro (dataset) | Macro (mean / image) |", "|---|---:|---:|"])
+    else:
+        lines.extend(["| Metric | Micro (dataset) |", "|---|---:|"])
+
+    screen_labels = [
+        ("Screen type accuracy", "screen_type_accuracy"),
+        ("Presentation scope accuracy", "presentation_scope_accuracy"),
+        ("Outcome state type accuracy", "outcome_state_type_accuracy"),
+        ("Screen enum accuracy (mean of three)", "screen_enum_accuracy"),
+    ]
+    for label, key in screen_labels:
+        lines.append(row_screen(label, key))
+    lines.append("")
+
+    def prf_count_block(title: str, prefix: str) -> None:
+        lines.extend([f"## {title}", ""])
+        if use_macro:
+            lines.extend(
+                [
+                    "| Metric | Micro (dataset) | Macro (mean / image) |",
+                    "|---|---:|---:|",
+                ]
+            )
+        else:
+            lines.extend(["| Metric | Micro (dataset) |", "|---|---:|"])
+
+        def pair(label: str, key: str, *, counts: bool = False) -> None:
+            mv = _fmt_metric_val(micro.get(key), counts=counts)
+            if use_macro:
+                mac = _fmt_metric_val(macro.get(key) if macro else None, counts=counts)
+                lines.append(f"| {label} | {mv} | {mac} |")
+            else:
+                lines.append(f"| {label} | {mv} |")
+
+        pair("Precision", f"{prefix}_precision")
+        pair("Recall", f"{prefix}_recall")
+        pair("F1", f"{prefix}_f1")
+        pair("Correct count", f"{prefix}_correct_count", counts=True)
+        pair("Pred count", f"{prefix}_pred_count", counts=True)
+        pair("GT count", f"{prefix}_gt_count", counts=True)
+        lines.append("")
+
+    prf_count_block("3. Element extraction results", "element")
+    prf_count_block("4. Action extraction results", "action")
+    prf_count_block("5. Feedback extraction results", "feedback")
+    prf_count_block("6. Intent inference results", "intent")
+
+    lines.extend(
+        [
+            "## 7. Diagnostics: skipped/missing keys",
+            "",
+            "Counts aggregate multiset evaluation-key skips (pred-side empty keys; intent column includes pred + GT misses).",
+            "",
+        ]
+    )
+    rs = results or []
+    tot_el = sum(r.key_diagnostics.skipped_empty_key_element_count for r in rs)
+    tot_ac = sum(r.key_diagnostics.skipped_empty_key_action_count for r in rs)
+    tot_fb = sum(r.key_diagnostics.skipped_empty_key_feedback_count for r in rs)
+    tot_int = sum(r.key_diagnostics.intent_key_missing_count for r in rs)
+    lines.extend(
+        [
+            "| Diagnostic | Dataset total |",
+            "|---|---:|",
+            f"| Skipped empty-key elements (pred) | {tot_el} |",
+            f"| Skipped empty-key actions (pred) | {tot_ac} |",
+            f"| Skipped empty-key feedback (pred) | {tot_fb} |",
+            f"| Intent key missing (pred + GT) | {tot_int} |",
+            "",
+        ]
+    )
+    scored = sorted(
+        rs,
+        key=lambda r: (
+            r.key_diagnostics.skipped_empty_key_element_count
+            + r.key_diagnostics.skipped_empty_key_action_count
+            + r.key_diagnostics.skipped_empty_key_feedback_count
+            + r.key_diagnostics.intent_key_missing_count
+        ),
+        reverse=True,
+    )
+    flagged = [
+        r
+        for r in scored
+        if (
+            r.key_diagnostics.skipped_empty_key_element_count
+            + r.key_diagnostics.skipped_empty_key_action_count
+            + r.key_diagnostics.skipped_empty_key_feedback_count
+            + r.key_diagnostics.intent_key_missing_count
+        )
+        > 0
+    ][:10]
+    if flagged:
+        lines.extend(["### Images with non-zero key skips (top 10)", "", "| image_id | Sum of skip counts |", "|---|---:|"])
+        for r in flagged:
+            s = (
+                r.key_diagnostics.skipped_empty_key_element_count
+                + r.key_diagnostics.skipped_empty_key_action_count
+                + r.key_diagnostics.skipped_empty_key_feedback_count
+                + r.key_diagnostics.intent_key_missing_count
+            )
+            lines.append(f"| {r.image_id} | {s} |")
+        lines.append("")
+
+    lines.extend(
+        [
+            "## 8. Notes and limitations",
+            "",
+            "- **Summary v4 (micro):** Pooled precision/recall/F1 use summed matched / pred / GT counts across images. Screen accuracies are mean per-image over three taxonomy fields (**domain** excluded).",
+            "- **Element counts** follow **text-grounded** denominators (evaluable label keys); see `evaluation_per_image.json` for full per-image blocks.",
+            "- **Auxiliary metrics** (interaction groups, ID grounding, intent sub-multisets, reference consistency) are not listed here; see `evaluation_summary.json` → `diagnostic_metrics` and optional pipeline JSONL debug logs.",
+            "",
+        ]
+    )
+
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")
