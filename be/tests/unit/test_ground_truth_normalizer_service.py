@@ -70,13 +70,13 @@ def _signup_dual_intents_raw() -> dict:
                 },
                 {
                     "action_id": "a3",
-                    "action_type": "submit",
+                    "action_type": "click",
                     "text": ["Create account"],
                     "visual_region": "main",
                 },
                 {
                     "action_id": "a4",
-                    "action_type": "navigate",
+                    "action_type": "click",
                     "text": ["Already have an account? Sign in"],
                     "visual_region": "main",
                 },
@@ -160,14 +160,14 @@ def test_gt_view_signup_dual_intents_acceptance_s07_style() -> None:
     )
     gt = build_temp_ground_truth_from_raw(doc, source_raw_output_path="raw.json", validate_joint_schema=True)
 
-    submission_key = ("submission", ("submit", "create-account"))
-    navigation_key = ("navigation", ("navigate", "already-have-an-account-sign-in"))
+    submission_key = ("submission", ("click", "create-account"))
+    navigation_key = ("navigation", ("click", "already-have-an-account-sign-in"))
 
     view = build_gt_evaluation_view(gt)
     assert view.intent_keys[submission_key] == 1
     assert view.intent_keys[navigation_key] == 1
-    assert view.action_keys[("submit", "create-account")] == 1
-    assert view.action_keys[("navigate", "already-have-an-account-sign-in")] == 1
+    assert view.action_keys[("click", "create-account")] == 1
+    assert view.action_keys[("click", "already-have-an-account-sign-in")] == 1
 
     assert view.screen_fields.presentation_scope == "full_screen"
     assert view.screen_fields.screen_type == "auth"

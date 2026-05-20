@@ -59,8 +59,8 @@ def test_prompt_fixed_style_screen_key_multiset() -> None:
     expected_actions = [
         ("type", "email"),
         ("type", "password"),
-        ("submit", "sign-in"),
-        ("navigate", "forgot-password"),
+        ("click", "sign-in"),
+        ("click", "forgot-password"),
     ]
     for k in expected_actions:
         assert view.action_keys[k] == 1, f"missing action key {k!r}"
@@ -89,10 +89,10 @@ def _prompt_fixed_joint_raw_stub() -> dict:
             "available_actions": [
                 {"action_id": "a1", "action_type": "type", "text": ["Email"], "visual_region": "main"},
                 {"action_id": "a2", "action_type": "type", "text": ["Password"], "visual_region": "main"},
-                {"action_id": "a3", "action_type": "submit", "text": ["Sign in"], "visual_region": "main"},
+                {"action_id": "a3", "action_type": "click", "text": ["Sign in"], "visual_region": "main"},
                 {
                     "action_id": "a4",
-                    "action_type": "navigate",
+                    "action_type": "click",
                     "text": ["Forgot password?"],
                     "visual_region": "main",
                 },

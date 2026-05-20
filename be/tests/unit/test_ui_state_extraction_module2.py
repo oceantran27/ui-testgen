@@ -93,7 +93,7 @@ def _login_raw_payload() -> dict:
                 },
                 {
                     "action_id": "ac_003",
-                    "action_type": "submit",
+                    "action_type": "click",
                     "text": ["Login"],
                     "action_priority": "primary",
                     "visual_region": "main",

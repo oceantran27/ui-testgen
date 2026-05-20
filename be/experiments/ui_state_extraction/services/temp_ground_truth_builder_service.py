@@ -53,12 +53,18 @@ from experiments.ui_state_extraction.services.validation_report_service import (
     sync_conversion_counts,
 )
 
-_ACTION_TYPE_SET_A: frozenset[str] = frozenset(
-    {"click", "submit", "navigate", "open", "close", "confirm", "cancel"},
-)
+_ACTION_TYPE_SET_A: frozenset[str] = frozenset({"click", "open", "close"})
 _ACTION_TYPE_SET_B: frozenset[str] = frozenset(
     {"type", "select", "toggle", "upload", "drag", "scroll"},
 )
+_LEGACY_ACTION_TYPES: frozenset[str] = frozenset({"submit", "navigate", "confirm", "cancel"})
+
+
+def _canonical_action_type(raw: str) -> str:
+    at = (raw or "unknown").strip().lower()
+    if at in _LEGACY_ACTION_TYPES:
+        return "click"
+    return at
 _INPUT_ROLE_HINTS: frozenset[str] = frozenset({"required_input", "optional_input"})
 
 
@@ -231,7 +237,7 @@ def build_temp_ground_truth_from_raw(
         if mid:
             model_ac_to_gt[mid] = gid
         texts = as_str_list(a.get("text"))
-        atype = str(a.get("action_type", "unknown"))
+        atype = _canonical_action_type(str(a.get("action_type", "unknown")))
 
         anchor_texts: list[str] = list(texts)
         grounded: str | None = None
