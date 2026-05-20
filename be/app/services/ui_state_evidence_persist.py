@@ -12,6 +12,7 @@ from app.constants.ui_screen_taxonomy import normalize_screen_type
 from app.db.models.image import Image
 from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
+from app.constants.screen_intent_taxonomy import normalize_action_type
 from app.model_providers.schemas import (
     GroupEvidenceA1V2,
     InteractionGroupA1V2,
@@ -94,7 +95,7 @@ def flags_from_elements(
     has_form = any(
         el.element_type in ("input", "textarea", "select", "checkbox", "radio")
         for el in elements
-    ) or any(act.action_type == "submit" for act in actions)
+    ) or any(act.action_type in ("type", "select", "toggle", "upload") for act in actions)
 
     has_table = any(el.element_type == "table" for el in elements)
     overlay_regions = frozenset({"dialog", "drawer", "popover", "toast", "overlay"})
@@ -241,7 +242,7 @@ def persist_ui_state_from_v2_result(
                 run_id=run_id,
                 image_id=img.id,
                 type="action",
-                action_type=act_data.action_type,
+                action_type=normalize_action_type(act_data.action_type),
                 text=act_data.text,
                 actionable=True,
                 is_feedback=False,

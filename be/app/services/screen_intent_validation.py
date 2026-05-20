@@ -11,6 +11,7 @@ from app.constants.screen_intent_taxonomy import (
     INPUT_FAMILY_ELEMENT_TYPES,
     INTENT_KIND_VALUES,
     SEARCH_ACTION_HINTS,
+    normalize_action_type,
 )
 from app.model_providers.schemas import (
     ActionSequenceStepA2,
@@ -90,7 +91,7 @@ def _hydrate_primary_action(actions_by_id: Dict[str, Any], action_id: str) -> Sc
         return None
     return ScreenIntentPrimaryActionA2(
         action_id=act.get("action_id"),
-        action_type=str(act.get("action_type") or "unknown"),
+        action_type=normalize_action_type(str(act.get("action_type") or "unknown")),
         text=list(act.get("text") or []),
     )
 
@@ -192,7 +193,7 @@ def _group_has_search_affordance(
         ac = actions_by_id.get(aid)
         if not ac:
             continue
-        at = _norm(ac.get("action_type"))
+        at = normalize_action_type(_norm(ac.get("action_type")))
         if at in SEARCH_ACTION_HINTS:
             return True
         merged = " ".join(ac.get("text") or []).lower()
@@ -473,8 +474,8 @@ def validate_and_hydrate_intent(
             )
         # primary allowed only for benign navigation affordances inside group
         if primary_h:
-            pt = _norm(primary_h.action_type)
-            if pt not in ("navigate", "open", "click", "unknown"):
+            pt = normalize_action_type(_norm(primary_h.action_type))
+            if pt not in ("open", "click", "unknown"):
                 return ValidationOutcome(
                     None,
                     True,

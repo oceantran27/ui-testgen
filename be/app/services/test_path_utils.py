@@ -34,7 +34,7 @@ def format_action_step(action: Any) -> str:
         return f"Select \"{a_text}\""
     elif a_type in ["input", "type", "fill", "enter"]:
         return f"Enter \"{a_text}\""
-    elif a_type in ["commit", "confirm", "submit"]:
+    elif a_type in ["commit"]:
         return f"Confirm \"{a_text}\""
     else:
         return f"Click \"{a_text}\""

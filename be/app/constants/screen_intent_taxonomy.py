@@ -90,7 +90,37 @@ INPUT_FAMILY_ELEMENT_TYPES: Final[frozenset[str]] = frozenset(
     )
 )
 
-SEARCH_ACTION_HINTS: Final[frozenset[str]] = frozenset(("search",))
+SEARCH_ACTION_HINTS: Final[frozenset[str]] = frozenset(("search", "type"))
+
+# Phase A available_actions.action_type (prompt_joint_screen_understanding_v1 §3.3)
+ACTION_TYPE_ORDERED: Final[tuple[str, ...]] = (
+    "type",
+    "select",
+    "toggle",
+    "upload",
+    "drag",
+    "scroll",
+    "open",
+    "close",
+    "click",
+    "unknown",
+)
+ACTION_TYPE_VALUES: Final[frozenset[str]] = frozenset(ACTION_TYPE_ORDERED)
+
+# Removed from prompt; normalize legacy LLM/GT payloads on ingest.
+LEGACY_ACTION_TYPE_MAP: Final[dict[str, str]] = {
+    "submit": "click",
+    "navigate": "click",
+    "confirm": "click",
+    "cancel": "click",
+}
+
+
+def normalize_action_type(raw: str | None) -> str:
+    s = (raw or "unknown").strip().lower()
+    if s in LEGACY_ACTION_TYPE_MAP:
+        return LEGACY_ACTION_TYPE_MAP[s]
+    return s if s in ACTION_TYPE_VALUES else "unknown"
 
 
 def taxonomy_bullets(ordered_values: tuple[str, ...]) -> str:

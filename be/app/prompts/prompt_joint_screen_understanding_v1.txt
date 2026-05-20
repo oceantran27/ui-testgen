@@ -227,17 +227,17 @@ Disabled and read-only controls:
 Card elements and Inline links:
 - Treat each visible card as ONE element with `element_type: "card"`. Do NOT decompose a card into separate heading/text/badge/image elements. A card is an atomic visual unit.
 - Put the card's primary title as the first item in `text`. If the card has additional key info, append it after the title.
-- If the card has a clickable link or button inside it, create ONE click/navigate action for the card.
+- If the card has a clickable link or button inside it, create ONE click action for the card.
 - For inline links embedded in a sentence (e.g., "Need an account? Sign up"), extract the FULL visible sentence as the element's `text` to preserve context.
 
 Example:
 Visible UI — a product card with a "Read more" link inside:
 Correct Element: {"element_type": "card", "text": ["iPhone 17 Plus", "$999"]}
-Correct Action: {"action_type": "navigate", "text": ["iPhone 17 Plus", "$999"]}
+Correct Action: {"action_type": "click", "text": ["iPhone 17 Plus", "$999"]}
 
 Visible UI — an inline link: "Need an account? Sign up"
 Correct Element: {"element_type": "link", "text": ["Need an account? Sign up"]}
-Correct Action: {"action_type": "navigate", "text": ["Need an account? Sign up"]}
+Correct Action: {"action_type": "click", "text": ["Need an account? Sign up"]}
 
 Do NOT:
 - Create one element per table row for identical buttons (e.g., a "Delete" button in every row). Instead, represent the table as one `table` element and create ONE action representing the row-level operation.
@@ -254,21 +254,24 @@ Each action object must contain:
 - `visual_region`
 
 `action_type` — classify the interaction:
-- `click`: generic click on a button, link, or interactive element
-- `type`: typing text into an input or textarea
-- `select`: choosing an option from a dropdown/select control
-- `toggle`: toggling a checkbox, switch, or radio button
-- `submit`: submitting a form (the main commit action)
-- `navigate`: navigating to another page/section via link or menu
-- `open`: opening a modal, drawer, popover, or dropdown
-- `close`: closing a modal, drawer, popover, or dismissing
-- `confirm`: confirming a dialog or confirmation prompt
-- `cancel`: cancelling an operation or dismissing a dialog
-- `upload`: uploading a file
-- `drag`: drag-and-drop interaction
-- `scroll`: scrolling within a container
-- `unknown`: cannot determine from visible evidence
-- Conflict resolution: use the MOST SPECIFIC type. A button that submits a form → `submit`, not `click`. A link that opens a modal → `open`, not `navigate`. A button labeled "Cancel" in a confirmation dialog → `cancel`, not `click`.
+Action type must describe the direct UI interaction, not the business meaning of the action.
+
+Choose the most specific `action_type` using this priority:
+`type` / `select` / `toggle` / `upload` / `drag` / `scroll` / `open` / `close` first.
+Use `click` only when no more specific action_type applies.
+
+Enum definitions:
+- `type`: user enters text or data into an input-like control (e.g., input, textarea, email field, password field, search box). Example: "Enter Email", "Enter Password".
+- `select`: user chooses one value from a visible set of options (e.g., select dropdown, date picker, radio option, autocomplete option, filter). Use `select` for choosing a value, not merely opening the option list.
+- `toggle`: user changes a binary or on/off state (e.g., checkbox, switch, show-password control, agree-terms checkbox). Do not use `click` for checkbox or switch controls.
+- `upload`: user selects or uploads a file, image, avatar, document, or uses an upload/dropzone control.
+- `drag`: user drags an item or handle to move, reorder, resize, adjust a range, or change position.
+- `scroll`: user scrolls a page, list, table, or container to reveal more content. Only create scroll actions when visible evidence suggests scrollable content.
+- `open`: user opens or expands a hidden UI container (e.g., menu, dropdown, modal, drawer, popover, calendar, accordion).
+- `close`: user closes, dismisses, collapses, or hides a visible UI container (e.g., modal, drawer, menu, popover, toast, banner).
+- `click`: user activates a clickable control and the action is not better described by the above. Use `click` for normal buttons, links, cards, tabs, menu items, submit/confirm/cancel buttons, and navigation links.
+
+Conflict resolution: If there is conflict between different enums, choose the most specific physical action first. For example, selecting a checkbox must be `toggle` (not `click`), typing into search must be `type` (not `click`), selecting an item in dropdown must be `select` (not `click`), but opening the dropdown must be `open` (not `click`).
 
 Action text rules:
 - For input/textarea: use `Enter <control label>`
@@ -558,8 +561,8 @@ Each unresolved item contains:
     "available_actions": [
       {"action_id": "ac_001", "action_type": "type", "text": ["Enter Email address"], "action_priority": "secondary", "visual_region": "dialog"},
       {"action_id": "ac_002", "action_type": "type", "text": ["Enter Password"], "action_priority": "secondary", "visual_region": "dialog"},
-      {"action_id": "ac_003", "action_type": "submit", "text": ["Sign In"], "action_priority": "primary", "visual_region": "dialog"},
-      {"action_id": "ac_004", "action_type": "navigate", "text": ["Forgot password"], "action_priority": "tertiary", "visual_region": "dialog"}
+      {"action_id": "ac_003", "action_type": "click", "text": ["Sign In"], "action_priority": "primary", "visual_region": "dialog"},
+      {"action_id": "ac_004", "action_type": "click", "text": ["Forgot password"], "action_priority": "tertiary", "visual_region": "dialog"}
     ],
     "visible_feedback": [],
     "interaction_groups": [
@@ -645,12 +648,12 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
       {"element_id": "el_009", "element_type": "button", "text": ["Place Order"], "role_hint": "primary_action", "visual_region": "main"}
     ],
     "available_actions": [
-      {"action_id": "ac_001", "action_type": "navigate", "text": ["Home"], "action_priority": "tertiary", "visual_region": "top_bar"},
-      {"action_id": "ac_002", "action_type": "navigate", "text": ["Cart"], "action_priority": "tertiary", "visual_region": "top_bar"},
+      {"action_id": "ac_001", "action_type": "click", "text": ["Home"], "action_priority": "tertiary", "visual_region": "top_bar"},
+      {"action_id": "ac_002", "action_type": "click", "text": ["Cart"], "action_priority": "tertiary", "visual_region": "top_bar"},
       {"action_id": "ac_003", "action_type": "type", "text": ["Enter Full Name"], "action_priority": "secondary", "visual_region": "main"},
       {"action_id": "ac_004", "action_type": "type", "text": ["Enter Email"], "action_priority": "secondary", "visual_region": "main"},
       {"action_id": "ac_005", "action_type": "select", "text": ["Select Payment Method"], "action_priority": "secondary", "visual_region": "main"},
-      {"action_id": "ac_006", "action_type": "submit", "text": ["Place Order"], "action_priority": "primary", "visual_region": "main"}
+      {"action_id": "ac_006", "action_type": "click", "text": ["Place Order"], "action_priority": "primary", "visual_region": "main"}
     ],
     "visible_feedback": [
       {"feedback_id": "fb_001", "feedback_type": "validation_error", "text": ["Email is required"], "related_element_ids": ["el_006"], "visual_region": "main"}
@@ -733,13 +736,13 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
       {"element_id": "el_009", "element_type": "button", "text": ["Create Order"], "role_hint": "primary_action", "visual_region": "main"}
     ],
     "available_actions": [
-      {"action_id": "ac_001", "action_type": "navigate", "text": ["Dashboard"], "action_priority": "tertiary", "visual_region": "sidebar"},
-      {"action_id": "ac_002", "action_type": "navigate", "text": ["Orders"], "action_priority": "tertiary", "visual_region": "sidebar"},
-      {"action_id": "ac_003", "action_type": "navigate", "text": ["Settings"], "action_priority": "tertiary", "visual_region": "sidebar"},
+      {"action_id": "ac_001", "action_type": "click", "text": ["Dashboard"], "action_priority": "tertiary", "visual_region": "sidebar"},
+      {"action_id": "ac_002", "action_type": "click", "text": ["Orders"], "action_priority": "tertiary", "visual_region": "sidebar"},
+      {"action_id": "ac_003", "action_type": "click", "text": ["Settings"], "action_priority": "tertiary", "visual_region": "sidebar"},
       {"action_id": "ac_004", "action_type": "click", "text": ["All"], "action_priority": "tertiary", "visual_region": "main"},
       {"action_id": "ac_005", "action_type": "click", "text": ["Pending"], "action_priority": "tertiary", "visual_region": "main"},
       {"action_id": "ac_006", "action_type": "click", "text": ["Completed"], "action_priority": "tertiary", "visual_region": "main"},
-      {"action_id": "ac_007", "action_type": "navigate", "text": ["Create Order"], "action_priority": "primary", "visual_region": "main"}
+      {"action_id": "ac_007", "action_type": "click", "text": ["Create Order"], "action_priority": "primary", "visual_region": "main"}
     ],
     "visible_feedback": [
       {"feedback_id": "fb_001", "feedback_type": "empty", "text": ["No orders found"], "related_element_ids": [], "visual_region": "main"}

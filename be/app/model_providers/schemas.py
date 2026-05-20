@@ -106,19 +106,15 @@ A1ElementType = Literal[
 ]
 
 A1ActionType = Literal[
-    "click",
     "type",
     "select",
     "toggle",
-    "submit",
-    "navigate",
-    "open",
-    "close",
-    "confirm",
-    "cancel",
     "upload",
     "drag",
     "scroll",
+    "open",
+    "close",
+    "click",
     "unknown",
 ]
 
