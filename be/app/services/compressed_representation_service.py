@@ -4,9 +4,15 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import Any, Dict, List, Tuple, cast, get_args
+from typing import Any, Dict, List, Tuple, cast
 
 from app.constants.ui_screen_taxonomy import normalize_screen_type
+from app.constants.ui_state_taxonomy import (
+    normalize_domain,
+    normalize_feedback_type,
+    normalize_outcome_state_type,
+    normalize_presentation_scope,
+)
 from app.model_providers.schemas import (
     A1FeedbackType,
     A1OutcomeStateType,
@@ -17,10 +23,6 @@ from app.model_providers.schemas import (
     CompressedTaxonomy,
     CompressedTraceIndexEntry,
 )
-
-_PRESENTATION_OK: frozenset[str] = frozenset(get_args(A1PresentationScope))
-_OUTCOME_OK: frozenset[str] = frozenset(get_args(A1OutcomeStateType))
-_FEEDBACK_OK: frozenset[str] = frozenset(get_args(A1FeedbackType))
 
 _ELEMENT_KEYS: frozenset[str] = frozenset({"element_id", "element_type", "role_hint", "text"})
 _ACTION_KEYS: frozenset[str] = frozenset({"action_id", "action_type", "text", "action_priority"})
@@ -39,29 +41,19 @@ _GROUP_KEYS: frozenset[str] = frozenset(
 
 
 def _norm_domain(raw: str | None) -> str:
-    t = (raw or "").strip()
-    return t if t else "unknown"
+    return normalize_domain(raw)
 
 
 def _norm_presentation_scope(raw: str | None) -> A1PresentationScope:
-    s = (raw or "unknown").strip().lower() or "unknown"
-    if s in _PRESENTATION_OK:
-        return cast(A1PresentationScope, s)
-    return "unknown"
+    return cast(A1PresentationScope, normalize_presentation_scope(raw))
 
 
 def _norm_outcome_state_type(raw: str | None) -> A1OutcomeStateType:
-    s = (raw or "unknown").strip().lower() or "unknown"
-    if s in _OUTCOME_OK:
-        return cast(A1OutcomeStateType, s)
-    return "unknown"
+    return cast(A1OutcomeStateType, normalize_outcome_state_type(raw))
 
 
 def _norm_feedback_type(raw: str | None) -> A1FeedbackType:
-    s = (raw or "unknown").strip().lower() or "unknown"
-    if s in _FEEDBACK_OK:
-        return cast(A1FeedbackType, s)
-    return "unknown"
+    return cast(A1FeedbackType, normalize_feedback_type(raw))
 
 
 def _project_dict(row: Dict[str, Any], keep: frozenset[str]) -> Dict[str, Any]:

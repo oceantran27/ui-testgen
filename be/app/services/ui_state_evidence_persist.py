@@ -9,6 +9,11 @@ from typing import Any, Dict, List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants.ui_screen_taxonomy import normalize_screen_type
+from app.constants.ui_state_taxonomy import (
+    normalize_domain,
+    normalize_outcome_state_type,
+    normalize_presentation_scope,
+)
 from app.db.models.image import Image
 from app.db.models.ui_element import UIElement
 from app.db.models.ui_state import UIState
@@ -67,7 +72,16 @@ def generate_state_signature(
     fb_type = "none"
 
     for el in elements:
-        if el.element_type in ("input", "textarea", "checkbox", "radio", "select", "switch", "date_picker"):
+        if el.element_type in (
+            "input",
+            "textarea",
+            "checkbox",
+            "radio",
+            "select",
+            "switch",
+            "date_picker",
+            "file_input",
+        ):
             t = " ".join(el.text) if el.text else ""
             if t:
                 inputs.append(t[:20])
@@ -93,7 +107,7 @@ def flags_from_elements(
     presentation_scope: str,
 ) -> tuple[bool, bool, bool, bool]:
     has_form = any(
-        el.element_type in ("input", "textarea", "select", "checkbox", "radio")
+        el.element_type in ("input", "textarea", "select", "checkbox", "radio", "file_input")
         for el in elements
     ) or any(act.action_type in ("type", "select", "toggle", "upload") for act in actions)
 
@@ -193,10 +207,10 @@ def persist_ui_state_from_v2_result(
         image_id=img.id,
         page_type=canonical_screen_type,
         screen_type=canonical_screen_type,
-        presentation_scope=result_data.presentation_scope,
-        outcome_state_type=result_data.outcome_state_type,
+        presentation_scope=normalize_presentation_scope(str(result_data.presentation_scope)),
+        outcome_state_type=normalize_outcome_state_type(str(result_data.outcome_state_type)),
         screen_purpose=result_data.screen_purpose,
-        domain=result_data.domain,
+        domain=normalize_domain(str(result_data.domain)),
         state_summary=result_data.screen_purpose,
         state_signature=signature,
         confidence=conf,
@@ -281,10 +295,10 @@ def persist_ui_state_from_v2_result(
         "source_image_id": img.id,
         "page_type": canonical_screen_type,
         "screen_type": canonical_screen_type,
-        "presentation_scope": result_data.presentation_scope,
-        "outcome_state_type": result_data.outcome_state_type,
+        "presentation_scope": normalize_presentation_scope(str(result_data.presentation_scope)),
+        "outcome_state_type": normalize_outcome_state_type(str(result_data.outcome_state_type)),
         "screen_purpose": result_data.screen_purpose,
-        "domain": result_data.domain,
+        "domain": normalize_domain(str(result_data.domain)),
         "state_summary": result_data.screen_purpose,
         "visible_texts": [],
         "visible_elements": [e.model_dump() for e in result_data.visible_elements],

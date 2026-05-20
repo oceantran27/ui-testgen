@@ -1,19 +1,46 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.constants.screen_intent_taxonomy import (
+    ACTION_TYPE_VALUES,
     EVIDENCE_TYPE_VALUES,
     INTENT_KIND_VALUES,
+    LEGACY_INTENT_KIND_MAP,
     MODEL_CONFIDENCE_VALUES,
     OPTION_REF_TYPE_VALUES,
     STEP_TYPE_VALUES,
-    UNRESOLVED_REASON_VALUES,
     VISIBLE_STATUS_VALUES,
+    normalize_action_type,
+    normalize_evidence_type,
+    normalize_step_type,
+    normalize_unresolved_reason_code,
 )
-# Phase-2 draft enums (intent_kind, step_type, unresolved reason_code, …): canonical ordered lists live in
-# app.constants.screen_intent_taxonomy — keep prompts aligned with those tuples, not duplicated literals here.
+from app.constants.ui_screen_taxonomy import SCREEN_TYPES_ORDERED
+from app.constants.ui_state_taxonomy import (
+    ACTION_PRIORITY_VALUES,
+    ELEMENT_TYPE_VALUES,
+    FEEDBACK_TYPE_VALUES,
+    GROUP_CONFIDENCE_VALUES,
+    GROUP_EVIDENCE_TYPE_VALUES,
+    GROUP_TYPE_VALUES,
+    OUTCOME_STATE_TYPE_VALUES,
+    PRESENTATION_SCOPE_VALUES,
+    ROLE_HINT_VALUES,
+    normalize_domain,
+    normalize_element_type,
+    normalize_feedback_type,
+    normalize_group_evidence_type,
+    normalize_group_type,
+    normalize_outcome_state_type,
+    normalize_presentation_scope,
+    normalize_role_hint,
+    normalize_screen_type_joint,
+    normalize_visual_region,
+    normalize_action_priority,
+)
+# Phase A: app.constants.ui_state_taxonomy — Phase B: app.constants.screen_intent_taxonomy.
 
 # ── UI state closed vocabularies (joint vision: prompt_joint_screen_understanding_v1) ──
 
@@ -30,7 +57,6 @@ A1ScreenType = Literal[
     "checkout",
     "profile",
     "settings",
-    "wizard_step",
     "document",
     "media",
     "support",
@@ -57,8 +83,6 @@ A1OutcomeStateType = Literal[
     "warning",
     "empty",
     "loading",
-    "confirmation_required",
-    "review_required",
     "unknown",
 ]
 
@@ -92,14 +116,21 @@ A1ElementType = Literal[
     "switch",
     "slider",
     "date_picker",
+    "file_input",
     "tab",
     "menu_item",
+    "breadcrumb",
+    "pagination",
     "list",
     "list_item",
     "card",
     "table",
+    "table_row",
+    "table_cell",
     "divider",
     "badge",
+    "tag",
+    "avatar",
     "progress",
     "container",
     "other",
@@ -132,21 +163,25 @@ A1FeedbackType = Literal[
 ]
 
 A1GroupType = Literal[
-    "form",
     "navigation",
+    "form",
     "search",
     "filter",
-    "list",
-    "list_item",
-    "card",
-    "table",
     "toolbar",
     "dialog",
+    "card",
+    "list",
+    "table",
+    "tabs",
+    "menu",
     "feedback",
     "empty_state",
     "content_section",
     "media",
+    "footer",
+    "header",
     "other",
+    "unknown",
 ]
 
 A1GroupEvidenceType = Literal[
@@ -162,17 +197,34 @@ A1GroupEvidenceType = Literal[
 A1RoleHint = Literal[
     "primary_action",
     "secondary_action",
+    "tertiary_action",
     "required_input",
     "optional_input",
     "navigation",
+    "feedback",
+    "status",
     "informative",
-    "status_indicator",
+    "decorative",
+    "disabled",
     "other",
+    "unknown",
 ]
 
-A1ActionPriority = Literal["primary", "secondary", "tertiary"]
+A1ActionPriority = Literal["primary", "secondary", "tertiary", "destructive"]
 
 A1GroupConfidence = Literal["high", "medium", "low"]
+
+assert frozenset(SCREEN_TYPES_ORDERED) == frozenset(get_args(A1ScreenType))
+assert PRESENTATION_SCOPE_VALUES == frozenset(get_args(A1PresentationScope))
+assert OUTCOME_STATE_TYPE_VALUES == frozenset(get_args(A1OutcomeStateType))
+assert ELEMENT_TYPE_VALUES == frozenset(get_args(A1ElementType))
+assert FEEDBACK_TYPE_VALUES == frozenset(get_args(A1FeedbackType))
+assert GROUP_TYPE_VALUES == frozenset(get_args(A1GroupType))
+assert GROUP_EVIDENCE_TYPE_VALUES == frozenset(get_args(A1GroupEvidenceType))
+assert ROLE_HINT_VALUES == frozenset(get_args(A1RoleHint))
+assert ACTION_PRIORITY_VALUES == frozenset(get_args(A1ActionPriority))
+assert GROUP_CONFIDENCE_VALUES == frozenset(get_args(A1GroupConfidence))
+assert ACTION_TYPE_VALUES == frozenset(get_args(A1ActionType))
 
 
 class _PromptOutputBase(BaseModel):
@@ -203,6 +255,11 @@ class GroupEvidenceA1V2(_PromptOutputBase):
     evidence_type: A1GroupEvidenceType
     description: str
 
+    @field_validator("evidence_type", mode="before")
+    @classmethod
+    def _normalize_ge(cls, v: Any) -> str:
+        return normalize_group_evidence_type(str(v) if v is not None else None)
+
 
 class UIElementA1V2(_PromptOutputBase):
     element_id: str
@@ -210,6 +267,24 @@ class UIElementA1V2(_PromptOutputBase):
     text: List[str] = Field(default_factory=list)
     role_hint: Optional[A1RoleHint] = None
     visual_region: A1VisualRegion = "unknown"
+
+    @field_validator("element_type", mode="before")
+    @classmethod
+    def _normalize_et(cls, v: Any) -> str:
+        return normalize_element_type(str(v) if v is not None else None)
+
+    @field_validator("role_hint", mode="before")
+    @classmethod
+    def _normalize_rh(cls, v: Any) -> str | None:
+        if v is None:
+            return None
+        rh = normalize_role_hint(str(v))
+        return rh
+
+    @field_validator("visual_region", mode="before")
+    @classmethod
+    def _normalize_vr_el(cls, v: Any) -> str:
+        return normalize_visual_region(str(v) if v is not None else None)
 
 
 class UIActionA1V2(_PromptOutputBase):
@@ -219,6 +294,23 @@ class UIActionA1V2(_PromptOutputBase):
     action_priority: Optional[A1ActionPriority] = None
     visual_region: A1VisualRegion = "unknown"
 
+    @field_validator("action_type", mode="before")
+    @classmethod
+    def _normalize_at(cls, v: Any) -> str:
+        return normalize_action_type(str(v) if v is not None else None)
+
+    @field_validator("action_priority", mode="before")
+    @classmethod
+    def _normalize_ap(cls, v: Any) -> str | None:
+        if v is None:
+            return None
+        return normalize_action_priority(str(v))
+
+    @field_validator("visual_region", mode="before")
+    @classmethod
+    def _normalize_vr_ac(cls, v: Any) -> str:
+        return normalize_visual_region(str(v) if v is not None else None)
+
 
 class UIFeedbackA1V2(_PromptOutputBase):
     feedback_id: str
@@ -226,6 +318,16 @@ class UIFeedbackA1V2(_PromptOutputBase):
     text: List[str] = Field(default_factory=list)
     related_element_ids: List[str] = Field(default_factory=list)
     visual_region: A1VisualRegion = "unknown"
+
+    @field_validator("feedback_type", mode="before")
+    @classmethod
+    def _normalize_fb(cls, v: Any) -> str:
+        return normalize_feedback_type(str(v) if v is not None else None)
+
+    @field_validator("visual_region", mode="before")
+    @classmethod
+    def _normalize_vr_fb(cls, v: Any) -> str:
+        return normalize_visual_region(str(v) if v is not None else None)
 
 
 class InteractionGroupA1V2(_PromptOutputBase):
@@ -239,6 +341,17 @@ class InteractionGroupA1V2(_PromptOutputBase):
     group_evidence: List[GroupEvidenceA1V2] = Field(default_factory=list)
     group_confidence: A1GroupConfidence
 
+    @field_validator("group_type", mode="before")
+    @classmethod
+    def _normalize_gt(cls, v: Any) -> str:
+        return normalize_group_type(str(v) if v is not None else None)
+
+    @field_validator("group_confidence", mode="before")
+    @classmethod
+    def _normalize_gc(cls, v: Any) -> str:
+        s = str(v or "medium").strip().lower()
+        return s if s in GROUP_CONFIDENCE_VALUES else "medium"
+
 
 class UIStateExtractionV2Result(_PromptOutputBase):
     state_id: str
@@ -251,6 +364,26 @@ class UIStateExtractionV2Result(_PromptOutputBase):
     available_actions: List[UIActionA1V2] = Field(default_factory=list)
     visible_feedback: List[UIFeedbackA1V2] = Field(default_factory=list)
     interaction_groups: List[InteractionGroupA1V2] = Field(default_factory=list)
+
+    @field_validator("presentation_scope", mode="before")
+    @classmethod
+    def _norm_ps(cls, v: Any) -> str:
+        return normalize_presentation_scope(str(v) if v is not None else None)
+
+    @field_validator("screen_type", mode="before")
+    @classmethod
+    def _norm_st(cls, v: Any) -> str:
+        return normalize_screen_type_joint(str(v) if v is not None else None)
+
+    @field_validator("outcome_state_type", mode="before")
+    @classmethod
+    def _norm_os(cls, v: Any) -> str:
+        return normalize_outcome_state_type(str(v) if v is not None else None)
+
+    @field_validator("domain", mode="before")
+    @classmethod
+    def _norm_dom(cls, v: Any) -> str:
+        return normalize_domain(str(v) if v is not None else None)
 
 
 # ──────────────────────────────────────────────
@@ -275,7 +408,7 @@ class EvidenceRefDraftA2(_PromptOutputBase):
     @field_validator("evidence_type")
     @classmethod
     def _evidence_kind(cls, v: str) -> str:
-        v = str(v).strip()
+        v = normalize_evidence_type(str(v).strip())
         if v not in EVIDENCE_TYPE_VALUES:
             raise ValueError(f"unsupported evidence_type {v!r}")
         return v
@@ -292,13 +425,10 @@ class UnresolvedScreenGroupA2(_PromptOutputBase):
     reason_code: str
     details: str = ""
 
-    @field_validator("reason_code")
+    @field_validator("reason_code", mode="before")
     @classmethod
-    def _reason_code_vocab(cls, v: str) -> str:
-        v = str(v).strip()
-        if v not in UNRESOLVED_REASON_VALUES:
-            raise ValueError(f"unsupported reason_code {v!r}")
-        return v
+    def _reason_code_vocab(cls, v: Any) -> str:
+        return normalize_unresolved_reason_code(str(v) if v is not None else None)
 
 
 class SelectionOptionDraftA2(_PromptOutputBase):
@@ -344,7 +474,7 @@ class ActionSequenceStepDraftA2(_PromptOutputBase):
     @field_validator("step_type")
     @classmethod
     def _step_vocab(cls, v: str) -> str:
-        v = str(v).strip()
+        v = normalize_step_type(str(v).strip())
         if v not in STEP_TYPE_VALUES:
             raise ValueError(f"unsupported step_type {v!r}")
         return v
@@ -385,13 +515,15 @@ class ScreenBehaviourIntentDraftA2(_PromptOutputBase):
     evidence_refs: List[EvidenceRefDraftA2] = Field(default_factory=list)
     model_confidence: str = "medium"
 
-    @field_validator("intent_kind")
+    @field_validator("intent_kind", mode="before")
     @classmethod
-    def _intent_kind_vocab(cls, v: str) -> str:
-        v = str(v).strip()
-        if v not in INTENT_KIND_VALUES:
+    def _intent_kind_vocab(cls, v: Any) -> str:
+        s = str(v).strip().lower()
+        if s in LEGACY_INTENT_KIND_MAP:
+            s = LEGACY_INTENT_KIND_MAP[s]
+        if s not in INTENT_KIND_VALUES:
             raise ValueError(f"unsupported intent_kind {v!r}")
-        return v
+        return s
 
     @field_validator("model_confidence")
     @classmethod

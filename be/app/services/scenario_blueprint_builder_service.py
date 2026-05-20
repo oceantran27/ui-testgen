@@ -95,7 +95,7 @@ def _element_text_buckets_for_then(card: Dict[str, Any]) -> tuple[List[str], Lis
             primary_texts.extend(texts)
         if et in ("button", "link", "input", "select") and texts:
             primary_texts.extend(texts)
-        if (rh == "status_indicator" or et in ("badge", "status")) and texts:
+        if (rh in ("status", "status_indicator") or et in ("badge", "status")) and texts:
             status_texts.extend(texts)
     for fb in card.get("visible_feedback") or []:
         if not isinstance(fb, dict):

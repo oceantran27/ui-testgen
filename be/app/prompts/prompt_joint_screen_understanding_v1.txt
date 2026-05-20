@@ -55,7 +55,7 @@ Do not skip numbers.
 
 ### 2.3 Labelled controls
 
-For form controls such as `input`, `textarea`, `select`, `checkbox`, `radio`, `switch`, `slider`, `date_picker`, `upload`:
+For form controls such as `input`, `textarea`, `select`, `checkbox`, `radio`, `switch`, `slider`, `date_picker`, `file_input`:
 
 - If the control has a visible label, put that visible label in the control's `text` array.
 - Do not output the labelled control with `text: []`.
@@ -146,7 +146,6 @@ Create `ui_state`.
   - `checkout`: payment, shipping, final order submission
   - `profile`: user profile view or edit
   - `settings`: application/account settings
-  - `wizard_step`: one step in a multi-step flow (e.g., step 2 of 4)
   - `document`: static document, policy, terms, help article
   - `media`: media player, gallery, image/video focused page
   - `support`: help desk, ticket creation, FAQ, contact forms
@@ -161,10 +160,9 @@ Create `ui_state`.
   - `warning`: non-blocking warning message visible
   - `empty`: explicit empty state (no results, no data, empty list)
   - `loading`: loading spinner, skeleton, or progress indicator active
-  - `confirmation_required`: user must confirm before proceeding (delete confirm dialog, submit confirm)
-  - `review_required`: user must review information before final action (order review, preview)
   - `unknown`: cannot determine from visible evidence
-  - Conflict resolution priority: error > validation_error > warning > success > loading > empty > confirmation_required > review_required > neutral.
+  - Conflict resolution priority: error > validation_error > warning > success > loading > empty > neutral.
+  - If a success message and an empty-state message are both visible, classify `outcome_state_type` as `success` when the success message is the dominant result of the current screen. Still extract the empty-state message as `visible_feedback` with `feedback_type: "empty"`.
 
 - `domain`: one of
   `authentication | ecommerce | healthcare | banking | education | travel | productivity | admin | unknown`
@@ -195,14 +193,21 @@ Each element object must contain:
 - `switch`: on/off toggle switch
 - `slider`: range slider control
 - `date_picker`: date/time selection control
+- `file_input`: file selection or upload input control
 - `tab`: tab in a tab bar
 - `menu_item`: item in a navigation menu or dropdown menu
+- `breadcrumb`: breadcrumb navigation item or breadcrumb trail
+- `pagination`: pagination control or page navigation item
 - `list`: ordered or unordered list container
 - `list_item`: individual item within a list
 - `card`: visually contained card component
 - `table`: data table container
+- `table_row`: row within a data table
+- `table_cell`: cell within a data table
 - `divider`: visual separator line
 - `badge`: small label/count badge (e.g., notification count)
+- `tag`: small category/status/filter label
+- `avatar`: user or entity avatar
 - `progress`: progress bar or step indicator
 - `container`: generic visual container (section, panel)
 - `other`: none of the above
@@ -214,13 +219,13 @@ Each element object must contain:
 - do not invent business content
 
 `role_hint` must be one of:
-`primary_action | secondary_action | required_input | optional_input | navigation | informative | status_indicator | other`
+`primary_action | secondary_action | tertiary_action | required_input | optional_input | navigation | feedback | status | informative | decorative | disabled | other | unknown`
 
 `visual_region` must be one of:
 `top_bar | navigation | sidebar | main | footer | bottom_bar | dialog | drawer | popover | toast | overlay | unknown`
 
 Disabled and read-only controls:
-- Disabled controls (grayed out, non-interactive): extract as element with `role_hint: "other"`. Do NOT create an action for disabled controls.
+- Disabled controls (grayed out, non-interactive): extract as element with `role_hint: "disabled"`. Do NOT create an action for disabled controls.
 - Read-only fields (displays a value but not editable): extract as element with `role_hint: "informative"`. Do NOT create an input action.
 - Visually hidden elements: do NOT extract. Only extract what is visible.
 
@@ -275,15 +280,20 @@ Conflict resolution: If there is conflict between different enums, choose the mo
 
 Action text rules:
 - For input/textarea: use `Enter <control label>`
-- For select/date_picker/radio/checkbox/switch/upload: use action text based on the control label
+- For select/date_picker/radio/checkbox/switch/file_input: use action text based on the control label
 - For all other actionable elements (button, link, menu_item, tab, card, etc.): the action's `text` array MUST exactly match its corresponding element's `text` array. Do NOT extract just the clickable word; mirror the full element text.
 - Do not create duplicate actions for the same control
 - Do NOT create actions for disabled or read-only controls (§3.2).
+
+`action_priority` must be one of:
+`primary | secondary | tertiary | destructive`
 
 Action priority rules:
 - Main commit action of a form/search/confirmation: `primary`
 - Input/select/toggle/upload actions supporting a main commit action: `secondary`
 - Auxiliary navigation/reset/cancel/back/forgot-password actions: `tertiary` unless they are the main visible action
+- Destructive actions that delete, remove, cancel an existing item/order/appointment, or irreversibly change visible data: `destructive`
+- If an action is both primary and destructive, use `destructive`.
 
 ### 3.4 `visible_feedback`
 
@@ -308,9 +318,11 @@ Each feedback object must contain:
 - `confirmation`: request for user confirmation ("Are you sure?", "Delete this item?")
 - `unknown`: cannot determine from visible evidence
 - Conflict resolution: use the MOST SPECIFIC type. "Email is required" → `validation_error`, not `error`. "No results found" → `empty`, not `info`. A confirmation dialog message → `confirmation`.
+- Conflict priority: validation_error > error; empty > info; confirmation > info.
 
 Feedback rules:
 - Use verbatim visible feedback text.
+- Empty-state text is feedback even when styled as normal content. Extract messages such as "No results", "No upcoming appointments", "No items yet", or "Nothing here yet" as `feedback_type: "empty"`.
 - Link validation feedback to the related input/control if visually clear.
 - If relation is unclear, use `related_element_ids: []`.
 
@@ -339,16 +351,22 @@ Each group object must contain:
 - `group_confidence`
 
 `group_type` must be one of:
-`form | navigation | search | filter | list | list_item | card | table | toolbar | dialog | feedback | empty_state | content_section | media | other`
+`navigation | form | search | filter | toolbar | dialog | card | list | table | tabs | menu | feedback | empty_state | content_section | media | footer | header | other | unknown`
 
 Canonical grouping rules:
+- Use the most specific `group_type`.
+- Conflict priority: dialog > form/search/filter > navigation/menu/tabs/toolbar > table/list/card > feedback/empty_state > content_section > other.
 - A visible form must be one `form` group containing its labels, controls, validation feedback, commit action, and auxiliary links inside the form.
 - Do not split each input field into a separate group if they belong to the same visible form.
 - A search box with filters and a search button should be one `search` or `filter` group.
 - A navigation bar/sidebar should be one `navigation` group.
 - A table should be one `table` group unless rows/cards are independently actionable.
-- A success/error/empty message area should be one `feedback` or `empty_state` group.
+- A tab bar should be one `tabs` group.
+- A menu or dropdown menu should be one `menu` group.
+- A success/error/warning/info message area should be one `feedback` group.
+- An empty-state message area with optional CTA should be one `empty_state` group.
 - Dashboard cards may be grouped as `card` or `content_section` based on visible containers.
+- Use `content_section` only when no more specific group_type applies.
 
 Do NOT:
 - Create a separate group for each navigation menu item. A navigation bar with multiple links should be ONE `navigation` group.
@@ -389,18 +407,30 @@ Each intent object must contain:
 - `model_confidence`
 
 `intent_kind` — classify the user's intent:
-- `informative`: viewing/reading information with no primary action (dashboard stats, article content)
-- `data_entry`: filling in form fields as the main goal (profile edit, auto-saving settings)
-- `selection`: choosing from a set of visible options (radio group, dropdown, tab selection)
+- `submission`: submitting a completed form or committing user-entered data
+- `confirmation`: confirming a pending decision on a review, summary, confirmation, or "Are you sure?" screen
+- `cancellation`: cancelling, backing out of, keeping, or dismissing an in-progress flow or pending decision
+- `navigation`: moving to another page, route, section, detail view, or destination
+- `selection`: choosing one option from visible sibling options
 - `search`: querying and viewing search results
-- `navigation`: navigating to another page or section
-- `submission`: submitting a completed form (login, checkout, create ticket)
-- `confirmation`: confirming a pending action (delete confirmation, order confirmation)
-- `cancellation`: cancelling an in-progress action or dismissing a dialog
-- `editing`: modifying existing data (edit mode, inline edit)
-- `deletion`: deleting/removing an item
-- `feedback_acknowledgement`: dismissing or acting on visible feedback (closing a toast, clicking "OK" on error)
-- Conflict resolution: a form with a submit button → `submission`, not `data_entry`. `data_entry` is for forms where filling is the goal without a final commit. If a screen shows both a form and an informative section, create separate intents per group.
+- `filtering`: changing filters, sorting, or narrowing a visible result set
+- `editing`: modifying existing data
+- `creation`: starting or creating a new entity/item
+- `deletion`: explicitly deleting or removing an item
+- `data_entry`: filling fields is the main goal and no final commit action is visible
+- `feedback_acknowledgement`: dismissing or acting on visible feedback
+- `informational`: reading information with no actionable goal
+- `other`: none of the above
+- `unknown`: not enough visible evidence
+
+Intent kind decision rules:
+- A data-entry form with a visible commit action → `submission`, not `data_entry`.
+- A review, summary, confirmation, or "Are you sure?" screen with a confirm action → `confirmation`, not `submission`.
+- Cancel, Keep, Back, Close, or Do not proceed actions → `cancellation`.
+- Delete or Remove actions on an item → `deletion`. Use `cancellation` for "Cancel appointment/order/booking" unless the UI explicitly says Delete or Remove.
+- Choosing one option among visible sibling options → `selection`.
+- Moving to another page, route, detail view, or section → `navigation`.
+- Purely informational groups with no action should usually be placed in `unresolved_screen_groups` with `reason_code: "passive_content_only"`, not turned into actionable behaviour intents.
 
 `selection_options` — visible selectable options for `selection` intents:
 
@@ -432,7 +462,7 @@ Create separate intents only for standalone alternative actions:
 - close
 - forgot password
 - create account / sign up link
-- navigation link
+- primary navigation link inside the active functional group
 - dismiss feedback
 - edit/delete action
 
@@ -476,12 +506,13 @@ Each step contains:
 - `source_element_id`
 
 `step_type` must be one of:
-`enter_input | select_option | toggle_option | invoke_action | navigate | open | close | confirm | cancel | upload`
+`enter_input | select_option | toggle_option | upload_file | drag_item | scroll_view | open_container | close_container | invoke_action | navigate | confirm | cancel | acknowledge_feedback`
 
 Canonical sequence rules:
 - For the main form/search/submission/confirmation intent:
   1. Add input/select/toggle/upload/date-picker steps in visual order (§2.1).
-  2. Put the commit action as the final step.
+  2. Use `upload_file` for file-input upload steps.
+  3. Put the commit action as the final step.
 - Use actual controls as source elements (§2.3), not separate label text elements.
 - For standalone navigation/cancel/reset/back/close intents, use one direct action step.
 - Do not include alternative actions in the main sequence (§4.2).
@@ -496,7 +527,7 @@ Each evidence ref has:
 - `source_id`
 
 `evidence_type` must be one of:
-`element_text | action_text | feedback_text | non_text_label | group_evidence | control_state`
+`element_text | action_text | feedback_text | control_label | control_value | control_state | group_evidence | visual_structure | non_text_icon`
 
 Rules:
 - For a main form/search/submission intent, include the commit action as `action_text`.
@@ -514,7 +545,7 @@ Each unresolved item contains:
 - `details`
 
 `reason_code` must be one of:
-`no_interaction_group | no_grounded_evidence | no_actionable_control | ambiguous_multiple_goals | invalid_source_group_id | invalid_action_reference | invalid_element_reference | invalid_feedback_reference | unsupported_intent_kind | schema_violation | conflicting_action_roles | outcome_prediction_detected`
+`no_actionable_control | passive_content_only | ambiguous_primary_goal | ambiguous_action_role | ambiguous_intent_kind | ambiguous_screen_type | missing_visible_label | unresolved_non_text_icon | duplicate_control_label | invalid_reference | unsupported_pattern | low_confidence | schema_violation | out_of_scope_inference`
 
 ---
 
@@ -626,7 +657,7 @@ Each unresolved item contains:
 
 ### Example B — Checkout form with validation errors (full_screen, multi-group)
 
-Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint "other", NO action created.
+Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint "disabled", NO action created.
 
 {
   "ui_state": {
@@ -644,7 +675,7 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
       {"element_id": "el_005", "element_type": "input", "text": ["Full Name", "John"], "role_hint": "required_input", "visual_region": "main"},
       {"element_id": "el_006", "element_type": "input", "text": ["Email", "heyodayne@gmail.com"], "role_hint": "required_input", "visual_region": "main"},
       {"element_id": "el_007", "element_type": "select", "text": ["Payment Method", "Credit Card"], "role_hint": "required_input", "visual_region": "main"},
-      {"element_id": "el_008", "element_type": "button", "text": ["Apply Coupon"], "role_hint": "other", "visual_region": "main"},
+      {"element_id": "el_008", "element_type": "button", "text": ["Apply Coupon"], "role_hint": "disabled", "visual_region": "main"},
       {"element_id": "el_009", "element_type": "button", "text": ["Place Order"], "role_hint": "primary_action", "visual_region": "main"}
     ],
     "available_actions": [
@@ -709,7 +740,7 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
       }
     ],
     "unresolved_screen_groups": [
-      {"group_id": "ig_001", "reason_code": "no_actionable_control", "details": "Navigation bar is auxiliary; primary action is on the checkout form."}
+      {"group_id": "ig_001", "reason_code": "ambiguous_primary_goal", "details": "Navigation bar is auxiliary; no primary local goal is selected from this screen."}
     ]
   }
 }
@@ -758,7 +789,7 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
         "group_confidence": "high"
       },
       {
-        "group_id": "ig_002", "group_type": "content_section", "group_label": "Order Tabs",
+        "group_id": "ig_002", "group_type": "tabs", "group_label": "Order Tabs",
         "element_ids": ["el_004", "el_005", "el_006", "el_007"],
         "action_ids": ["ac_004", "ac_005", "ac_006"],
         "feedback_ids": [],
@@ -804,15 +835,15 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
         "model_confidence": "high"
       },
       {
-        "source_group_id": "ig_003", "intent_kind": "navigation",
-        "intent_name": "navigate to create order",
-        "local_user_goal": "User can navigate to create a new order from the empty state.",
+        "source_group_id": "ig_003", "intent_kind": "creation",
+        "intent_name": "create order",
+        "local_user_goal": "User can start creating a new order from the empty state.",
         "primary_action_id": "ac_007", "commit_action_id": "ac_007",
         "secondary_action_ids": [],
         "selection_options": [],
         "local_action_sequence_templates": [{
-          "sequence_name": "open create order",
-          "steps": [{"step_type": "navigate", "source_action_id": "ac_007", "source_element_id": "el_009"}],
+          "sequence_name": "start create order",
+          "steps": [{"step_type": "invoke_action", "source_action_id": "ac_007", "source_element_id": "el_009"}],
           "outcome_prediction_allowed": false
         }],
         "required_input_element_ids": [],
@@ -824,7 +855,7 @@ Note: el_008 (Apply Coupon) is disabled — extracted as element with role_hint 
       }
     ],
     "unresolved_screen_groups": [
-      {"group_id": "ig_001", "reason_code": "no_actionable_control", "details": "Sidebar navigation is auxiliary; main actions are tab selection and create order."}
+      {"group_id": "ig_001", "reason_code": "ambiguous_primary_goal", "details": "Sidebar navigation is auxiliary; main actions are tab selection and create order."}
     ]
   }
 }

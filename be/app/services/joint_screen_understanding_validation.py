@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Set
 
+from app.constants.screen_intent_taxonomy import ELEMENT_SCOPED_EVIDENCE_TYPES
+
 
 @dataclass
 class JointUnderstandingValidationReport:
@@ -154,7 +156,7 @@ def validate_joint_screen_understanding_structured(
             ok = False
             if et == "group_evidence" and sid == str(g.get("group_id")):
                 ok = True
-            elif et in ("element_text", "non_text_label", "control_state") and sid in ge:
+            elif et in ELEMENT_SCOPED_EVIDENCE_TYPES and sid in ge:
                 ok = True
             elif et == "action_text" and sid in ga:
                 ok = True

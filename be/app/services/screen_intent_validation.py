@@ -5,9 +5,10 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from app.constants.screen_intent_taxonomy import (
+    ELEMENT_SCOPED_EVIDENCE_TYPES,
     INPUT_FAMILY_ELEMENT_TYPES,
     INTENT_KIND_VALUES,
     SEARCH_ACTION_HINTS,
@@ -141,7 +142,7 @@ def _hydrate_evidence_ref(
                 pooled.extend(el.get("text") or [])
         return EvidenceRefHydratedA2(evidence_type=etype, source_id=sid, text=pooled[:8]), None
 
-    if etype in ("element_text", "non_text_label", "control_state"):
+    if etype in ELEMENT_SCOPED_EVIDENCE_TYPES:
         if sid not in ge:
             return None, "invalid_element_evidence_reference"
         el = elements_by_id.get(sid)
@@ -209,6 +210,36 @@ def _group_has_search_affordance(
         if ("search" in merged) or (et == "input" and "search" in merged):
             return True
         if roles & {"navigation"} and "search" in merged:
+            return True
+    return False
+
+
+def _group_has_filter_affordance(
+    group: Mapping[str, Any],
+    actions_by_id: Dict[str, Any],
+    element_ids: Sequence[str],
+    action_ids: Sequence[str],
+    elements_by_id: Dict[str, Any],
+) -> bool:
+    """True when the group looks like filter/sort/narrow per prompt §4.1 ``filtering``."""
+    gt = _norm(group.get("group_type"))
+    if gt in ("filter", "search"):
+        return True
+    hints = ("filter", "sort", "refine", "narrow")
+    for aid in action_ids:
+        ac = actions_by_id.get(aid)
+        if not ac:
+            continue
+        at = normalize_action_type(_norm(ac.get("action_type")))
+        blob = " ".join(ac.get("text") or []).lower()
+        if at in ("select", "toggle", "open", "type", "click") and any(h in blob for h in hints):
+            return True
+    for eid in element_ids:
+        el = elements_by_id.get(eid)
+        if not el:
+            continue
+        blob = " ".join(el.get("text") or []).lower()
+        if any(h in blob for h in hints):
             return True
     return False
 
@@ -457,16 +488,46 @@ def validate_and_hydrate_intent(
             trace,
         )
 
-    if draft.intent_kind == "informative":
+    if draft.intent_kind == "confirmation" and commit_h is None:
+        add_issue("severe", "confirmation_without_commit", "")
+        return ValidationOutcome(
+            None,
+            True,
+            UnresolvedScreenGroupA2(
+                group_id=gid_str,
+                reason_code="conflicting_action_roles",
+                details="confirmation requires commit_action_id present in group",
+            ),
+            gid_str,
+            "low",
+            trace,
+        )
+
+    if draft.intent_kind == "creation" and commit_h is None and primary_h is None:
+        add_issue("severe", "creation_without_action", "")
+        return ValidationOutcome(
+            None,
+            True,
+            UnresolvedScreenGroupA2(
+                group_id=gid_str,
+                reason_code="conflicting_action_roles",
+                details="creation requires primary_action_id and/or commit_action_id in group",
+            ),
+            gid_str,
+            "low",
+            trace,
+        )
+
+    if draft.intent_kind == "informational":
         if commit_h is not None:
-            add_issue("severe", "informative_commit", "")
+            add_issue("severe", "informational_commit", "")
             return ValidationOutcome(
                 None,
                 True,
                 UnresolvedScreenGroupA2(
                     group_id=gid_str,
                     reason_code="conflicting_action_roles",
-                    details="informative must not declare commit_action_id",
+                    details="informational must not declare commit_action_id",
                 ),
                 gid_str,
                 "low",
@@ -482,7 +543,7 @@ def validate_and_hydrate_intent(
                     UnresolvedScreenGroupA2(
                         group_id=gid_str,
                         reason_code="conflicting_action_roles",
-                        details=f"informative disallows actionable primary ({primary_h.action_type})",
+                        details=f"informational disallows actionable primary ({primary_h.action_type})",
                     ),
                     gid_str,
                     "low",
@@ -626,6 +687,24 @@ def validate_and_hydrate_intent(
                     group_id=gid_str,
                     reason_code="conflicting_action_roles",
                     details="search intent_kind requires explicit search affordance/action in group",
+                ),
+                gid_str,
+                "low",
+                trace,
+            )
+
+    if draft.intent_kind == "filtering":
+        allowed = _group_has_filter_affordance(
+            group, actions_by_id, list(elt_ids_set), list(action_ids_set), elements_by_id
+        )
+        if not allowed:
+            return ValidationOutcome(
+                None,
+                True,
+                UnresolvedScreenGroupA2(
+                    group_id=gid_str,
+                    reason_code="conflicting_action_roles",
+                    details="filtering intent_kind requires filter/sort/refine affordance or filter/search group_type",
                 ),
                 gid_str,
                 "low",
